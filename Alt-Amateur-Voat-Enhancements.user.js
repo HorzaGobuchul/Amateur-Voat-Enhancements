@@ -15,6 +15,7 @@
 // ==/UserScript==
 //'use strict';
 
+/// From gist.githubusercontent.com/arantius/3123124/raw/grant-none-shim.js by Anthony Lieuallen ///
 const __GM_STORAGE_PREFIX = [
     '', GM_info.script.namespace, GM_info.script.name, ''].join('***');
 
@@ -31,7 +32,7 @@ function GM_getValue(aKey, aDefault) {
 function GM_setValue(aKey, aVal) {
     localStorage.setItem(__GM_STORAGE_PREFIX + aKey, aVal);
 }
-
+/// END ///
 var data = {};
 
 data.option = {
