@@ -10,8 +10,8 @@
 // @grant       none
 // @run-at      document-end
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
-// @updateURL   https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Voat_subverses_header_meta.user.js
-// @downloadURL https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Voat_subverses_header.user.js
+// @updateURL   https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Alt-Amateur-Voat-Enhancements_meta.user.js
+// @downloadURL https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Alt-Amateur-Voat-Enhancements.user.js
 // ==/UserScript==
 //'use strict';
 
