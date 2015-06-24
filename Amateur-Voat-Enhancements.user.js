@@ -41,15 +41,12 @@ $(window).ready(function () {
         data.option[key] = GM_getValue(key, true);
     }
 
-    if (data.option.EnableSubHeader) {
-        DisplayCustomSubversesList();
-    }
-
     if (data.option.EnableImage && $.inArray(data.currentPageType, ["subverses", "sets", "user", "user-manage", "mysets"]) == -1) {
         AppendImageButton();
     }
     
     if (data.option.EnableSubHeader){
+        DisplayCustomSubversesList();
         if (data.isPageSubverse) {
             AppendShortcutButton();
         } else if (data.currentPageType == "subverses") {
