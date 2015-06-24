@@ -1,6 +1,8 @@
 # Amateur Voat Enhancements
 
-AVE is a light Enhancement Suite for Voat.co
+AVE is a light Enhancement Suite for Voat.co.
+
+It is a userscript written for [GreaseMonkyeGreaseMonkey](http://www.greasespot.net/).
 
 # Features:
 ## All css modifications support both Dark and Light themes.
