@@ -29,6 +29,7 @@ On a selected posts you can press:
 
 * A to upvote
 * Z to downvote
+
 ### Supports:
 * Subverse page,
 * Set page,
