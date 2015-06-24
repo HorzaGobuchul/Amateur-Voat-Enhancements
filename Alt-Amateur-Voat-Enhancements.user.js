@@ -56,32 +56,31 @@ $(window).ready(function () {
         data.option[key] = (GM_getValue(key, "1") == "1" ? true : false);
     }
 
-    if (data.option.EnableSubHeader) {
-        DisplayCustomSubversesList();
-    }
-
     if (data.option.EnableImage && $.inArray(data.currentPageType, ["subverses", "sets", "user", "user-manage", "mysets"]) == -1) {
         AppendImageButton();
     }
     
-    if (data.isPageSubverse) {
-        AppendShortcutButton();
-    } else if (data.currentPageType == "subverses") {
-        AddShortcutsButtonInSubversesPage();
-    } else if ($.inArray(data.currentPageType, ["mysets", "sets"]) >= 0) {
-        AddShortcutsButtonInSetsPage();
-    } else if (data.currentPageType == "set") {
-        AddShortcutsButtonInSetPage(); //https://voat.co/set/xx
-    }
-
-    if (data.currentPageType == "user-manage") {
-        InsertAVEManager();
+    if (data.option.EnableSubHeader){
+        DisplayCustomSubversesList();
+        if (data.isPageSubverse) {
+            AppendShortcutButton();
+        } else if (data.currentPageType == "subverses") {
+            AddShortcutsButtonInSubversesPage();
+        } else if ($.inArray(data.currentPageType, ["mysets", "sets"]) >= 0) {
+            AddShortcutsButtonInSetsPage();
+        } else if (data.currentPageType == "set") {
+            AddShortcutsButtonInSetPage(); //https://voat.co/set/xx
+        }
     }
     
     if (data.option.EnableTags)
     {
         data.usertags = GM_getValue("Voat_Tags", "");
         ShowUserTag();
+    }
+
+    if (data.currentPageType == "user-manage") {
+        InsertAVEManager();
     }
 });
 
