@@ -6,7 +6,7 @@
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     0.9
+// @version     0.8
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -15,11 +15,11 @@
 // @downloadURL https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Voat_subverses_header.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
 // ==/UserScript==
+//'use strict';
 
-'use strict';
 var data = {};
 
-data.option = { //Pulled from GM_Value
+data.option = {
     FixedAccountHeader: true,
     FixedListHeader: true,
     EnableTags: true,
@@ -28,7 +28,6 @@ data.option = { //Pulled from GM_Value
 };
 
 $(window).ready(function () {
-    //Use init function to activate function/listener according to data.option, to set var, data.[...]
     data.regExpSet = /([^:]*):([0-9]*)/i;
     data.regExpTag = /([^:]*):([^:]*)/i;
     data.subverseName = GetSubverseName();
@@ -69,12 +68,6 @@ $(window).ready(function () {
         ShowUserTag();
     }
 });
-
-/// Init Method ///
-function Initialize() {
-
-}
-/// End ///
 
 //// Special to voat.co/set/xx: adds a "shortcut" button for this set ////
 function AddShortcutsButtonInSetPage() {
@@ -494,7 +487,7 @@ function ShowUserTag() {
     $("a[href*='/user/']").each(function () {
         if (!$(this).attr('href').match(sel)) return true;
         name = $(this).html().replace("@", "").replace("/u/", "").toLowerCase(); //Accepts: Username, @Username, /u/Username
-        if ($(this).attr('href').split("/")[2].toLowerCase() != name.toLowerCase()) return true;
+        if ($(this).attr('href').split("/")[2].toLowerCase() != name) return true;
 
         tag = GetTag(name);
         Tag_html = '<span class="GM_UserTag" id="' + name + '" style="' + style + '">' + (!tag ? "+" : tag) + '</span>';
@@ -635,6 +628,4 @@ $(document).on("click", "#AVEPrefRest", function () {
     GM_deleteValue("Voat_Tags");
     GM_deleteValue("Voat_Subverses");
 });
-
-
 /// END ///
