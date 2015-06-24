@@ -10,10 +10,12 @@ AVE is a light Enhancement Suite for Voat.co
 * Click [+] to set or modify a tag.
 
 ## Toggle Images:
-### [Adds a button](https://i.imgur.com/8rcfCgz.png) at the top if there are media to display in the current page.
+
+[Adds a button](https://i.imgur.com/8rcfCgz.png) at the top if there are media to display in the current page.
 
 ## [Header List:](https://i.imgur.com/qbh3fIq.jpg)
-### Supports Subverses and Sets (in bold & italic)
+
+Supports Subverses and Sets (in bold & italic)
 * Add/remove a Subverse from:
     * [Any subverse page](https://i.imgur.com/3pOTais.jpg)
     * [voat.co/subverses](https://i.imgur.com/YnTKD8U.jpg)
@@ -30,7 +32,8 @@ On a selected posts you can press:
 * A to upvote
 * Z to downvote
 
-### Supports:
+Supports:
+
 * Subverse page,
 * Set page,
 * Thread,
