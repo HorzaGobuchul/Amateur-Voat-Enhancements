@@ -34,11 +34,11 @@ On a selected posts you can press:
 * Subverse page,
 * Set page,
 * Thread,
-* user/Submision
-* user/Comments
-* messaging/postreplies
-* "blockquote" html blocks
-* Highlighted Comments
+* user/Submision,
+* user/Comments,
+* messaging/postreplies,
+* "blockquote" html blocks,
+* Highlighted Comments.
 
 ## [Fixed element position:](https://i.imgur.com/OLs5waM.png)
 * User info block at the top right
