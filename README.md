@@ -5,7 +5,7 @@ AVE is a light Enhancement Suite for Voat.co.
 It is a userscript written for [GreaseMonkyeGreaseMonkey](http://www.greasespot.net/).
 
 # Features:
-## All css modifications support both Dark and Light themes.
+#### All css modifications support both Dark and Light themes.
 
 ## [Tags:](https://i.imgur.com/azBCRIB.png)
 * If a username is detected [+] will appear at its right.
