@@ -2,12 +2,12 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        24 june 2015
+// @date        25 june 2015
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     0.9
+// @version     1
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -16,7 +16,6 @@
 // @downloadURL https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Amateur-Voat-Enhancements.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
 // ==/UserScript==
-//'use strict';
 
 var data = {};
 
@@ -34,11 +33,19 @@ $(window).ready(function () {
     data.subverseName = GetSubverseName();
     data.isPageSubverse = isPageSubverse();
     data.currentPageType = GetCurrentPageType();
-    data.ListHeaderHeight = 24,
+    data.ListHeaderHeight = 0,
     data.CSSstyle = GetCSSStyle();
     
     for (var key in data.option) {
         data.option[key] = GM_getValue(key, true);
+    }
+    
+    if (data.option.FixedListHeader) {
+        SetSubListHeaderPosAsFixed();
+    }
+    
+    if (data.option.FixedAccountHeader) {
+        SetAccountHeaderPosAsFixed();
     }
 
     if (data.option.EnableImage && $.inArray(data.currentPageType, ["subverses", "sets", "user", "user-manage", "mysets"]) == -1) {
@@ -398,47 +405,39 @@ $(document).keypress(function (event) {
 });
 /// END ///
 
-/// Fixed position header-account info /// Put both feature in the same scroll function
-var headerAccountPos = $('#header-account').offset().top;
-$(window).scroll(function () {
-    if (!data.option.FixedAccountHeader) {return;}
+/// Fixed position header-account info ///
+function SetAccountHeaderPosAsFixed(){
+    var headerAccountPos = $('#header-account').offset().top;
+    $(window).scroll(function () {
+        if (!data.option.FixedAccountHeader) {return;}
 
-    if ($(window).scrollTop() + (data.option.FixedListHeader ? data.ListHeaderHeight : 0) > headerAccountPos) {
-        $('#header-account').css('position', 'fixed')
-                            .css('top', data.option.FixedListHeader ? data.ListHeaderHeight : "0")
-                            .css('right', '0')
-                            .css("text-align", "center")
-                            .css("height", "0px");
-        $('.logged-in').css("background", data.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)");
-    } else {
-        $('#header-account').css('position', '')
-                            .css('top', '')
-                            .css("text-align", "")
-                            .css("height", "");
-        $('.logged-in').css("background", "");
-    }
-});
+        if ($(window).scrollTop() + (data.option.FixedListHeader ? data.ListHeaderHeight : 0) > headerAccountPos) {
+            $('#header-account').css('position', 'fixed')
+                                .css('top', data.option.FixedListHeader ? data.ListHeaderHeight : "0")
+                                .css('right', '0')
+                                .css("text-align", "center")
+                                .css("height", "0px");
+            $('.logged-in').css("background", data.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)");
+        } else {
+            $('#header-account').css('position', '')
+                                .css('top', '')
+                                .css("text-align", "")
+                                .css("height", "");
+            $('.logged-in').css("background", "");
+        }
+    });
+}
 /// END ///
 
 /// Fixed position subverse list header ///
-var headerListPos = $('.width-clip').offset();
-$(window).scroll(function () {
-    if (!data.option.FixedListHeader) { return; }
-
-    if ($(window).scrollTop() > headerListPos.top) {
-        $('.width-clip').css('position', 'fixed')
-                            .css('z-index', '1000')
-                            .css('border-bottom', '1px solid ' + (data.CSSstyle == "dark" ? "#222" : "#DCDCDC"))
-                            .css("height", data.ListHeaderHeight + "px")
-                            .css("background-color", data.CSSstyle == "dark" ? "#333" : "#FFF");
-    } else {
-        $('.width-clip').css('position', '')
-                            .css('z-index', '')
-                            .css('border', '')
-                            .css("height", "")
-                            .css("background-color", "");
-    }
-});
+function SetSubListHeaderPosAsFixed (){
+    data.ListHeaderHeight = $('#sr-header-area').height();
+    
+    $('.width-clip').css('position', 'fixed')
+        .css('border-bottom', '1px solid ' + (data.CSSstyle == "dark" ? "#222" : "#DCDCDC"))
+        .css("height", data.ListHeaderHeight + "px")
+        .css("background-color", data.CSSstyle == "dark" ? "#333" : "#FFF");
+}
 /// END ///
 
 /// Toggle expand all images ///
@@ -608,8 +607,8 @@ function InsertAVEManager() {
                    '</div>';
     }
 
-    MngHTML += '<br /><input value="Reset Stored Data" id="AVEPrefRest" class="btn btn-whoaverse" type="submit" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
-    MngHTML += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input value="Save" id="AVEPrefSave" class="btn btn-whoaverse" type="submit" title="Save!"></input>';
+    MngHTML += '<br /><input value="Save" id="AVEPrefSave" class="btn btn-whoaverse" type="submit" title="Save!"></input>';
+    MngHTML += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input value="Reset Stored Data" id="AVEPrefRest" class="btn btn-whoaverse" type="submit" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
     MngHTML += '</form></section><br />';
 
     $(MngHTML).insertBefore($(".alert-title").get(2));
