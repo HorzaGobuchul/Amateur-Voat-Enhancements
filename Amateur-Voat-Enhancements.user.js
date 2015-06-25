@@ -1,4 +1,3 @@
-
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
@@ -7,7 +6,7 @@
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     1
+// @version     1.0.1
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -76,6 +75,60 @@ $(window).ready(function () {
     }
 });
 
+//// Utils ////
+function GetCSSStyle() {
+    return $("head > link[href*='/Content/Dark?']").length > 0 ? "dark" : "light";
+}
+
+function GetCurrentPageType() {
+    var RegExpTypes = {
+        frontpage: /voat.co\/?$/i,
+        subverse: /voat.co\/v\/[a-z]*\/?$/i,
+        thread: /voat.co\/v\/[a-z]*\/comments\/\d*/i,
+        subverses: /voat.co\/subverses/i,
+        set: /voat.co\/set\/\d*/i,
+        mySet: /voat.co\/mysets/i,
+        sets: /voat.co\/sets/i,
+        user: /voat.co\/user\/[\w\d]*\/?$/i,
+        comments: /voat.co\/user\/[\w\d]*\/comments/i,
+        submissions: /voat.co\/user\/[\w\d]*\/submissions/i,
+        messaging: /voat.co\/messaging/i,
+        manage: /voat.co\/account\/manage/i,
+    };
+    var url = window.location.href;
+
+    if (RegExpTypes.frontpage.test(url)) { return "frontpage"; }
+    else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
+    else if (RegExpTypes.thread.test(url)) { return "thread"; }
+    else if (RegExpTypes.subverses.test(url)) { return "subverses"; }
+    else if (RegExpTypes.set.test(url)) { return "set"; }
+    else if (RegExpTypes.mySet.test(url)) { return "mysets"; }
+    else if (RegExpTypes.sets.test(url)) { return "sets"; }
+    else if (RegExpTypes.user.test(url)) { return "user"; }
+    else if (RegExpTypes.comments.test(url)) { return "user-comments"; }
+    else if (RegExpTypes.submissions.test(url)) { return "user-submissions"; }
+    else if (RegExpTypes.messaging.test(url)) { return "user-messages"; }
+    else if (RegExpTypes.manage.test(url)) { return "user-manage"; }
+
+    return "none";
+}
+
+function isPageSubverse() {
+
+    if (data.subverseName != null)
+    { return true; }
+
+    return false;
+}
+
+function GetSubverseName() {
+    var m = new RegExp(/voat\.co\/v\/([\w\d]*)/).exec(window.location.href);
+
+    if (m == null) { return null; }
+    else { return m[1].toLowerCase(); }
+}
+//// END ////
+
 //// Special to voat.co/set/xx: adds a "shortcut" button for this set ////
 function AddShortcutsButtonInSetPage() {
     //Not implemented yet.
@@ -102,30 +155,30 @@ function AddShortcutsButtonInSetsPage() {
                       </div>';
         $(btnHTML).insertAfter($(this).find(".midcol").first());
     });
+
+    $(document).on("click", "#GM_Sets_Shortcut", function () {
+        var setName = $(this).attr("setName");
+        var setId = $(this).attr("setId");
+
+        if (setName == null || setName == undefined || setName == "undefined" ||
+            setId == null || setId == undefined) {
+            alert("Error adding set " + setName + ", id: " + setId);
+            return;
+        }
+
+        var set = setName + ":" + setId;
+        if (isSubInShortcuts(set)) {
+            RemoveFromShortcuts(set);
+            ToggleShortcutButton(true, this);
+        }
+        else {
+            AddToShortcuts(set);
+            ToggleShortcutButton(false, this);
+        }
+
+        DisplayCustomSubversesList();
+    });
 }
-
-$(document).on("click", "#GM_Sets_Shortcut", function () {
-    var setName = $(this).attr("setName");
-    var setId = $(this).attr("setId");
-
-    if (setName == null || setName == undefined || setName == "undefined" ||
-        setId == null || setId == undefined) {
-        alert("Error adding set " + setName + ", id: " + setId);
-        return;
-    }
-
-    var set = setName + ":" + setId;
-    if (isSubInShortcuts(set)) {
-        RemoveFromShortcuts(set);
-        ToggleShortcutButton(true, this);
-    }
-    else {
-        AddToShortcuts(set);
-        ToggleShortcutButton(false, this);
-    }
-
-    DisplayCustomSubversesList();
-});
 //// END ////
 
 //// Special to voat.co/subverses: adds a "shortcut" button for each subverse////
@@ -144,74 +197,20 @@ function AddShortcutsButtonInSubversesPage() {
                       </div>';
         $(btnHTML).insertAfter($(this).find(".midcol").first());
     });
-}
 
-$(document).on("click", "#GM_Subverses_Shortcut", function () {
-    var subName = $(this).attr("subverse");
-    if (isSubInShortcuts(subName)) {
-        RemoveFromShortcuts(subName);
-        ToggleShortcutButton(true, this);
-    }
-    else {
-        AddToShortcuts(subName);
-        ToggleShortcutButton(false, this);
-    }
+    $(document).on("click", "#GM_Subverses_Shortcut", function () {
+        var subName = $(this).attr("subverse");
+        if (isSubInShortcuts(subName)) {
+            RemoveFromShortcuts(subName);
+            ToggleShortcutButton(true, this);
+        }
+        else {
+            AddToShortcuts(subName);
+            ToggleShortcutButton(false, this);
+        }
 
-    DisplayCustomSubversesList();
-});
-//// END ////
-
-//// Utils ////
-function GetCSSStyle() {
-    return $("head > link[href*='/Content/Dark?']").length > 0 ? "dark" : "light";
-}
-
-function GetCurrentPageType() {
-    var RegExpTypes = {
-            frontpage:   /voat.co\/?$/i,
-            subverse:    /voat.co\/v\/[a-z]*\/?$/i,
-            thread:      /voat.co\/v\/[a-z]*\/comments\/\d*/i,
-            subverses:   /voat.co\/subverses/i,
-            set:         /voat.co\/set\/\d*/i,
-            mySet:       /voat.co\/mysets/i,
-            sets:        /voat.co\/sets/i,
-            user:        /voat.co\/user\/[\w\d]*\/?$/i,
-            comments:    /voat.co\/user\/[\w\d]*\/comments/i,
-            submissions: /voat.co\/user\/[\w\d]*\/submissions/i,
-            messaging:   /voat.co\/messaging/i,
-            manage:      /voat.co\/account\/manage/i,
-    };
-    var url = window.location.href;
-
-    if (RegExpTypes.frontpage.test(url))        {return "frontpage";}
-    else if (RegExpTypes.subverse.test(url))    {return "subverse";}
-    else if (RegExpTypes.thread.test(url))      {return "thread";}
-    else if (RegExpTypes.subverses.test(url))   {return "subverses";}
-    else if (RegExpTypes.set.test(url))         {return "set";}
-    else if (RegExpTypes.mySet.test(url))       {return "mysets";}
-    else if (RegExpTypes.sets.test(url))        {return "sets";}
-    else if (RegExpTypes.user.test(url))        {return "user";}
-    else if (RegExpTypes.comments.test(url))    {return "user-comments";}
-    else if (RegExpTypes.submissions.test(url)) {return "user-submissions";}
-    else if (RegExpTypes.messaging.test(url))   {return "user-messages";}
-    else if (RegExpTypes.manage.test(url))      {return "user-manage";}
-
-    return "none";
-}
-
-function isPageSubverse() {
-
-    if (data.subverseName != null)
-    { return true; }
-
-    return false;
-}
-
-function GetSubverseName() {
-    var m = new RegExp(/voat\.co\/v\/([\w\d]*)/).exec(window.location.href);
-
-    if (m == null) { return null; }
-    else { return m[1].toLowerCase(); }
+        DisplayCustomSubversesList();
+    });
 }
 //// END ////
 
@@ -326,20 +325,20 @@ function AppendShortcutButton() {
     else {
         $(btnHTML).insertAfter(".btn-whoaverse-paging.btn-xs.btn-default.btn-sub");
     }
+
+    $(document).on("click", "#GM_Shortcut", function () {
+        if (isPageInShortcuts()) {
+            RemoveFromShortcuts(data.subverseName);
+            ToggleShortcutButton(true, "#GM_Shortcut");
+        }
+        else {
+            AddToShortcuts(data.subverseName);
+            ToggleShortcutButton(false, "#GM_Shortcut");
+        }
+
+        DisplayCustomSubversesList();
+    });
 }
-
-$(document).on("click", "#GM_Shortcut", function () {
-    if (isPageInShortcuts()) {
-        RemoveFromShortcuts(data.subverseName);
-        ToggleShortcutButton(true, "#GM_Shortcut");
-    }
-    else {
-        AddToShortcuts(data.subverseName);
-        ToggleShortcutButton(false, "#GM_Shortcut");
-    }
-
-    DisplayCustomSubversesList();
-});
 //// END ////
 
 
@@ -495,11 +494,32 @@ function ShowUserTag() {
 
     //Username in userpages
     if ($.inArray(data.currentPageType, ["user", "user-comments", "user-submissions"]) >= 0) {
-        name = $(".alert-title").text().split(" ")[3].replace(".", "");
+        name = $(".alert-title").text().split(" ")[3].replace(".", "").toLowerCase();
         tag = GetTag(name);
         Tag_html = '<span class="GM_UserTag" id="' + name + '" style="' + style + '">' + (!tag ? "+" : tag) + '</span>';
         $(".alert-title").html("Profile overview for "+name+Tag_html+".");
     }
+
+    $(document).on("click", ".GM_UserTag", function () {
+        var username = $(this).attr("id");
+        var oldTag = $(this).text();
+        var newTag = prompt("Tag for " + username, oldTag !== "+" ? oldTag : "").replace(/[:,]/g, "-");
+        if (newTag.length > 0) {
+            if (oldTag !== "+") {
+                UpdateTag(username, newTag);
+            } else {
+                SetTag(username, newTag);
+            }
+        }
+        else if (newTag.length == 0) {
+            if (oldTag != "+") {
+                RemoveTag(username);
+            }
+            newTag = "+";
+        }
+        $(this).text(newTag);
+        UpdateUserTag(username, newTag);
+    });
 }
 
 function UpdateUserTag(name, tag) {
@@ -508,32 +528,11 @@ function UpdateUserTag(name, tag) {
     });
 }
 
-$(document).on("click", ".GM_UserTag", function () {
-    var username = $(this).attr("id");
-    var oldTag = $(this).text();
-    var newTag = prompt("Tag for "+username, oldTag !== "+" ? oldTag : "").replace(/[:,]/g,"-");
-    if (newTag.length > 0) {
-        if (oldTag !== "+") {
-            UpdateTag(username, newTag);
-        } else {
-            SetTag(username, newTag);
-        }
-    }
-    else if (newTag.length == 0) {
-        if (oldTag != "+") {
-            RemoveTag(username);
-        }
-        newTag = "+";
-    }
-    $(this).text(newTag);
-    UpdateUserTag(username, newTag);
-});
-
 function RemoveTag(userName) {
     var usertags = data.usertags.split(",");
     var idx = usertags.indexOf(userName + ":" + GetTag(userName));
     if (idx < 0) {
-        alert("RemoveTag: No tag was found for this user (" + userName + ").");
+        alert("RemoveTag: couldn't find user " + userName + ".");
         return false;
     }
     usertags.splice(idx, 1);
@@ -548,7 +547,6 @@ function UpdateTag(userName, tag) {
     for (var idx in usertags) {
         user = data.regExpTag.exec(usertags[idx]);
         if (user == null) continue;
-
         if (userName.toLowerCase() == user[1].toLowerCase()) {
             usertags[idx] = userName + ":" + tag;
             break;
@@ -612,19 +610,19 @@ function InsertAVEManager() {
     MngHTML += '</form></section><br />';
 
     $(MngHTML).insertBefore($(".alert-title").get(2));
-}
 
-$(document).on("click", "#AVEPrefSave", function () {
-    $("#AVEPreferences").find(":checkbox").each(function () {
-        data.option[$(this).attr("id")] = $(this).is(":checked");
-        GM_setValue($(this).attr("id"), $(this).is(":checked"));
+    $(document).on("click", "#AVEPrefSave", function () {
+        $("#AVEPreferences").find(":checkbox").each(function () {
+            data.option[$(this).attr("id")] = $(this).is(":checked");
+            GM_setValue($(this).attr("id"), $(this).is(":checked"));
+        });
     });
-});
 
-$(document).on("click", "#AVEPrefRest", function () {
-    for (var key in data.option)
-    {GM_deleteValue(key);}
-    GM_deleteValue("Voat_Tags");
-    GM_deleteValue("Voat_Subverses");
-});
+    $(document).on("click", "#AVEPrefRest", function () {
+        for (var key in data.option)
+        { GM_deleteValue(key); }
+        GM_deleteValue("Voat_Tags");
+        GM_deleteValue("Voat_Subverses");
+    });
+}
 /// END ///
