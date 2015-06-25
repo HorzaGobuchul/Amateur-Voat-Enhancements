@@ -6,14 +6,14 @@
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     1.0.1
+// @version     1.0.2
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
 // @run-at      document-end
 // @updateURL   https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Amateur-Voat-Enhancements_meta.user.js
 // @downloadURL https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Amateur-Voat-Enhancements.user.js
-// @require     https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
+// @require     https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
 // ==/UserScript==
 
 var data = {};
@@ -22,8 +22,9 @@ data.option = {
     FixedAccountHeader: true,
     FixedListHeader: true,
     EnableTags: true,
+    EnableSubHeader: true,
     EnableImage: true,
-    EnableSubHeader : true
+    MediaTypes: "110", //Images, Videos, Self-text
 };
 
 $(window).ready(function () {
@@ -34,15 +35,15 @@ $(window).ready(function () {
     data.currentPageType = GetCurrentPageType();
     data.ListHeaderHeight = 0,
     data.CSSstyle = GetCSSStyle();
-    
+
     for (var key in data.option) {
-        data.option[key] = GM_getValue(key, true);
+        data.option[key] = GM_getValue(key, data.option[key]);
     }
-    
+
     if (data.option.FixedListHeader) {
         SetSubListHeaderPosAsFixed();
     }
-    
+
     if (data.option.FixedAccountHeader) {
         SetAccountHeaderPosAsFixed();
     }
@@ -50,8 +51,8 @@ $(window).ready(function () {
     if (data.option.EnableImage && $.inArray(data.currentPageType, ["subverses", "sets", "user", "user-manage", "mysets"]) == -1) {
         AppendImageButton();
     }
-    
-    if (data.option.EnableSubHeader){
+
+    if (data.option.EnableSubHeader) {
         DisplayCustomSubversesList();
         if (data.isPageSubverse) {
             AppendShortcutButton();
@@ -63,9 +64,8 @@ $(window).ready(function () {
             AddShortcutsButtonInSetPage(); //https://voat.co/set/xx
         }
     }
-    
-    if (data.option.EnableTags)
-    {
+
+    if (data.option.EnableTags) {
         data.usertags = GM_getValue("Voat_Tags", "");
         ShowUserTag();
     }
@@ -127,7 +127,6 @@ function GetSubverseName() {
     if (m == null) { return null; }
     else { return m[1].toLowerCase(); }
 }
-//// END ////
 
 //// Special to voat.co/set/xx: adds a "shortcut" button for this set ////
 function AddShortcutsButtonInSetPage() {
@@ -191,7 +190,7 @@ function AddShortcutsButtonInSubversesPage() {
         inShortcut = isSubInShortcuts(tempSubName);
 
         var btnHTML = '<div style="float: left; width: 100%; margin-top: 10px;" class="midcol">\
-                            <button id="GM_Subverses_Shortcut" subverse="'+tempSubName+'" type="button" class="btn-whoaverse-paging btn-xs btn-default '+(inShortcut ? "" : "btn-sub")+'">'
+                            <button id="GM_Subverses_Shortcut" subverse="'+ tempSubName + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'
                                 + (inShortcut ? "-" : "+") + ' shortcut\
                             </button>\
                       </div>';
@@ -237,9 +236,8 @@ function RemoveSetFromShortcut(id) {
     var subversesArr = GetSubversesList();
 
     for (var x in subversesArr) {
-        if (data.regExpSet.test(subversesArr[x]))
-        {
-            if ( GetSetParam(subversesArr[x])[1] == id){
+        if (data.regExpSet.test(subversesArr[x])) {
+            if (GetSetParam(subversesArr[x])[1] == id) {
                 RemoveFromShortcuts(subversesArr[x]);
                 return true;
             }
@@ -297,7 +295,7 @@ function DisplayCustomSubversesList() {
     var setInfo = [];
 
     for (var idx in subArr) {
-        if (subArr[idx] == "") { continue;}
+        if (subArr[idx] == "") { continue; }
         if (data.regExpSet.test(subArr[idx])) { //ex: name:12
             setInfo = GetSetParam(subArr[idx]);
             SubString += '<li><span class="separator">-</span><a href="/set/' + setInfo[1] + '/" style="font-weight:bold;font-style: italic;">' + setInfo[0] + '</a></li>';
@@ -319,7 +317,7 @@ function AppendShortcutButton() {
         var btnHTML = '<button id="GM_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default">- shortcut</button>';
     }
 
-    if ($(".btn-whoaverse-paging.btn-xs.btn-default.btn-unsub").length){
+    if ($(".btn-whoaverse-paging.btn-xs.btn-default.btn-unsub").length) {
         $(btnHTML).insertAfter(".btn-whoaverse-paging.btn-xs.btn-default.btn-unsub");
     }
     else {
@@ -341,20 +339,18 @@ function AppendShortcutButton() {
 }
 //// END ////
 
-
 /// Highlight and Select a comment/thread in particular ///
 $(document).on("click", ".entry", function () {
     ToggleSelectedState($(this));
 });
 
 function ToggleSelectedState(obj) {
-    if (data.SelectedPost != undefined)
-    { 
+    if (data.SelectedPost != undefined) {
         data.SelectedPost.closest("div[class*=' id-']").css('background-color', '');
         data.SelectedPost.find("blockquote").css('background-color', '');
         //data.SelectedPost.find("pre").css('background-color', '');
 
-        if (data.currentPageType == "user-submissions"){
+        if (data.currentPageType == "user-submissions") {
             data.SelectedPost.parent().find(".submission.even.link.self").css('background-color', '');
             data.SelectedPost.parent().css('background-color', '');
             data.SelectedPost.prevAll(".midcol.unvoted").first().find(".submissionscore").css('background-color', '');
@@ -396,7 +392,7 @@ $(document).keypress(function (event) {
     if (data.SelectedPost != undefined) {
         if (event.which === 97) { //a to upvote
             data.SelectedPost.parent().find(".midcol").find("div[aria-label='upvote']").first().click();
-        }   
+        }
         else if (event.which === 122) { //z to downvote
             data.SelectedPost.parent().find(".midcol").find("div[aria-label='downvote']").first().click();
         }
@@ -405,34 +401,37 @@ $(document).keypress(function (event) {
 /// END ///
 
 /// Fixed position header-account info ///
-function SetAccountHeaderPosAsFixed(){
+function SetAccountHeaderPosAsFixed() {
     var headerAccountPos = $('#header-account').offset().top;
     $(window).scroll(function () {
-        if (!data.option.FixedAccountHeader) {return;}
-
-        if ($(window).scrollTop() + (data.option.FixedListHeader ? data.ListHeaderHeight : 0) > headerAccountPos) {
-            $('#header-account').css('position', 'fixed')
-                                .css('top', data.option.FixedListHeader ? data.ListHeaderHeight : "0")
-                                .css('right', '0')
-                                .css("text-align", "center")
-                                .css("height", "0px");
-            $('.logged-in').css("background", data.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)");
-        } else {
-            $('#header-account').css('position', '')
-                                .css('top', '')
-                                .css("text-align", "")
-                                .css("height", "");
-            $('.logged-in').css("background", "");
-        }
+        CheckAccountHeaderPosAsDFixed(headerAccountPos)
     });
+    CheckAccountHeaderPosAsDFixed(headerAccountPos)
+}
+function CheckAccountHeaderPosAsDFixed(headerAccountPos) {
+    if ($(window).scrollTop() + (data.option.FixedListHeader ? data.ListHeaderHeight : 0) > headerAccountPos) {
+        $('#header-account').css('position', 'fixed')
+                            .css('top', data.option.FixedListHeader ? data.ListHeaderHeight : "0")
+                            .css('right', '0')
+                            .css("text-align", "center")
+                            .css("height", "0px");
+        $('.logged-in').css("background", data.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)");
+    } else {
+        $('#header-account').css('position', '')
+                            .css('top', '')
+                            .css("text-align", "")
+                            .css("height", "");
+        $('.logged-in').css("background", "");
+    }
 }
 /// END ///
 
 /// Fixed position subverse list header ///
-function SetSubListHeaderPosAsFixed (){
+function SetSubListHeaderPosAsFixed() {
     data.ListHeaderHeight = $('#sr-header-area').height();
-    
+
     $('.width-clip').css('position', 'fixed')
+        .css("z-index", "1000")
         .css('border-bottom', '1px solid ' + (data.CSSstyle == "dark" ? "#222" : "#DCDCDC"))
         .css("height", data.ListHeaderHeight + "px")
         .css("background-color", data.CSSstyle == "dark" ? "#333" : "#FFF");
@@ -441,23 +440,35 @@ function SetSubListHeaderPosAsFixed (){
 
 /// Toggle expand all images ///
 function AppendImageButton() {
-    var sel = $("[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']"); //,[title=''] voat.co/v/test/comments/37149
+    var ImgMedia = "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']";
+    var VidMedia = "[title='YouTube'],[title='Vimeo']";
+    var SelfText = "[onclick*='loadSelfText']";
+
+    ////voat.co/v/test/comments/37149
+    var sel = $(
+        (data.option.MediaTypes[0] == true ? ImgMedia + "," : "") +
+        (data.option.MediaTypes[1] == true ? VidMedia : ",") +
+        (data.option.MediaTypes[2] == true ? SelfText : "")
+        );
+    if (sel[sel.length - 1] == ",") {
+        sel.slice(0, -1);
+    }
 
     var NbImg = sel.length;
     var isExpanded = false;
 
     if (NbImg == 0) return;
 
-    var btnHTML = '<li class="disabled"><a id="GM_ExpandAllImages" class="contribute submit-text">View images (' + NbImg + ')</a></li>';
+    var btnHTML = '<li class="disabled"><a id="GM_ExpandAllImages" class="contribute submit-text">View Media (' + NbImg + ')</a></li>';
     $(btnHTML).insertAfter(".disabled:last");
 
-    $('#GM_ExpandAllImages').click(function () {
+    $(document).on("click", "[id='GM_ExpandAllImages']", function () {
         if ($(this).hasClass("expanded")) {
-            $(this).text('View images (' + NbImg + ')');
+            $(this).text('View Media (' + NbImg + ')');
             $(this).removeClass("expanded")
             isExpanded = false;
         } else {
-            $(this).text('Hide images (' + NbImg + ')');
+            $(this).text('Hide Media (' + NbImg + ')');
             $(this).addClass("expanded")
             isExpanded = true;
         }
@@ -497,7 +508,7 @@ function ShowUserTag() {
         name = $(".alert-title").text().split(" ")[3].replace(".", "").toLowerCase();
         tag = GetTag(name);
         Tag_html = '<span class="GM_UserTag" id="' + name + '" style="' + style + '">' + (!tag ? "+" : tag) + '</span>';
-        $(".alert-title").html("Profile overview for "+name+Tag_html+".");
+        $(".alert-title").html("Profile overview for " + name + Tag_html + ".");
     }
 
     $(document).on("click", ".GM_UserTag", function () {
@@ -583,7 +594,6 @@ function GetTagCount() {
 }
 /// END ////
 
-
 /// AVE Manager ///
 
 function InsertAVEManager() {
@@ -591,19 +601,31 @@ function InsertAVEManager() {
         FixedAccountHeader: "Enable fixed position for the account block",
         FixedListHeader: "Enable fixed position for the Subverse list header",
         EnableTags: "Enable user tags",
-        EnableImage: "Enable button to display images",
         EnableSubHeader: "Replace Subverse list header with custom choice of shortcuts",
+        EnableImage: "Add a button to toggle media",
     }
 
     var MngHTML = '<br /><div class="alert-title">AVE Preferences</div>';
     MngHTML += '<section id="AVEPreferences">'
     MngHTML += '<form class="form-horizontal" action="/account/manage" method="get">';
     for (var i in data.option) {
-        MngHTML += '<div class="checkbox">'+
-                       '<input '+ (data.option[i] ? 'checked="checked"' : '') +' id="' + i + '" name="' + i + '" value="' + data.option[i] + '" type="checkbox"></input>' +
+        if (i == "MediaTypes") continue;
+
+        MngHTML += '<div class="checkbox">' +
+                       '<input ' + (data.option[i] ? 'checked="checked"' : '') + ' id="' + i + '" name="' + i + '" value="' + data.option[i] + '" type="checkbox"></input>' +
                        '<label for="' + i + '">' + Labels[i] + '</label>' +
                    '</div>';
     }
+
+    var mediaTypes = ["Images", "Videos", "Self-texts"];
+    MngHTML += '<div style="margin-left:30px;padding:5px 0 0 5px;border-left:2px solid #' + (data.CSSstyle == "dark" ? "222" : "DDD") + ';">';
+    for (var i in mediaTypes) {
+        MngHTML += '<span style="margin-right:20px;" >' +
+                       '<input ' + (data.option.EnableImage ? '' : 'disabled="true"') + ' ' + (data.option.MediaTypes[i] == 1 ? 'checked="checked"' : '') + ' id="' + mediaTypes[i] + '" name="' + mediaTypes[i] + '" type="checkbox"></input>' +
+                       '<label for="' + mediaTypes[i] + '">' + mediaTypes[i] + '</label>' +
+                   '</span>';
+    }
+    MngHTML += '</div>';
 
     MngHTML += '<br /><input value="Save" id="AVEPrefSave" class="btn btn-whoaverse" type="submit" title="Save!"></input>';
     MngHTML += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input value="Reset Stored Data" id="AVEPrefRest" class="btn btn-whoaverse" type="submit" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
@@ -613,9 +635,18 @@ function InsertAVEManager() {
 
     $(document).on("click", "#AVEPrefSave", function () {
         $("#AVEPreferences").find(":checkbox").each(function () {
+            if (i == $(this).attr("id")) return true;
+
             data.option[$(this).attr("id")] = $(this).is(":checked");
             GM_setValue($(this).attr("id"), $(this).is(":checked"));
         });
+        var mediaValue = "";
+        for (var i in mediaTypes) {
+            mediaValue += $("input[id='" + mediaTypes[i] + "']").prop("checked") ? "1" : "0";
+        }
+
+        data.option.MediaTypes = mediaValue;
+        GM_setValue("MediaTypes", mediaValue);
     });
 
     $(document).on("click", "#AVEPrefRest", function () {
@@ -623,6 +654,13 @@ function InsertAVEManager() {
         { GM_deleteValue(key); }
         GM_deleteValue("Voat_Tags");
         GM_deleteValue("Voat_Subverses");
+    });
+
+    $("input[id='EnableImage']").click(function () {
+        var state = !$("input[id='EnableImage']").prop("checked");
+        for (var i in mediaTypes) {
+            $("input[id='" + mediaTypes[i] + "']").prop("disabled", state);
+        }
     });
 }
 /// END ///
