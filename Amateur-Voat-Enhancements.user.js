@@ -442,17 +442,18 @@ function SetSubListHeaderPosAsFixed() {
 function AppendImageButton() {
     var ImgMedia = "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']";
     var VidMedia = "[title='YouTube'],[title='Vimeo']";
-    var SelfText = "[onclick*='loadSelfText']";
+    var SelfText = "[onclick^='loadSelfText']";
 
     ////voat.co/v/test/comments/37149
-    var sel = $(
-        (data.option.MediaTypes[0] == true ? ImgMedia + "," : "") +
-        (data.option.MediaTypes[1] == true ? VidMedia : ",") +
-        (data.option.MediaTypes[2] == true ? SelfText : "")
-        );
-    if (sel[sel.length - 1] == ",") {
-        sel.slice(0, -1);
+    var strSel = (data.option.MediaTypes[0] == true ? ImgMedia + "," : "") +
+                 (data.option.MediaTypes[1] == true ? VidMedia + "," : "") +
+                 (data.option.MediaTypes[2] == true ? SelfText : "");
+
+    if (strSel[strSel.length - 1] == ",") {
+        strSel = strSel.slice(0, -1);
     }
+
+    var sel = $(strSel);
 
     var NbImg = sel.length;
     var isExpanded = false;
