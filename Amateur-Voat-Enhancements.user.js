@@ -6,7 +6,7 @@
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     1.8.2.6
+// @version     1.8.2.7
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -48,7 +48,7 @@ $(window).ready(function () {
         SetAccountHeaderPosAsFixed();
     }
 
-    if (data.option.EnableImage && $.inArray(data.currentPageType, ["subverses", "sets", "user", "user-manage", "mysets"]) == -1) {
+    if (data.MediaTypes != "000" && $.inArray(data.currentPageType, ["subverses", "sets", "user", "user-manage", "mysets"]) == -1) {
         AppendImageButton();
     }
 
@@ -203,7 +203,6 @@ function InsertAVEManager() {
 }
 /// END PreferenceManager ///
 
-
 /// UserInfoFixedPos:  Fixed position for account info block ///
 function SetAccountHeaderPosAsFixed() {
     if (data.option.FixedListHeader == undefined) {
@@ -235,13 +234,14 @@ function CheckAccountHeaderPosAsFixed(headerAccountPos) {
 }
 /// END UserInfoFixedPos ///
 
-
 /// HeaderFixedPos:  Fixed position for the subverse list header ///
 function SetSubListHeaderPosAsFixed() {
     data.ListHeaderHeight = $('#sr-header-area').height();
 
     $('.width-clip').css('position', 'fixed')
+//!Chrome
         .css("z-index", "1000")
+//End
         .css('border-bottom', '1px solid ' + (data.CSSstyle == "dark" ? "#222" : "#DCDCDC"))
         .css("height", data.ListHeaderHeight + "px")
         .css("background-color", data.CSSstyle == "dark" ? "#333" : "#FFF");
@@ -251,7 +251,6 @@ $(window).resize(function () {
 });
 
 /// END HeaderFixedPos ///
-
 
 /// UserTag:  Tag Voat users ///
 function ShowUserTag() {
@@ -361,12 +360,11 @@ function GetTagCount() {
 }
 /// END UserTag ///
 
-
 /// Shortcuts:  Replace the subverse list header with a custom list ///
 //// Special to voat.co/set/xx: adds a "shortcut" button for this set ////
 function AddShortcutsButtonInSetPage() {
     //Not implemented yet.
-    //The set pages are boud to change soon.
+    //The set pages are bound to change soon.
     return false;
 }
 
@@ -569,7 +567,6 @@ function isPageInShortcuts() {
 }
 /// END Shortcuts ///
 
-
 /// ToggleMedia:  Toggle chosen media type (Images, Videos, Self-text) ///
 function AppendImageButton() {
     var ImgMedia = "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']";
@@ -618,7 +615,6 @@ function AppendImageButton() {
 }
 /// END ToggleMedia ///
 
-
 /// SelectComment:  Highlight and Select a comment or thread post by clicking it ///
 $(document).on("click", ".entry", function () {
     ToggleSelectedState($(this));
@@ -666,7 +662,6 @@ function ToggleSelectedState(obj) {
 }
 /// END SelectComment ///
 
-
 /// ShortcutKeys:  Use your keyboard to vote (A: upvote, Z: downvote) ///
 $(document).keypress(function (event) {
     if ($(":input").is(":focus")) { return; }
@@ -681,5 +676,3 @@ $(document).keypress(function (event) {
     }
 });
 /// END ShortcutKeys ///
-
-
