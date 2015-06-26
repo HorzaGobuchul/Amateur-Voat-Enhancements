@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        25 june 2015
+// @date        2015-06-26
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     1.0.2
+// @version     1.8.2.3
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -14,19 +14,18 @@
 // @updateURL   https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Amateur-Voat-Enhancements_meta.user.js
 // @downloadURL https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Amateur-Voat-Enhancements.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
-// ==/UserScript==
 
 var data = {};
 
 data.option = {
-    FixedAccountHeader: true,
-    FixedListHeader: true,
-    EnableTags: true,
-    EnableSubHeader: true,
-    EnableImage: true,
-    MediaTypes: "110", //Images, Videos, Self-text
+	FixedAccountHeader: true,
+	FixedListHeader: true,
+	EnableTags: true,
+	EnableSubHeader: true,
+	MediaTypes: "110",
 };
 
+/// Init ///
 $(window).ready(function () {
     data.regExpSet = /([^:]*):([0-9]*)/i;
     data.regExpTag = /([^:]*):([^:]*)/i;
@@ -74,8 +73,9 @@ $(window).ready(function () {
         InsertAVEManager();
     }
 });
+/// END Init ///
 
-//// Utils ////
+/// Utils ///
 function GetCSSStyle() {
     return $("head > link[href*='/Content/Dark?']").length > 0 ? "dark" : "light";
 }
@@ -126,289 +126,97 @@ function GetSubverseName() {
 
     if (m == null) { return null; }
     else { return m[1].toLowerCase(); }
-}
+}/// END Utils ///
 
-//// Special to voat.co/set/xx: adds a "shortcut" button for this set ////
-function AddShortcutsButtonInSetPage() {
-    //Not implemented yet.
-    //The set pages are boud to change soon.
-    return false;
-}
-//// END ////
+/// PreferenceManager:  Adds option to modify preferences in voat.co/account/manage under the title "AVE Preferences" ///
+function InsertAVEManager() {
+    var Labels = {
+        FixedAccountHeader: "Enable fixed position for the account block",
+        FixedListHeader: "Enable fixed position for the Subverse list header",
+        EnableTags: "Enable user tags",
+        EnableSubHeader: "Replace Subverse list header with custom choice of shortcuts",
+        MediaTypes: "Add a button to toggle media",
+    }
 
-//// Special to voat.co/sets & /mysets: adds a "shortcut" button for each sets ////
-function AddShortcutsButtonInSetsPage() {
-    var inShortcut = false;
-    var tempSetName = "";
-    var tempSetId = "";
+    var MngHTML = '<br /><div class="alert-title">AVE Preferences</div>';
+    MngHTML += '<section id="AVEPreferences">'
+    MngHTML += '<form class="form-horizontal" action="/account/manage" method="get">';
+    var boolVal = false;
+    for (var i in data.option) {
 
-    $("div[id*='set']").each(function () {
-        tempSetName = $(this).find(".h4").text();//.replace(/([&\/\\#,+()$~%.'":*?<>{}])/g, '\\$1');
-        tempSetId = $(this).find(".h4").attr("href").substr(5);
-        inShortcut = isSubInShortcuts(tempSetName + ":" + tempSetId);
+        if (i == "MediaTypes") { boolVal = data.option[i] != "000"; }
+        else { boolVal = data.option[i]; }
 
-        var btnHTML = '<div style="float: left; width: 100%; margin-top: 10px;" class="midcol">\
-                            <button id="GM_Sets_Shortcut" setName="' + tempSetName + '" setId="' + tempSetId + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'
-                                + (inShortcut ? "-" : "+") + ' shortcut\
-                            </button>\
-                      </div>';
-        $(btnHTML).insertAfter($(this).find(".midcol").first());
+        MngHTML += '<div class="checkbox">' +
+                       '<input ' + (boolVal ? 'checked="checked"' : '') + ' id="' + i + '" name="' + i + '" type="checkbox"></input>' +
+                       '<label for="' + i + '">' + Labels[i] + '</label>' +
+                   '</div>';
+    }
+
+    var mediaTypes = ["Images", "Videos", "Self-texts"];
+    MngHTML += '<div style="margin-left:30px;padding:5px 0 0 5px;border-left:2px solid #' + (data.CSSstyle == "dark" ? "222" : "DDD") + ';">';
+    for (var i in mediaTypes) {
+        MngHTML += '<span style="margin-right:20px;" >' +
+                       '<input ' + (data.option.MediaTypes != "000" ? '' : 'disabled="true"') + ' ' + (data.option.MediaTypes[i] == 1 ? 'checked="checked"' : '') + ' id="' + mediaTypes[i] + '" name="' + mediaTypes[i] + '" type="checkbox"></input>' +
+                       '<label for="' + mediaTypes[i] + '">' + mediaTypes[i] + '</label>' +
+                   '</span>';
+    }
+    MngHTML += '</div>';
+
+    MngHTML += '<br /><input value="Save" id="AVEPrefSave" class="btn btn-whoaverse" type="submit" title="Save!"></input>';
+    MngHTML += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input value="Reset Stored Data" id="AVEPrefRest" class="btn btn-whoaverse" type="submit" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
+    MngHTML += '</form></section><br />';
+
+    $(MngHTML).insertBefore($(".alert-title").get(2));
+
+    $(document).on("click", "#AVEPrefSave", function () {
+        $("#AVEPreferences").find(":checkbox").each(function () {
+            if (i == $(this).attr("id")) return true;
+
+            data.option[$(this).attr("id")] = $(this).is(":checked");
+            GM_setValue($(this).attr("id"), $(this).is(":checked"));
+        });
+        var mediaValue = "";
+        for (var i in mediaTypes) {
+            mediaValue += $("input[id='" + mediaTypes[i] + "']").prop("checked") ? "1" : "0";
+        }
+
+        data.option.MediaTypes = mediaValue;
+        GM_setValue("MediaTypes", mediaValue);
     });
 
-    $(document).on("click", "#GM_Sets_Shortcut", function () {
-        var setName = $(this).attr("setName");
-        var setId = $(this).attr("setId");
-
-        if (setName == null || setName == undefined || setName == "undefined" ||
-            setId == null || setId == undefined) {
-            alert("Error adding set " + setName + ", id: " + setId);
-            return;
-        }
-
-        var set = setName + ":" + setId;
-        if (isSubInShortcuts(set)) {
-            RemoveFromShortcuts(set);
-            ToggleShortcutButton(true, this);
-        }
-        else {
-            AddToShortcuts(set);
-            ToggleShortcutButton(false, this);
-        }
-
-        DisplayCustomSubversesList();
-    });
-}
-//// END ////
-
-//// Special to voat.co/subverses: adds a "shortcut" button for each subverse////
-function AddShortcutsButtonInSubversesPage() {
-    var inShortcut = false;
-    var tempSubName = "";
-
-    $('.col-md-6').each(function () {
-        tempSubName = $(this).find(".h4").attr("href").substr(3);
-        inShortcut = isSubInShortcuts(tempSubName);
-
-        var btnHTML = '<div style="float: left; width: 100%; margin-top: 10px;" class="midcol">\
-                            <button id="GM_Subverses_Shortcut" subverse="'+ tempSubName + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'
-                                + (inShortcut ? "-" : "+") + ' shortcut\
-                            </button>\
-                      </div>';
-        $(btnHTML).insertAfter($(this).find(".midcol").first());
+    $(document).on("click", "#AVEPrefRest", function () {
+        for (var key in data.option)
+        { GM_deleteValue(key); }
+        GM_deleteValue("Voat_Tags");
+        GM_deleteValue("Voat_Subverses");
     });
 
-    $(document).on("click", "#GM_Subverses_Shortcut", function () {
-        var subName = $(this).attr("subverse");
-        if (isSubInShortcuts(subName)) {
-            RemoveFromShortcuts(subName);
-            ToggleShortcutButton(true, this);
+    $("input[id='MediaTypes']").click(function () {
+        var state = !$(this).prop("checked");
+        for (var i in mediaTypes) {
+            $("input[id='" + mediaTypes[i] + "']").prop("disabled", state);
+            $("input[id='" + mediaTypes[i] + "']").prop("checked", state ? "" : "checked");
         }
-        else {
-            AddToShortcuts(subName);
-            ToggleShortcutButton(false, this);
-        }
-
-        DisplayCustomSubversesList();
     });
 }
-//// END ////
+/// END PreferenceManager ///
 
-/// Special methods related to shortcuts ///
-function GetSubversesList() {
-    return GM_getValue("Voat_Subverses", "newsubverses,introductions,news").split(',');
-}
 
-function GetSetParam(str) {
-    var m = data.regExpSet.exec(str);
-
-    if (m == null) { return null; }
-    else { return [m[1].toLowerCase(), m[2]]; }
-}
-
-function AddToShortcuts(SubName) {
-    var subversesArr = GetSubversesList();
-    var str = subversesArr.join(",") + "," + SubName;
-
-    GM_setValue("Voat_Subverses", str);
-}
-
-function RemoveSetFromShortcut(id) {
-    var subversesArr = GetSubversesList();
-
-    for (var x in subversesArr) {
-        if (data.regExpSet.test(subversesArr[x])) {
-            if (GetSetParam(subversesArr[x])[1] == id) {
-                RemoveFromShortcuts(subversesArr[x]);
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-function RemoveFromShortcuts(SubName) {
-    var subversesArr = GetSubversesList();
-    var idx = subversesArr.indexOf(SubName);
-
-    if (idx < 0) {
-        alert("sub or set name not found in Header list\n(" + SubName + ")");
-        return false;
-    }
-
-    subversesArr.splice(idx, 1);
-    GM_setValue("Voat_Subverses", subversesArr.join(","));
-}
-
-function ToggleShortcutButton(state, sel) {
-    if (state == true) {
-        $(sel).text('+ shortcut');
-        $(sel).addClass('btn-sub')
-    }
-    else {
-        $(sel).text('- shortcut');
-        $(sel).removeClass('btn-sub');
-    }
-}
-
-function isSubInShortcuts(Sub) {
-    var subversesArr = GetSubversesList();
-
-    for (var i in subversesArr) {
-        if (subversesArr[i].toLowerCase() == Sub.toLowerCase()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-function isPageInShortcuts() {
-    var subversesArr = GetSubversesList();
-
-    return isSubInShortcuts(data.subverseName);
-}
-/// END ///
-
-/// Common to voat.co: modifies the subverses header list with custom subverses ////
-function DisplayCustomSubversesList() {
-    var SubString = '';
-    var subArr = GetSubversesList();
-    var setInfo = [];
-
-    for (var idx in subArr) {
-        if (subArr[idx] == "") { continue; }
-        if (data.regExpSet.test(subArr[idx])) { //ex: name:12
-            setInfo = GetSetParam(subArr[idx]);
-            SubString += '<li><span class="separator">-</span><a href="/set/' + setInfo[1] + '/" style="font-weight:bold;font-style: italic;">' + setInfo[0] + '</a></li>';
-        }
-        else {
-            SubString += '<li><span class="separator">-</span><a href="/v/' + subArr[idx] + '/">' + subArr[idx] + '</a></li>';
-        }
-    }
-    $('ul#sr-bar').html(SubString);
-}
-
-//// Special to subverse: adds a "shortcut" button for this subverse////
-function AppendShortcutButton() {
-
-    if (!isPageInShortcuts()) {
-        var btnHTML = '<button id="GM_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default btn-sub">+ shortcut</button>';
-    }
-    else {
-        var btnHTML = '<button id="GM_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default">- shortcut</button>';
-    }
-
-    if ($(".btn-whoaverse-paging.btn-xs.btn-default.btn-unsub").length) {
-        $(btnHTML).insertAfter(".btn-whoaverse-paging.btn-xs.btn-default.btn-unsub");
-    }
-    else {
-        $(btnHTML).insertAfter(".btn-whoaverse-paging.btn-xs.btn-default.btn-sub");
-    }
-
-    $(document).on("click", "#GM_Shortcut", function () {
-        if (isPageInShortcuts()) {
-            RemoveFromShortcuts(data.subverseName);
-            ToggleShortcutButton(true, "#GM_Shortcut");
-        }
-        else {
-            AddToShortcuts(data.subverseName);
-            ToggleShortcutButton(false, "#GM_Shortcut");
-        }
-
-        DisplayCustomSubversesList();
-    });
-}
-//// END ////
-
-/// Highlight and Select a comment/thread in particular ///
-$(document).on("click", ".entry", function () {
-    ToggleSelectedState($(this));
-});
-
-function ToggleSelectedState(obj) {
-    if (data.SelectedPost != undefined) {
-        data.SelectedPost.closest("div[class*=' id-']").css('background-color', '');
-        data.SelectedPost.find("blockquote").css('background-color', '');
-        //data.SelectedPost.find("pre").css('background-color', '');
-
-        if (data.currentPageType == "user-submissions") {
-            data.SelectedPost.parent().find(".submission.even.link.self").css('background-color', '');
-            data.SelectedPost.parent().css('background-color', '');
-            data.SelectedPost.prevAll(".midcol.unvoted").first().find(".submissionscore").css('background-color', '');
-        }
-        if (data.SelectedPost.closest("div[class*=' id-']").hasClass("highlightedComment"))
-        { data.SelectedPost.closest(".highlightedComment").attr('style', ''); }
-
-        if (data.SelectedPost.closest("div[class*=' id-']").hasClass("submission"))
-        { data.SelectedPost.find(".md").css('background-color', ''); }
-    }
-
-    obj.closest("div[class*=' id-']").css('background-color', data.CSSstyle == "dark" ? '#323E47' : '#F4FCFF');
-    obj.find("blockquote").css('background-color', data.CSSstyle == "dark" ? '#394856' : '#EAFEFF');
-    //obj.find("pre").css('background-color', data.CSSstyle == "dark" ? '#394856' : '#EAFEFF'); //deactivated because a colour is attributed to the text in "pre" elements.
-
-    //Special case: user/username/submissions
-    if (data.currentPageType == "user-submissions") {
-        obj.parent().find(".submission.even.link.self").css('background-color', data.CSSstyle == "dark" ? '#323E47' : '#F4FCFF');
-        obj.parent().css('background-color', data.CSSstyle == "dark" ? '#323E47' : '#F4FCFF');
-        obj.prevAll(".midcol.unvoted").first().find(".submissionscore").css('background-color', data.CSSstyle == "dark" ? '#2D4A60' : '#E1F9FF');
-    }
-    //Special case: highlighted comment
-    if (obj.closest("div[class*=' id-']").hasClass("highlightedComment")) {
-        obj.closest(".highlightedComment").attr('style', data.CSSstyle == "dark" ?
-          'background-color: rgb(84, 47, 47) !important; border: 1px solid rgb(162, 62, 62) !important;' :
-          'background-color: rgb(209, 238, 249) !important; border: 1px solid rgb(49, 142, 200) !important;');
-    }
-    //Special: is a submission post, not a comment.
-    if (obj.closest("div[class*=' id-']").hasClass("submission"))
-    { obj.find(".md").css('background-color', data.CSSstyle == "dark" ? '#394856' : '#EAFEFF'); }
-
-    data.SelectedPost = obj;
-}
-
-//A and Z to vote
-$(document).keypress(function (event) {
-    if ($(":input").is(":focus")) { return; }
-
-    if (data.SelectedPost != undefined) {
-        if (event.which === 97) { //a to upvote
-            data.SelectedPost.parent().find(".midcol").find("div[aria-label='upvote']").first().click();
-        }
-        else if (event.which === 122) { //z to downvote
-            data.SelectedPost.parent().find(".midcol").find("div[aria-label='downvote']").first().click();
-        }
-    }
-});
-/// END ///
-
-/// Fixed position header-account info ///
+/// UserInfoFixedPos:  Fixed position for account info block ///
 function SetAccountHeaderPosAsFixed() {
+    if (data.option.FixedListHeader == undefined) {
+        data.option.FixedListHeader = false;
+        data.ListHeaderHeight = false;
+    }
+
     var headerAccountPos = $('#header-account').offset().top;
     $(window).scroll(function () {
-        CheckAccountHeaderPosAsDFixed(headerAccountPos)
+        CheckAccountHeaderPosAsFixed(headerAccountPos)
     });
-    CheckAccountHeaderPosAsDFixed(headerAccountPos)
+    CheckAccountHeaderPosAsFixed(headerAccountPos)
 }
-function CheckAccountHeaderPosAsDFixed(headerAccountPos) {
+function CheckAccountHeaderPosAsFixed(headerAccountPos) {
     if ($(window).scrollTop() + (data.option.FixedListHeader ? data.ListHeaderHeight : 0) > headerAccountPos) {
         $('#header-account').css('position', 'fixed')
                             .css('top', data.option.FixedListHeader ? data.ListHeaderHeight : "0")
@@ -424,9 +232,10 @@ function CheckAccountHeaderPosAsDFixed(headerAccountPos) {
         $('.logged-in').css("background", "");
     }
 }
-/// END ///
+/// END UserInfoFixedPos ///
 
-/// Fixed position subverse list header ///
+
+/// HeaderFixedPos:  Fixed position for the subverse list header ///
 function SetSubListHeaderPosAsFixed() {
     data.ListHeaderHeight = $('#sr-header-area').height();
 
@@ -436,58 +245,14 @@ function SetSubListHeaderPosAsFixed() {
         .css("height", data.ListHeaderHeight + "px")
         .css("background-color", data.CSSstyle == "dark" ? "#333" : "#FFF");
 }
-/// END ///
+$(window).resize(function () {
+    data.ListHeaderHeight = $('#sr-header-area').height();
+});
 
-/// Toggle expand all images ///
-function AppendImageButton() {
-    var ImgMedia = "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']";
-    var VidMedia = "[title='YouTube'],[title='Vimeo']";
-    var SelfText = "[onclick^='loadSelfText']";
+/// END HeaderFixedPos ///
 
-    ////voat.co/v/test/comments/37149
-    var strSel = (data.option.MediaTypes[0] == true ? ImgMedia + "," : "") +
-                 (data.option.MediaTypes[1] == true ? VidMedia + "," : "") +
-                 (data.option.MediaTypes[2] == true ? SelfText : "");
 
-    if (strSel[strSel.length - 1] == ",") {
-        strSel = strSel.slice(0, -1);
-    }
-
-    var sel = $(strSel);
-
-    var NbImg = sel.length;
-    var isExpanded = false;
-
-    if (NbImg == 0) return;
-
-    var btnHTML = '<li class="disabled"><a id="GM_ExpandAllImages" class="contribute submit-text">View Media (' + NbImg + ')</a></li>';
-    $(btnHTML).insertAfter(".disabled:last");
-
-    $(document).on("click", "[id='GM_ExpandAllImages']", function () {
-        if ($(this).hasClass("expanded")) {
-            $(this).text('View Media (' + NbImg + ')');
-            $(this).removeClass("expanded")
-            isExpanded = false;
-        } else {
-            $(this).text('Hide Media (' + NbImg + ')');
-            $(this).addClass("expanded")
-            isExpanded = true;
-        }
-
-        for (var el in sel) {
-            if (
-                (isExpanded && sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
-                isExpanded === sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
-                ) {
-                sel[el].click();
-            }
-        }
-    });
-}
-/// END ///
-
-/// Taggging ///
-
+/// UserTag:  Tag Voat users ///
 function ShowUserTag() {
     var Tag_html, name, tag;
     var style = "border:1px solid #" + (data.CSSstyle == "dark" ? "5452A8" : "D1D0FE") + ";background-color:#" + (data.CSSstyle == "dark" ? "304757" : "F4FCFF") + ";font-size:10px;padding:0px 4px;color:#6CA9E4;font-weight:bold;margin-left:4px;cursor: pointer;";
@@ -593,75 +358,327 @@ function GetTag(userName) {
 function GetTagCount() {
     return data.usertags.split(",").length;
 }
-/// END ////
+/// END UserTag ///
 
-/// AVE Manager ///
 
-function InsertAVEManager() {
-    var Labels = {
-        FixedAccountHeader: "Enable fixed position for the account block",
-        FixedListHeader: "Enable fixed position for the Subverse list header",
-        EnableTags: "Enable user tags",
-        EnableSubHeader: "Replace Subverse list header with custom choice of shortcuts",
-        EnableImage: "Add a button to toggle media",
-    }
+/// Shortcuts:  Replace the subverse list header with a custom list ///
+//// Special to voat.co/set/xx: adds a "shortcut" button for this set ////
+function AddShortcutsButtonInSetPage() {
+    //Not implemented yet.
+    //The set pages are boud to change soon.
+    return false;
+}
 
-    var MngHTML = '<br /><div class="alert-title">AVE Preferences</div>';
-    MngHTML += '<section id="AVEPreferences">'
-    MngHTML += '<form class="form-horizontal" action="/account/manage" method="get">';
-    for (var i in data.option) {
-        if (i == "MediaTypes") continue;
+//// Special to voat.co/sets & /mysets: adds a "shortcut" button for each sets ////
+function AddShortcutsButtonInSetsPage() {
+    var inShortcut = false;
+    var tempSetName = "";
+    var tempSetId = "";
 
-        MngHTML += '<div class="checkbox">' +
-                       '<input ' + (data.option[i] ? 'checked="checked"' : '') + ' id="' + i + '" name="' + i + '" value="' + data.option[i] + '" type="checkbox"></input>' +
-                       '<label for="' + i + '">' + Labels[i] + '</label>' +
-                   '</div>';
-    }
+    $("div[id*='set']").each(function () {
+        tempSetName = $(this).find(".h4").text();//.replace(/([&\/\\#,+()$~%.'":*?<>{}])/g, '\\$1');
+        tempSetId = $(this).find(".h4").attr("href").substr(5);
+        inShortcut = isSubInShortcuts(tempSetName + ":" + tempSetId);
 
-    var mediaTypes = ["Images", "Videos", "Self-texts"];
-    MngHTML += '<div style="margin-left:30px;padding:5px 0 0 5px;border-left:2px solid #' + (data.CSSstyle == "dark" ? "222" : "DDD") + ';">';
-    for (var i in mediaTypes) {
-        MngHTML += '<span style="margin-right:20px;" >' +
-                       '<input ' + (data.option.EnableImage ? '' : 'disabled="true"') + ' ' + (data.option.MediaTypes[i] == 1 ? 'checked="checked"' : '') + ' id="' + mediaTypes[i] + '" name="' + mediaTypes[i] + '" type="checkbox"></input>' +
-                       '<label for="' + mediaTypes[i] + '">' + mediaTypes[i] + '</label>' +
-                   '</span>';
-    }
-    MngHTML += '</div>';
+        var btnHTML = '<div style="float: left; width: 100%; margin-top: 10px;" class="midcol">\
+                            <button id="GM_Sets_Shortcut" setName="' + tempSetName + '" setId="' + tempSetId + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'
+                                + (inShortcut ? "-" : "+") + ' shortcut\
+                            </button>\
+                      </div>';
+        $(btnHTML).insertAfter($(this).find(".midcol").first());
+    });
 
-    MngHTML += '<br /><input value="Save" id="AVEPrefSave" class="btn btn-whoaverse" type="submit" title="Save!"></input>';
-    MngHTML += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input value="Reset Stored Data" id="AVEPrefRest" class="btn btn-whoaverse" type="submit" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
-    MngHTML += '</form></section><br />';
+    $(document).on("click", "#GM_Sets_Shortcut", function () {
+        var setName = $(this).attr("setName");
+        var setId = $(this).attr("setId");
 
-    $(MngHTML).insertBefore($(".alert-title").get(2));
-
-    $(document).on("click", "#AVEPrefSave", function () {
-        $("#AVEPreferences").find(":checkbox").each(function () {
-            if (i == $(this).attr("id")) return true;
-
-            data.option[$(this).attr("id")] = $(this).is(":checked");
-            GM_setValue($(this).attr("id"), $(this).is(":checked"));
-        });
-        var mediaValue = "";
-        for (var i in mediaTypes) {
-            mediaValue += $("input[id='" + mediaTypes[i] + "']").prop("checked") ? "1" : "0";
+        if (setName == null || setName == undefined || setName == "undefined" ||
+            setId == null || setId == undefined) {
+            alert("Error adding set " + setName + ", id: " + setId);
+            return;
         }
 
-        data.option.MediaTypes = mediaValue;
-        GM_setValue("MediaTypes", mediaValue);
+        var set = setName + ":" + setId;
+        if (isSubInShortcuts(set)) {
+            RemoveFromShortcuts(set);
+            ToggleShortcutButton(true, this);
+        }
+        else {
+            AddToShortcuts(set);
+            ToggleShortcutButton(false, this);
+        }
+
+        DisplayCustomSubversesList();
+    });
+}
+
+//// Special to voat.co/subverses: adds a "shortcut" button for each subverse////
+function AddShortcutsButtonInSubversesPage() {
+    var inShortcut = false;
+    var tempSubName = "";
+
+    $('.col-md-6').each(function () {
+        tempSubName = $(this).find(".h4").attr("href").substr(3);
+        inShortcut = isSubInShortcuts(tempSubName);
+
+        var btnHTML = '<div style="float: left; width: 100%; margin-top: 10px;" class="midcol">\
+                            <button id="GM_Subverses_Shortcut" subverse="'+ tempSubName + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'
+                                + (inShortcut ? "-" : "+") + ' shortcut\
+                            </button>\
+                      </div>';
+        $(btnHTML).insertAfter($(this).find(".midcol").first());
     });
 
-    $(document).on("click", "#AVEPrefRest", function () {
-        for (var key in data.option)
-        { GM_deleteValue(key); }
-        GM_deleteValue("Voat_Tags");
-        GM_deleteValue("Voat_Subverses");
-    });
+    $(document).on("click", "#GM_Subverses_Shortcut", function () {
+        var subName = $(this).attr("subverse");
+        if (isSubInShortcuts(subName)) {
+            RemoveFromShortcuts(subName);
+            ToggleShortcutButton(true, this);
+        }
+        else {
+            AddToShortcuts(subName);
+            ToggleShortcutButton(false, this);
+        }
 
-    $("input[id='EnableImage']").click(function () {
-        var state = !$("input[id='EnableImage']").prop("checked");
-        for (var i in mediaTypes) {
-            $("input[id='" + mediaTypes[i] + "']").prop("disabled", state);
+        DisplayCustomSubversesList();
+    });
+}
+
+/// Common to voat.co: modifies the subverses header list with custom subverses ////
+function DisplayCustomSubversesList() {
+    var SubString = '';
+    var subArr = GetSubversesList();
+    var setInfo = [];
+
+    for (var idx in subArr) {
+        if (subArr[idx] == "") { continue; }
+        if (data.regExpSet.test(subArr[idx])) { //ex: name:12
+            setInfo = GetSetParam(subArr[idx]);
+            SubString += '<li><span class="separator">-</span><a href="/set/' + setInfo[1] + '/" style="font-weight:bold;font-style: italic;">' + setInfo[0] + '</a></li>';
+        }
+        else {
+            SubString += '<li><span class="separator">-</span><a href="/v/' + subArr[idx] + '/">' + subArr[idx] + '</a></li>';
+        }
+    }
+    $('ul#sr-bar').html(SubString);
+}
+
+//// Special to subverse: adds a "shortcut" button for this subverse////
+function AppendShortcutButton() {
+
+    if (!isPageInShortcuts()) {
+        var btnHTML = '<button id="GM_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default btn-sub">+ shortcut</button>';
+    }
+    else {
+        var btnHTML = '<button id="GM_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default">- shortcut</button>';
+    }
+
+    if ($(".btn-whoaverse-paging.btn-xs.btn-default.btn-unsub").length) {
+        $(btnHTML).insertAfter(".btn-whoaverse-paging.btn-xs.btn-default.btn-unsub");
+    }
+    else {
+        $(btnHTML).insertAfter(".btn-whoaverse-paging.btn-xs.btn-default.btn-sub");
+    }
+
+    $(document).on("click", "#GM_Shortcut", function () {
+        if (isPageInShortcuts()) {
+            RemoveFromShortcuts(data.subverseName);
+            ToggleShortcutButton(true, "#GM_Shortcut");
+        }
+        else {
+            AddToShortcuts(data.subverseName);
+            ToggleShortcutButton(false, "#GM_Shortcut");
+        }
+
+        DisplayCustomSubversesList();
+    });
+}
+/// Special methods related to shortcuts ///
+function GetSubversesList() {
+    return GM_getValue("Voat_Subverses", "newsubverses,introductions,news").split(',');
+}
+
+function GetSetParam(str) {
+    var m = data.regExpSet.exec(str);
+
+    if (m == null) { return null; }
+    else { return [m[1].toLowerCase(), m[2]]; }
+}
+
+function AddToShortcuts(SubName) {
+    var subversesArr = GetSubversesList();
+    var str = subversesArr.join(",") + "," + SubName;
+
+    GM_setValue("Voat_Subverses", str);
+}
+
+function RemoveSetFromShortcut(id) {
+    var subversesArr = GetSubversesList();
+
+    for (var x in subversesArr) {
+        if (data.regExpSet.test(subversesArr[x])) {
+            if (GetSetParam(subversesArr[x])[1] == id) {
+                RemoveFromShortcuts(subversesArr[x]);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function RemoveFromShortcuts(SubName) {
+    var subversesArr = GetSubversesList();
+    var idx = subversesArr.indexOf(SubName);
+
+    if (idx < 0) {
+        alert("sub or set name not found in Header list\n(" + SubName + ")");
+        return false;
+    }
+
+    subversesArr.splice(idx, 1);
+    GM_setValue("Voat_Subverses", subversesArr.join(","));
+}
+
+function ToggleShortcutButton(state, sel) {
+    if (state == true) {
+        $(sel).text('+ shortcut');
+        $(sel).addClass('btn-sub')
+    }
+    else {
+        $(sel).text('- shortcut');
+        $(sel).removeClass('btn-sub');
+    }
+}
+
+function isSubInShortcuts(Sub) {
+    var subversesArr = GetSubversesList();
+
+    for (var i in subversesArr) {
+        if (subversesArr[i].toLowerCase() == Sub.toLowerCase()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function isPageInShortcuts() {
+    var subversesArr = GetSubversesList();
+
+    return isSubInShortcuts(data.subverseName);
+}
+/// END Shortcuts ///
+
+
+/// ToggleMedia:  Toggle chosen media type (Images, Videos, Self-text) ///
+function AppendImageButton() {
+    var ImgMedia = "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']";
+    var VidMedia = "[title='YouTube'],[title='Vimeo']";
+    var SelfText = "[onclick^='loadSelfText']";
+
+    ////voat.co/v/test/comments/37149
+    var strSel = (data.option.MediaTypes[0] == true ? ImgMedia + "," : "") +
+                 (data.option.MediaTypes[1] == true ? VidMedia + "," : "") +
+                 (data.option.MediaTypes[2] == true ? SelfText : "");
+
+    if (strSel[strSel.length - 1] == ",") {
+        strSel = strSel.slice(0, -1);
+    }
+
+    var sel = $(strSel);
+
+    var NbImg = sel.length;
+    var isExpanded = false;
+
+    if (NbImg == 0) return;
+
+    var btnHTML = '<li class="disabled"><a id="GM_ExpandAllImages" class="contribute submit-text">View Media (' + NbImg + ')</a></li>';
+    $(btnHTML).insertAfter(".disabled:last");
+
+    $(document).on("click", "[id='GM_ExpandAllImages']", function () {
+        if ($(this).hasClass("expanded")) {
+            $(this).text('View Media (' + NbImg + ')');
+            $(this).removeClass("expanded")
+            isExpanded = false;
+        } else {
+            $(this).text('Hide Media (' + NbImg + ')');
+            $(this).addClass("expanded")
+            isExpanded = true;
+        }
+
+        for (var el in sel) {
+            if (
+                (isExpanded && sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
+                isExpanded === sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
+                ) {
+                sel[el].click();
+            }
         }
     });
 }
-/// END ///
+/// END ToggleMedia ///
+
+
+/// SelectComment:  Highlight and Select a comment or thread post by clicking it ///
+$(document).on("click", ".entry", function () {
+    ToggleSelectedState($(this));
+});
+
+function ToggleSelectedState(obj) {
+    if (data.SelectedPost != undefined) {
+        data.SelectedPost.closest("div[class*=' id-']").css('background-color', '');
+        data.SelectedPost.find("blockquote").css('background-color', '');
+        //data.SelectedPost.find("pre").css('background-color', '');
+
+        if (data.currentPageType == "user-submissions") {
+            data.SelectedPost.parent().find(".submission.even.link.self").css('background-color', '');
+            data.SelectedPost.parent().css('background-color', '');
+            data.SelectedPost.prevAll(".midcol.unvoted").first().find(".submissionscore").css('background-color', '');
+        }
+        if (data.SelectedPost.closest("div[class*=' id-']").hasClass("highlightedComment"))
+        { data.SelectedPost.closest(".highlightedComment").attr('style', ''); }
+
+        if (data.SelectedPost.closest("div[class*=' id-']").hasClass("submission"))
+        { data.SelectedPost.find(".md").css('background-color', ''); }
+    }
+
+    obj.closest("div[class*=' id-']").css('background-color', data.CSSstyle == "dark" ? '#323E47' : '#F4FCFF');
+    obj.find("blockquote").css('background-color', data.CSSstyle == "dark" ? '#394856' : '#EAFEFF');
+    //obj.find("pre").css('background-color', data.CSSstyle == "dark" ? '#394856' : '#EAFEFF'); //deactivated because a colour is attributed to the text in "pre" elements.
+
+    //Special case: user/username/submissions
+    if (data.currentPageType == "user-submissions") {
+        obj.parent().find(".submission.even.link.self").css('background-color', data.CSSstyle == "dark" ? '#323E47' : '#F4FCFF');
+        obj.parent().css('background-color', data.CSSstyle == "dark" ? '#323E47' : '#F4FCFF');
+        obj.prevAll(".midcol.unvoted").first().find(".submissionscore").css('background-color', data.CSSstyle == "dark" ? '#2D4A60' : '#E1F9FF');
+    }
+    //Special case: highlighted comment
+    if (obj.closest("div[class*=' id-']").hasClass("highlightedComment")) {
+        obj.closest(".highlightedComment").attr('style', data.CSSstyle == "dark" ?
+          'background-color: rgb(84, 47, 47) !important; border: 1px solid rgb(162, 62, 62) !important;' :
+          'background-color: rgb(209, 238, 249) !important; border: 1px solid rgb(49, 142, 200) !important;');
+    }
+    //Special: is a submission post, not a comment.
+    if (obj.closest("div[class*=' id-']").hasClass("submission"))
+    { obj.find(".md").css('background-color', data.CSSstyle == "dark" ? '#394856' : '#EAFEFF'); }
+
+    data.SelectedPost = obj;
+}
+/// END SelectComment ///
+
+
+/// ShortcutKeys:  Use your keyboard to vote (A: upvote, Z: downvote) ///
+$(document).keypress(function (event) {
+    if ($(":input").is(":focus")) { return; }
+
+    if (data.SelectedPost != undefined) {
+        if (event.which === 97) { //a to upvote
+            data.SelectedPost.parent().find(".midcol").find("div[aria-label='upvote']").first().click();
+        }
+        else if (event.which === 122) { //z to downvote
+            data.SelectedPost.parent().find(".midcol").find("div[aria-label='downvote']").first().click();
+        }
+    }
+});
+/// END ShortcutKeys ///
+
+
