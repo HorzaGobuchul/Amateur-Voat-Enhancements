@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        2015-06-26
+// @date        2015-06-27
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     1.8.2.7
+// @version     1.9.2.1
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -14,11 +14,14 @@
 // @updateURL   https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Amateur-Voat-Enhancements_meta.user.js
 // @downloadURL https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Amateur-Voat-Enhancements.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
+// @require     https://github.com/domchristie/to-markdown/raw/master/dist/to-markdown.js
 // ==/UserScript==
 
 var data = {};
 
 data.option = {
+	UseAutoQuote: true,
+	ReplyWhithQuote: true,
 	FixedAccountHeader: true,
 	FixedListHeader: true,
 	EnableTags: true,
@@ -72,6 +75,14 @@ $(window).ready(function () {
 
     if (data.currentPageType == "user-manage") {
         InsertAVEManager();
+    }
+
+    if (data.option.UseAutoQuote) {
+        AppendQuoteLink();
+    }
+
+    if (data.option.ReplyWhithQuote) {
+        AddSelectedTextListener();
     }
 });
 /// END Init ///
@@ -127,6 +138,11 @@ function GetSubverseName() {
 
     if (m == null) { return null; }
     else { return m[1].toLowerCase(); }
+}
+
+function ParseQuotedText(text) {
+    converter = { filter: 'span', replacement: function (innerHTML) { return ''; } };
+    return toMarkdown(text, { converters: [converter] }).replace(/^(.)/img, "> $1");
 }/// END Utils ///
 
 /// PreferenceManager:  Adds option to modify preferences in voat.co/account/manage under the title "AVE Preferences" ///
@@ -136,6 +152,8 @@ function InsertAVEManager() {
         FixedListHeader: "Enable fixed position for the Subverse list header",
         EnableTags: "Enable user tags",
         EnableSubHeader: "Replace Subverse list header with custom choice of shortcuts",
+        ReplyWhithQuote: 'Automaticaly Quote with selected/highlighted text in comment when replying',
+        UseAutoQuote: 'Add "quote" button',
         MediaTypes: "Add a button to toggle media",
     }
 
@@ -172,7 +190,7 @@ function InsertAVEManager() {
 
     $(document).on("click", "#AVEPrefSave", function () {
         $("#AVEPreferences").find(":checkbox").each(function () {
-            if (i == $(this).attr("id")) return true;
+            if ($(this).attr("id") == "MediaTypes") return true;
 
             data.option[$(this).attr("id")] = $(this).is(":checked");
             GM_setValue($(this).attr("id"), $(this).is(":checked"));
@@ -181,7 +199,6 @@ function InsertAVEManager() {
         for (var i in mediaTypes) {
             mediaValue += $("input[id='" + mediaTypes[i] + "']").prop("checked") ? "1" : "0";
         }
-
         data.option.MediaTypes = mediaValue;
         GM_setValue("MediaTypes", mediaValue);
     });
@@ -676,3 +693,101 @@ $(document).keypress(function (event) {
     }
 });
 /// END ShortcutKeys ///
+
+/// AutoQuote:  Add a Quote button to comments ///
+function AppendQuoteLink() {
+    $("ul[class*='flat-list']").each(function () {
+        $('<li><a id="GM_QuotePost" href="javascript:void(0)" style="font-weight:bold;">quote</a></li>').insertAfter($(this).find("li:contains(source)"));
+    });
+
+    $(document).on("click", "[id='GM_QuotePost']", function () {
+        var comment = ParseQuotedText($(this).parent().parent().parent().find('.md:first').html())
+        $(this).parents(":has(textarea[class='commenttextarea'][id='CommentContent']:visible)").first().find("textarea[class='commenttextarea'][id='CommentContent']:visible").val(comment);
+    });
+}
+/// END AutoQuote ///
+
+/// ReplyWithQuote:  Insert selected text (from a comment) into the newly toggled comment-input ///
+function AddSelectedTextListener() {
+    if (!window.x) {
+        x = {};
+    }
+    x.Selector = {};
+    x.Selector.getSelected = function () {
+        var t = '';
+        if (window.getSelection) {
+            t = window.getSelection();
+            if (t.rangeCount) {
+                for (var i = 0, len = t.rangeCount; i < len; ++i) {
+                    return new XMLSerializer().serializeToString(t.getRangeAt(i).cloneContents());
+                }
+            }
+        }
+        else {
+            alert("Quoting is not supported by your browser. Sorry");
+        }
+    }
+
+    function getSelectedNode() {
+        // Thanks to InvisibleBacon @ https://stackoverflow.com/questions/1335252/how-can-i-get-the-dom-element-which-contains-the-current-selection
+        var selection = window.getSelection();
+        if (selection.rangeCount > 0)
+            return selection.getRangeAt(0).endContainer.parentNode;
+    }
+
+    var StartSelId = "";
+    var Quote = "";
+
+    $(".usertext").on("mousedown", function () {
+        StartSelId = $(this).attr("id");
+        Quote = "";
+    });
+
+    $(".usertext").on("mouseup", function (event) {
+        if (StartSelId != $(getSelectedNode()).parents(".usertext").attr("id")) { return; }
+        Quote = ParseQuotedText(x.Selector.getSelected().toString()); //.replace(/^([^\n])/img, "> $1");
+        StartSelId = "";
+    });
+
+    //Thanks to Mr Br @ https://stackoverflow.com/questions/1950038/jquery-fire-event-if-css-class-changed#answer-24284069
+    (function ($) {
+        var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+        $.fn.attrchange = function (callback) {
+            if (MutationObserver) {
+                var options = {
+                    subtree: true,
+                    childList: true,
+                };
+
+                //https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationRecord
+                var observer = new MutationObserver(function (mutations) {
+                    mutations.forEach(function (e) {
+                        if (Quote !== "" && e.addedNodes != null) {
+                            callback.call(e.target);
+                        }
+                    });
+                });
+
+                return this.each(function () {
+                    observer.observe(this, options);
+                });
+            }
+        }
+    })(jQuery);
+
+    $("div[class*='entry']").attrchange(function () {
+        var ReplyBox = $(this).find("textarea[class='commenttextarea'][id='CommentContent']");
+        if (ReplyBox.length > 0) {
+            InsertQuoteInReply(ReplyBox);
+        }
+    });
+    function InsertQuoteInReply(obj) {
+        if (obj.val().length > 0) {
+            obj.val(Quote + "\n\n" + ReplyBox.val());
+        } else {
+            obj.val(Quote);
+        }
+        Quote = "";
+    }
+}
+/// END ReplyWithQuote ///
