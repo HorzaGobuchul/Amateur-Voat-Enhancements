@@ -6,7 +6,7 @@
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     1.9.2.2
+// @version     1.10.1.1
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -22,6 +22,7 @@ var data = {};
 data.option = {
 	UseAutoQuote: true,
 	ReplyWhithQuote: true,
+	ShowVersionChangeNotification: true,
 	FixedAccountHeader: true,
 	FixedListHeader: true,
 	EnableTags: true,
@@ -83,6 +84,10 @@ $(window).ready(function () {
 
     if (data.option.ReplyWhithQuote) {
         AddSelectedTextListener();
+    }
+
+    if (data.option.ShowVersionChangeNotification) {
+        ShowVersionNotification();
     }
 });
 /// END Init ///
@@ -219,6 +224,97 @@ function InsertAVEManager() {
     });
 }
 /// END PreferenceManager ///
+
+/// VersionNotifier:  Show a short notification the first time a new version of AVE is used ///
+function ShowVersionNotification() {
+    var ChangeLog = ["Added VersionNotifier: shows a notification the first time a new version of AVE is used.",
+                     "AutoQuote: replaced User: message, with User wrote: message.",
+                     "ReplyWhithQuote: Added two lines after the quote so that the user can start replying without having to press enter twice."];
+    var CSSstyle = 'div.VersionBox' +
+                      '{background-color: #' + (data.CSSstyle == "dark" ? "292929" : "F6F6F6") + ';' +
+                       'border:1px solid black;' +
+                       'z-index: 1000 ! important;' +
+                       'position:fixed;' +
+                       'right:0px;' +
+                       'top:64px;' +
+                       'width:250px;' +
+                       'font-size:12px;' +
+                       '}' +
+                    'p.VersionBoxTitle' +
+                       '{background-color: ' + (data.CSSstyle == "dark" ? "#575757" : "#D5D5D5") + ';' +
+                       'color: ' + (data.CSSstyle == "dark" ? "#BFBFBF" : "535353") + ';' +
+                       'border-bottom:1px solid ' + (data.CSSstyle == "dark" ? "#6E6E6E" : "#939393") + ';' +
+                       'text-align: center;' +
+                       'font-weight: bold;' +
+                       '}' +
+                    'p.VersionBoxInfo' +
+                       '{' +
+                       'color: ' + (data.CSSstyle == "dark" ? "#AAA" : "#565656") + ';' +
+                       'margin-top: 5px;' +
+                       'padding: 5px;' +
+                       '}' +
+                    'p.VersionBoxToggle' +
+                       '{padding: 5px;}' +
+                    'div.VersionBoxClose{' +
+                       'border:1px solid #' + (data.CSSstyle == "dark" ? "5452A8" : "D1D0FE") + ';' +
+                       'background-color:#' + (data.CSSstyle == "dark" ? "304757" : "F4FCFF") + ';' +
+                       'font-size:12px;' +
+                       'text-align: center;' +
+                       'color:#6CA9E4;' +
+                       'font-weight:bold;' +
+                       'float: right;' +
+                       'margin: 0 5px 5px 0;' +
+                       'cursor: pointer;' +
+                       'width:50px;' +
+                       '}' +
+                    'textarea.VersionBoxText{' +
+                       'resize:none;' +
+                       'border-bottom:1px solid ' + (data.CSSstyle == "dark" ? "#6E6E6E" : "#939393") + ';' +
+                       'color: ' + (data.CSSstyle == "dark" ? "#BFBFBF" : "535353") + ';' +
+                       'font-size:12px;' +
+                       'font-weight:bold;' +
+                       'width:100%;' +
+                       'padding:10px;' +
+                       'padding-bottom:10px;' +
+                       '}'
+    ;
+    var notifierHTML = '<div class="VersionBox">' +
+                            '<p class="VersionBoxTitle">' + GM_info.script.name + '</p>' +
+                            '<p class="VersionBoxInfo">New Version downloaded: <strong style="font-size:14px">' + GM_info.script.version + '</strong></p>' +
+                            '<p class="VersionBoxToggle"><a href="javascript:void(0)" id="ShowChangelog">See Changelog?</a><p>' +
+                            '<div class="VersionBoxClose">Close</div>' +
+                        '</div>';
+
+    $("<style></style>").appendTo("head").html(CSSstyle);
+    $("body").append(notifierHTML);
+
+    var VersionBox = $(".VersionBox");
+
+    $("p.VersionBoxToggle").on("click", function () {
+        var ChangeLogHTML = '<textarea class="VersionBoxText" readonly="true">';
+        for (var idx in ChangeLog) {
+            ChangeLogHTML += ChangeLog[idx] + "\n";
+        }
+        ChangeLogHTML += '</textarea>';
+        $(this).remove();
+        $(ChangeLogHTML).insertAfter(VersionBox.find("p.VersionBoxInfo"));
+
+
+        $("textarea.VersionBoxText").animate({
+            height: "370",
+        }, 1000);
+        VersionBox.animate({
+            width: "85%",
+            height: "450px",
+        }, 1000);
+        //animate to the middle of the screen
+    });
+    $("div.VersionBoxClose").on("click", function () {
+        VersionBox.hide("slow");
+        GM_setValue("ShowVersionChangeNotification", false);
+    });
+}
+/// END VersionNotifier ///
 
 /// UserInfoFixedPos:  Fixed position for account info block ///
 function SetAccountHeaderPosAsFixed() {
@@ -705,7 +801,7 @@ function AppendQuoteLink() {
         var permaLink = $(this).parents("ul[class*='flat-list']").first().find("a[class*='bylink']").attr("href");
         var username = $(this).parents("ul[class*='flat-list']").first().parent().find("a[class*='author']").text();
 
-        comment = "###[" + username + "](https://voat.co" + permaLink + "):\n\n" + comment;
+        comment = "###[" + username + "](https://voat.co" + permaLink + ") wrote:\n\n" + comment;
 
         var NearestReplyBox = $(this).parents(":has(textarea[class*='commenttextarea'][id*='CommentContent']:visible)").first().find("textarea[class*='commenttextarea'][id*='CommentContent']:visible");
         if (NearestReplyBox.val() != "") {
@@ -788,16 +884,9 @@ function AddSelectedTextListener() {
     $("div[class*='entry']").attrchange(function () {
         var ReplyBox = $(this).find("textarea[class='commenttextarea'][id='CommentContent']");
         if (ReplyBox.length > 0) {
-            InsertQuoteInReply(ReplyBox);
+            obj.val(Quote + "\n\n" + ReplyBox.val());
+            Quote = "";
         }
     });
-    function InsertQuoteInReply(obj) {
-        if (obj.val().length > 0) {
-            obj.val(Quote + "\n\n" + ReplyBox.val());
-        } else {
-            obj.val(Quote);
-        }
-        Quote = "";
-    }
 }
 /// END ReplyWithQuote ///
