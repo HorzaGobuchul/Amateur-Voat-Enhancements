@@ -6,7 +6,7 @@
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     1.10.1.2
+// @version     1.10.1.3
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue

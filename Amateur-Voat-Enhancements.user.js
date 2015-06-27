@@ -6,7 +6,7 @@
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     1.10.1.2
+// @version     1.10.1.3
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -22,7 +22,7 @@ var data = {};
 data.option = {
 	UseAutoQuote: true,
 	ReplyWhithQuote: true,
-	ShowVersionChangeNotification: "1.10.1.2",
+	ShowVersionChangeNotification: "1.10.1.3",
 	FixedAccountHeader: true,
 	FixedListHeader: true,
 	EnableTags: true,
@@ -227,7 +227,7 @@ function InsertAVEManager() {
 
 /// VersionNotifier:  Show a short notification the first time a new version of AVE is used ///
 function ShowVersionNotification() {
-    var ChangeLog = ["VersionNotifier: changed way in which the new version is checked"];
+    var ChangeLog = ["ReplyWhithQuote: corrected two bugs"];
     var CSSstyle = 'div.VersionBox' +
                       '{background-color: #' + (data.CSSstyle == "dark" ? "292929" : "F6F6F6") + ';' +
                        'border:1px solid black;' +
@@ -827,7 +827,7 @@ function AddSelectedTextListener() {
             }
         }
         else {
-            alert("Quoting is not supported by your browser. Sorry");
+            alert("AVE: Quoting is not supported by your browser. Sorry");
         }
     }
 
@@ -835,7 +835,7 @@ function AddSelectedTextListener() {
         // Thanks to InvisibleBacon @ https://stackoverflow.com/questions/1335252/how-can-i-get-the-dom-element-which-contains-the-current-selection
         var selection = window.getSelection();
         if (selection.rangeCount > 0)
-            return selection.getRangeAt(0).endContainer.parentNode;
+            return [selection.getRangeAt(0).endContainer.parentNode, selection.getRangeAt(0).startContainer.parentNode];
     }
 
     var StartSelId = "";
@@ -847,8 +847,12 @@ function AddSelectedTextListener() {
     });
 
     $(".usertext").on("mouseup", function (event) {
-        if (StartSelId != $(getSelectedNode()).parents(".usertext").attr("id")) { return; }
-        Quote = ParseQuotedText(x.Selector.getSelected().toString()); //.replace(/^([^\n])/img, "> $1");
+        var nodes = getSelectedNode();
+        for (var i in nodes) {
+            if (StartSelId != $(nodes[i]).parents(".usertext").attr("id")) { return; }
+        }
+
+        Quote = ParseQuotedText(x.Selector.getSelected().toString());
         StartSelId = "";
     });
 
@@ -881,7 +885,7 @@ function AddSelectedTextListener() {
     $("div[class*='entry']").attrchange(function () {
         var ReplyBox = $(this).find("textarea[class='commenttextarea'][id='CommentContent']");
         if (ReplyBox.length > 0) {
-            obj.val(Quote + "\n\n" + ReplyBox.val());
+            ReplyBox.val(Quote + "\n\n" + ReplyBox.val());
             Quote = "";
         }
     });
