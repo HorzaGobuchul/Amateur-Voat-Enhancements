@@ -6,7 +6,7 @@
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     1.9.2.1
+// @version     1.9.2.2
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -702,7 +702,17 @@ function AppendQuoteLink() {
 
     $(document).on("click", "[id='GM_QuotePost']", function () {
         var comment = ParseQuotedText($(this).parent().parent().parent().find('.md:first').html())
-        $(this).parents(":has(textarea[class='commenttextarea'][id='CommentContent']:visible)").first().find("textarea[class='commenttextarea'][id='CommentContent']:visible").val(comment);
+        var permaLink = $(this).parents("ul[class*='flat-list']").first().find("a[class*='bylink']").attr("href");
+        var username = $(this).parents("ul[class*='flat-list']").first().parent().find("a[class*='author']").text();
+
+        comment = "###[" + username + "](https://voat.co" + permaLink + "):\n\n" + comment;
+
+        var NearestReplyBox = $(this).parents(":has(textarea[class*='commenttextarea'][id*='CommentContent']:visible)").first().find("textarea[class*='commenttextarea'][id*='CommentContent']:visible");
+        if (NearestReplyBox.val() != "") {
+            NearestReplyBox.val(NearestReplyBox.val() + "\n\n" + comment);
+        } else {
+            NearestReplyBox.val(comment);
+        }
     });
 }
 /// END AutoQuote ///
