@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        2015-06-27
+// @date        2015-06-28
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     1.10.1.1
+// @version     1.10.1.2
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -22,7 +22,7 @@ var data = {};
 data.option = {
 	UseAutoQuote: true,
 	ReplyWhithQuote: true,
-	ShowVersionChangeNotification: true,
+	ShowVersionChangeNotification: "1.10.1.2",
 	FixedAccountHeader: true,
 	FixedListHeader: true,
 	EnableTags: true,
@@ -86,7 +86,7 @@ $(window).ready(function () {
         AddSelectedTextListener();
     }
 
-    if (data.option.ShowVersionChangeNotification) {
+    if (data.option.ShowVersionChangeNotification != GM_info.script.version) {
         ShowVersionNotification();
     }
 });
@@ -227,9 +227,7 @@ function InsertAVEManager() {
 
 /// VersionNotifier:  Show a short notification the first time a new version of AVE is used ///
 function ShowVersionNotification() {
-    var ChangeLog = ["Added VersionNotifier: shows a notification the first time a new version of AVE is used.",
-                     "AutoQuote: replaced User: message, with User wrote: message.",
-                     "ReplyWhithQuote: Added two lines after the quote so that the user can start replying without having to press enter twice."];
+    var ChangeLog = ["VersionNotifier: changed way in which the new version is checked"];
     var CSSstyle = 'div.VersionBox' +
                       '{background-color: #' + (data.CSSstyle == "dark" ? "292929" : "F6F6F6") + ';' +
                        'border:1px solid black;' +
@@ -301,17 +299,16 @@ function ShowVersionNotification() {
 
 
         $("textarea.VersionBoxText").animate({
-            height: "370",
+            height: "370px",
         }, 1000);
         VersionBox.animate({
             width: "85%",
             height: "450px",
         }, 1000);
-        //animate to the middle of the screen
     });
     $("div.VersionBoxClose").on("click", function () {
         VersionBox.hide("slow");
-        GM_setValue("ShowVersionChangeNotification", false);
+        GM_setValue("ShowVersionChangeNotification", GM_info.script.version);
     });
 }
 /// END VersionNotifier ///
