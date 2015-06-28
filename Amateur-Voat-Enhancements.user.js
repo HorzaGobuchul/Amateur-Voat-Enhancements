@@ -6,7 +6,7 @@
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     1.10.1.3
+// @version     1.11.1.1
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -22,7 +22,8 @@ var data = {};
 data.option = {
 	UseAutoQuote: true,
 	ReplyWhithQuote: true,
-	ShowVersionChangeNotification: "1.10.1.3",
+	FixExpandImage: true,
+	ShowVersionChangeNotification: "1.11.1.1",
 	FixedAccountHeader: true,
 	FixedListHeader: true,
 	EnableTags: true,
@@ -89,8 +90,11 @@ $(window).ready(function () {
     if (data.option.ShowVersionChangeNotification != GM_info.script.version) {
         ShowVersionNotification();
     }
-});
-/// END Init ///
+
+    if (data.option.FixExpandImage) {
+        SetFixExpandImage();
+    }
+});/// END Init ///
 
 /// Utils ///
 function GetCSSStyle() {
@@ -148,7 +152,33 @@ function GetSubverseName() {
 function ParseQuotedText(text) {
     converter = { filter: 'span', replacement: function (innerHTML) { return ''; } };
     return toMarkdown(text, { converters: [converter] }).replace(/^(.)/img, "> $1");
-}/// END Utils ///
+}
+
+(function ($) {
+    //Thanks to Mr Br @ https://stackoverflow.com/questions/1950038/jquery-fire-event-if-css-class-changed#answer-24284069
+    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+    $.fn.OnNodeChange = function (callback) {
+        if (MutationObserver) {
+            var options = {
+                subtree: true,
+                childList: true,
+            };
+
+            //https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationRecord
+            var observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (e) {
+                    if (e.addedNodes != null) {
+                        callback.call(e.target);
+                    }
+                });
+            });
+
+            return this.each(function () {
+                observer.observe(this, options);
+            });
+        }
+    }
+})(jQuery);/// END Utils ///
 
 /// PreferenceManager:  Adds option to modify preferences in voat.co/account/manage under the title "AVE Preferences" ///
 function InsertAVEManager() {
@@ -167,6 +197,7 @@ function InsertAVEManager() {
     MngHTML += '<form class="form-horizontal" action="/account/manage" method="get">';
     var boolVal = false;
     for (var i in data.option) {
+        if (Labels[i] == undefined) { continue; }
 
         if (i == "MediaTypes") { boolVal = data.option[i] != "000"; }
         else { boolVal = data.option[i]; }
@@ -188,7 +219,7 @@ function InsertAVEManager() {
     MngHTML += '</div>';
 
     MngHTML += '<br /><input value="Save" id="AVEPrefSave" class="btn btn-whoaverse" type="submit" title="Save!"></input>';
-    MngHTML += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input value="Reset Stored Data" id="AVEPrefRest" class="btn btn-whoaverse" type="submit" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
+    MngHTML += '<input style="margin-left:40px;" value="Reset Stored Data" id="AVEPrefRest" class="btn btn-whoaverse" type="submit" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
     MngHTML += '</form></section><br />';
 
     $(MngHTML).insertBefore($(".alert-title").get(2));
@@ -227,7 +258,7 @@ function InsertAVEManager() {
 
 /// VersionNotifier:  Show a short notification the first time a new version of AVE is used ///
 function ShowVersionNotification() {
-    var ChangeLog = ["ReplyWhithQuote: corrected two bugs"];
+    var ChangeLog = ["New feature: FixExpandImage", "ReplyWhithQuote: Simplified main method", "PreferenceManager: Simplified main method"];
     var CSSstyle = 'div.VersionBox' +
                       '{background-color: #' + (data.CSSstyle == "dark" ? "292929" : "F6F6F6") + ';' +
                        'border:1px solid black;' +
@@ -838,38 +869,43 @@ function AddSelectedTextListener() {
             return [selection.getRangeAt(0).endContainer.parentNode, selection.getRangeAt(0).startContainer.parentNode];
     }
 
-    var StartSelId = "";
     var Quote = "";
 
-    $(".usertext").on("mousedown", function () {
-        StartSelId = $(this).attr("id");
-        Quote = "";
+    $("div[class*='entry']").OnNodeChange(function () {
+        if (Quote == "") { return; }
+        var ReplyBox = $(this).find("textarea[class='commenttextarea'][id='CommentContent']");
+        if (ReplyBox.length > 0) {
+            ReplyBox.val(Quote + "\n\n");
+        }
     });
 
     $(".usertext").on("mouseup", function (event) {
         var nodes = getSelectedNode();
-        for (var i in nodes) {
-            if (StartSelId != $(nodes[i]).parents(".usertext").attr("id")) { return; }
+        if ($(nodes[0]).parents(".usertext").attr("id") == undefined ||
+            $(nodes[0]).parents(".usertext").attr("id") != $(nodes[1]).parents(".usertext").attr("id")) {
+            Quote = "";
+            return;
         }
 
         Quote = ParseQuotedText(x.Selector.getSelected().toString());
-        StartSelId = "";
     });
+}
+/// END ReplyWithQuote ///
 
-    //Thanks to Mr Br @ https://stackoverflow.com/questions/1950038/jquery-fire-event-if-css-class-changed#answer-24284069
+/// FixExpandImage:  Let images expand over the sidebar and disallow the selection/highlight of the image ///
+function SetFixExpandImage() {
     (function ($) {
         var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
-        $.fn.attrchange = function (callback) {
+        $.fn.OnAttrChange = function (callback) {
             if (MutationObserver) {
                 var options = {
-                    subtree: true,
-                    childList: true,
+                    attributes: true,
                 };
 
                 //https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationRecord
                 var observer = new MutationObserver(function (mutations) {
                     mutations.forEach(function (e) {
-                        if (Quote !== "" && e.addedNodes != null) {
+                        if (e.attributeName != null) {
                             callback.call(e.target);
                         }
                     });
@@ -882,12 +918,24 @@ function AddSelectedTextListener() {
         }
     })(jQuery);
 
-    $("div[class*='entry']").attrchange(function () {
-        var ReplyBox = $(this).find("textarea[class='commenttextarea'][id='CommentContent']");
-        if (ReplyBox.length > 0) {
-            ReplyBox.val(Quote + "\n\n" + ReplyBox.val());
-            Quote = "";
+    $(".expando").OnNodeChange(function () {
+        var img = $(this).find("img:first");
+        if (img.length > 0) {
+            var exp = $(this);
+            img.css("position", "absolute");
+            img.css("margin-top", "20px");
+
+            img.OnAttrChange(function () {
+                window.getSelection().removeAllRanges();
+                exp.width(img.width());
+                exp.height(img.height() + 20);
+            });
+            exp.stop();
+            exp.animate({
+                width: img.width() + "px",
+                height: img.height() + 20 + "px",
+            }, 1000);
         }
     });
 }
-/// END ReplyWithQuote ///
+/// END FixExpandImage ///
