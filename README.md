@@ -2,7 +2,9 @@
 
 AVE is a light Enhancement Suite for Voat.co.
 
-It is a userscript written for [GreaseMonkey](http://www.greasespot.net/). [TamperMonkey version for Chrome](https://github.com/HorzaGobuchul/AVE-for-Chrome)
+It is a userscript written for [GreaseMonkey](http://www.greasespot.net/).
+
+[TamperMonkey version for Chrome](https://github.com/HorzaGobuchul/AVE-for-Chrome)
 
 # Features:
 #### All css modifications support both Dark and Light themes.
