@@ -20,13 +20,12 @@ AVE.Modules['UserTag'] = {
             Value: true,
         },
     },
-
-    UserTagObj: function (username, tag, colour, ignored, voteWeight) {
-        this.username = username.toString();
+    //Issue with the fact that the username in the profil overview is in lower case
+    UserTagObj: function (tag, colour, ignored, balance) {
         this.tag = tag.toString();
-        this.colour = colour || "#FFF";
+        this.colour = colour;
         this.ignored = (typeof ignored === "boolean" ? ignored : false);
-        this.voteWeight = (typeof voteWeight === "integer" ? voteWeight : 0);
+        this.balance = ((typeof balance === "number" && !isNaN(balance)) ? balance : 0);
     },
 
     SavePref: function (POST) {
@@ -131,7 +130,7 @@ table#formTable{\
             <tr id="SetBalance">\
                 <td>Vote balance</td>\
                 <td style="width:10px;"></td>\
-                <td><input style="width:80px;" class="UserTagTextInput" type="number" id="ToggleIgnore" class="tagInput" value="0" step="1" />\
+                <td><input style="width:80px;" class="UserTagTextInput" type="number" id="voteBalance" class="tagInput" value="0" step="1" />\
                 <a href="javascript:void(0)" style="position: absolute;right: 5px;font-weight:bold;" id="SaveTag">Save</a>\
                 </td>\
             </tr>\
@@ -139,8 +138,7 @@ table#formTable{\
     </div>\
 </div>';
             this.StorageName = this.Store.Prefix + this.ID + "_Tags";
-            this.usertags = this.Store.GetValue(this.StorageName, "");
-            //OLD StorageName: "Voat_Tags"
+            this.usertags = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
             this.Start();
         }
     },
@@ -149,13 +147,11 @@ table#formTable{\
         this.AppendToPage();
         this.Listeners();
 
-        //var a = new this.UserTagObj("aa", "bb", "#000", false, 10);
-
         //Username in userpages
         if ($.inArray(AVE.Utils.currentPageType, ["user", "user-comments", "user-submissions"]) >= 0) {
             name = $(".alert-title").text().split(" ")[3].replace(".", "").toLowerCase();
-            tag = GetTag(name);
-            Tag_html = '<span class="GM_UserTag" id="' + name + '" style="' + this.style + '">' + (!tag ? "+" : tag) + '</span>';
+            tag = this.GetTag(name);
+            Tag_html = '<span style="background-color:"' + tag.colour + ';border:1px solid gray;border-radius:2px" class="GM_UserTag" id="' + name + '">' + (!tag.tag ? "+" : tag.tag) + '</span>';
             $(".alert-title").html("Profile overview for " + name + Tag_html + ".");
         }
     },
@@ -165,6 +161,7 @@ table#formTable{\
     },
 
     AppendToPage: function () {
+        var self = AVE.Modules['UserTag'];
         var Tag_html, name, tag;
         //All mention of an username as a link.
         var sel = /\/user\/[^/]*\/?$/i;
@@ -176,12 +173,21 @@ table#formTable{\
             if ($(this).attr('href').split("/")[2].toLowerCase() != name) return true;
 
             tag = this.GetTag(name);
-            Tag_html = '<span class="GM_UserTag" id="' + name + '" style="' + style + '">' + (!tag ? "+" : tag) + '</span>';
+            Tag_html = '<span class="GM_UserTag" id="' + name + '" style="border:1px solid gray;border-radius:2px">' + (!tag.tag ? "+" : tag.tag) + '</span>';
             $(Tag_html).insertAfter($(this));
+
+            var r, g, b;
+            var newColour = tag.colour;
+            //from www.javascripter.net/faq/hextorgb.htm
+            r = parseInt(newColour.substring(1, 3), 16);
+            g = parseInt(newColour.substring(3, 5), 16);
+            b = parseInt(newColour.substring(5, 7), 16);
+            $(this).find(".GM_UserTag").css("background-color", tag.colour);
+            $(this).find(".GM_UserTag").css("color", AVE.Utils.GetBestFontColour(r, g, b));
         });
 
-        $("<style></style>").appendTo("head").html(this.style);
-        $(this.html).appendTo("body");
+        $("<style></style>").appendTo("head").html(self.style);
+        $(self.html).appendTo("body");
         $("#UserTagBox").hide();
 
         //Close button
@@ -194,7 +200,7 @@ table#formTable{\
         });
         //Show in the preview box the colour chosen and change the font-colour accordingly
         $("tr#SetColour > td > input#ChooseColor").on('change', function () {
-            var r,g,b;
+            var r, g, b;
             var newColour = $(this).val();
             //from www.javascripter.net/faq/hextorgb.htm
             r = parseInt(newColour.substring(1, 3), 16);
@@ -202,126 +208,108 @@ table#formTable{\
             b = parseInt(newColour.substring(5, 7), 16);
 
             $("tr#ShowPreview > td > span#PreviewBox").css("background-color", $(this).val());
-            $("tr#ShowPreview > td > span#PreviewBox").css("color", AVE.Utils.GetBestFontColour(r,g,b));
+            $("tr#ShowPreview > td > span#PreviewBox").css("color", AVE.Utils.GetBestFontColour(r, g, b));
+        });
+        //Saving tag
+        $("tr#SetBalance > td > a#SaveTag").on("click", function () {
+            var opt = {
+                username: $("div#UserTagHeader > span#username").text(),
+                tag: $("tr#SetTag > td > input.UserTagTextInput").val(),//.replace(/[:,]/g, "-")
+                colour: $("tr#SetColour > td > input#ChooseColor").val(),
+                ignore: $("tr#SetIgnore > td > input#ToggleIgnore").get(0).checked,
+                balance: parseInt($("tr#SetBalance > td > input#voteBalance").val(), 10),
+            };
+
+            if (opt.tag.length > 0) {
+                self.SetTag(opt);
+            }
+            else if (opt.tag.length == 0) {
+                self.RemoveTag(opt.username);
+                opt.tag = "+";
+            }
+
+            self.UpdateUserTag(opt.username, opt.tag, opt.colour);
+
+            ; $("#UserTagBox").hide();
+        });
+
+        $(document).on("keyup", function (e) {
+            if (e.which == 13) {
+                if ($(e.target).attr("class") == "UserTagTextInput") {
+                    $("tr#SetBalance > td > a#SaveTag").click();
+                }
+            }
         });
     },
 
     Listeners: function () {
-        var SetTag = this.SetTag;
-        var UpdateTag = this.UpdateTag;
-        var RemoveTag = this.RemoveTag;
-        var UpdateUserTag = this.UpdateUserTag;
+        var self = AVE.Modules['UserTag'];
 
-        $(".GM_UserTag").on("click", function (event) {
-            var username = $(this).attr("id");
+        $(".GM_UserTag").off("click");
+        $(".GM_UserTag").on("click", function () {
+            var username = $(this).attr("id").toLowerCase();
             var oldTag = $(this).text();
-            //var newTag = prompt("Tag for " + username, oldTag !== "+" ? oldTag : "").replace(/[:,]/g, "-") || "";
-            
-            $("div#UserTagHeader > span#username").text(username);
+
+            var usertag = self.usertags[username];
 
             var position = $(this).offset();
             position.top += 20;
             $("#UserTagBox").css(position);
             $("#UserTagBox").show();
-            //if tag exist insert it
-            //Same for color, ignore and vote balance
-            //  Else: insert default values
 
-            //if (newTag.length > 0) {
-            //    if (oldTag !== "+") {
-            //        UpdateTag(username, newTag);
-            //    } else {
-            //        SetTag(username, newTag);
-            //    }
-            //}
-            //else if (newTag.length == 0) {
-            //    if (oldTag != "+") {
-            //        RemoveTag(username);
-            //    }
-            //    newTag = "+";
-            //}
-            //$(this).text(newTag);
-            //UpdateUserTag(username, newTag);
+            $("div#UserTagHeader > span#username").text(username);
 
-            //event.stopPropagation();
+            $("tr#SetTag > td > input.UserTagTextInput").val(oldTag == "+" ? "" : oldTag);
+            $("tr#ShowPreview > td > span#PreviewBox").text(oldTag == "+" ? "" : oldTag);
+
+            if (usertag != undefined) {
+                $("tr#SetColour > td > input#ChooseColor").val(usertag.colour);
+                $("tr#SetColour > td > input#ChooseColor").change();
+                if (usertag.ignored) { $("tr#SetIgnore > td > input#ToggleIgnore").prop('checked', "true"); }
+                $("tr#SetBalance > td > input#voteBalance").val(usertag.balance);
+            }
+            $("tr#SetTag > td > input.UserTagTextInput").focus();
+            $("tr#SetTag > td > input.UserTagTextInput").select();
         });
     },
 
-
-    UpdateUserTag: function (name, tag) {
+    UpdateUserTag: function (name, tag, colour) {
         $("span[class*='GM_UserTag'][id*='" + name + "']").each(function () {
             $(this).text(tag);
+
+            var r, g, b;
+            var newColour = colour;
+            //from www.javascripter.net/faq/hextorgb.htm
+            r = parseInt(newColour.substring(1, 3), 16);
+            g = parseInt(newColour.substring(3, 5), 16);
+            b = parseInt(newColour.substring(5, 7), 16);
+            $(this).css("background-color", colour);
+            $(this).css("color", AVE.Utils.GetBestFontColour(r, g, b));
         });
     },
 
-    //this.usertags is now an array of tag object
-    // {username : UserTagObj}, {username : UserTagObj}
-    //https://stackoverflow.com/questions/9273157/javascript-how-to-get-index-of-an-object-in-an-associative-array
-    //$.each(_map, function(key, value) {
-    //});
-
-    RemoveTag: function (userName) {
+    RemoveTag: function (opt) {
         var self = AVE.Modules['UserTag'];
-        userName = userName.toLowerCase();
-        var usertags = self.usertags.split(",");
-        var idx = usertags.indexOf(userName + ":" + GetTag(userName));
-        if (idx < 0) {
-            alert("AVE: RemoveTag -> couldn't find user " + userName + ".");
-            return true;
-        }
-        usertags.splice(idx, 1); //remove()
+        delete self.usertags[opt.username];
 
-        self.usertags = usertags.join(",");
-        self.Store.SetValue(self.StorageName, this.usertags);
+        self.Store.SetValue(self.StorageName, JSON.stringify(self.usertags));
     },
 
-    UpdateTag: function (userName, tag) {
+    SetTag: function (opt) {
         var self = AVE.Modules['UserTag'];
-        var usertags = self.usertags.split(",");
-        var user;
-        var found = false;
-        for (var idx in usertags) {
-            user = AVE.Utils.regExpTag.exec(usertags[idx]);
-            if (user == null) continue;
-            if (userName.toLowerCase() == user[1].toLowerCase()) {
-                usertags[idx] = userName + ":" + tag;
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            alert("AVE: UpdateTag -> user " + userName + " couldn't be found in the database");
-            return;
-        }
+        self.usertags[opt.username] = new self.UserTagObj(opt.tag, opt.colour, opt.ignore, opt.balance);
 
-        self.usertags = usertags.join(",");
-        self.Store.SetValue(self.StorageName, self.usertags);
-    },
-
-    SetTag: function (userName, tag) { // new this.UserTagObj();
-        var self = AVE.Modules['UserTag'];
-        var usertags = self.usertags.split(",");
-
-        self.usertags = usertags + "," + userName + ":" + tag;
-        self.Store.SetValue(self.StorageName, self.usertags);
+        self.Store.SetValue(self.StorageName, JSON.stringify(self.usertags));
     },
 
     GetTag: function (userName) {
         var self = AVE.Modules['UserTag'];
-        var usertags = self.usertags.split(",");
-        var user = "";
-        for (var idx in usertags) {
-            user = AVE.Utils.regExpTag.exec(usertags[idx]);
-            if (user == null) continue;
-
-            if (userName.toLowerCase() == user[1].toLowerCase()) {
-                return user[2];
-            }
-        }
-        return false
+        var usertag = self.usertags[userName];
+        if (usertag == undefined) { return false; }
+        return usertag;
     },
 
     GetTagCount: function () {
-        return usertags.split(",").length;
+        return this.usertags.length;
     },
 };

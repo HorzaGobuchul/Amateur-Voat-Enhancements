@@ -145,6 +145,9 @@ AVE.Modules['ToggleMedia'] = {
                                '<label for="' + mediaTypes[i] + '">' + mediaTypes[i] + '</label>' +
                                '</span>';
             }
+            //ToggleInSidebar
+            htmlString += '<br /><input ' + (self.Options.ToggleInSidebar.Value ? 'checked="checked"' : '') + ' id="ToggleInSidebar" name="ToggleInSidebar" type="checkbox"></input>' +
+            '<label for="ToggleInSidebar">' + self.Options.ToggleInSidebar.Desc + '</label>';
 
             return htmlString+'</div>';
         },

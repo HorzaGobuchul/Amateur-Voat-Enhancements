@@ -7,6 +7,9 @@
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @version     2.0.0.0
+// @grant       GM_getValue
+// @grant       GM_setValue
+// @grant       GM_deleteValue
 // @run-at      document-end
 // @updateURL   https://github.com/HorzaGobuchul/{@repoName}/raw/master/{@fileName}_meta.user.js
 // @downloadURL https://github.com/HorzaGobuchul/{@repoName}/raw/master/{@fileName}.user.js

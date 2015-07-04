@@ -145,7 +145,7 @@ AVE.Modules['VersionNotifier'] = {
         });
         $("div.VersionBoxClose").on("click", function () {
             VersionBox.hide("slow");
-            GM_setValue(self.Store.Prefix + self.ID + "_Version", GM_info.script.version);
+            self.Store.SetValue(self.Store.Prefix + self.ID + "_Version", GM_info.script.version);
         });
     },
     //When re-enabled via the pref manager, make it display next page-load. (Set value as '')

@@ -52,7 +52,7 @@ AVE.Modules['SelectPost'] = {
     },
 
     SetOptionsFromPref: function () {
-        var self = this;
+        var self = AVE.Modules['SelectPost'];
         var Opt = self.Store.GetValue(self.Store.Prefix + self.ID);
 
         if (Opt !== null) {
@@ -81,7 +81,7 @@ AVE.Modules['SelectPost'] = {
     },
 
     Listeners: function () {
-        self = this;
+        var self = AVE.Modules['SelectPost'];
         $(".entry").off("click");
         $(".entry").on("click", function () {
             self.ToggleSelectedState($(this));

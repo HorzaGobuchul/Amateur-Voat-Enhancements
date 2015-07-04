@@ -71,8 +71,7 @@ AVE.Utils = {
 
     GetBestFontColour: function (r,g,b) {
         //from http://www.nbdtech.com/Blog/archive/2008/04/27/Calculating-the-Perceived-Brightness-of-a-Color.aspx
-        var rgb = [r, g, b];
-        var o = Math.round(((parseInt(rgb[0]) * 299) + (parseInt(rgb[1]) * 587) + (parseInt(rgb[2]) * 114)) / 1000);
+        var o = Math.round(((parseInt(r) * 299) + (parseInt(g) * 587) + (parseInt(b) * 114)) / 1000);
         return (o > 125) ? 'black' : 'white';
     },
 };
