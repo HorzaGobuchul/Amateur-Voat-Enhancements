@@ -40,5 +40,4 @@ AVE.Storage = {
         //Set options for all modules
         return 'Not Implemented Yet';
     },
-
 };

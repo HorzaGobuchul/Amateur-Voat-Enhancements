@@ -20,7 +20,6 @@ AVE.Modules['Shortcuts'] = {
 
     SavePref: function (POST) {
         var self = AVE.Modules['Shortcuts'];
-
         self.Store.SetValue(self.Store.Prefix + self.ID, JSON.stringify(POST[self.ID]));
     },
 
@@ -39,6 +38,7 @@ AVE.Modules['Shortcuts'] = {
 
     Load: function () {
         this.Store = AVE.Storage;
+
         this.SetOptionsFromPref();
 
         if (this.Enabled) {

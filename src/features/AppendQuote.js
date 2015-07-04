@@ -35,7 +35,7 @@ AVE.Modules['AppendQuote'] = {
         var self = this;
         var Opt = self.Store.GetValue(self.Store.Prefix + self.ID);
 
-        if (Opt !== null) {
+        if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
                 self.Options[key].Value = value;

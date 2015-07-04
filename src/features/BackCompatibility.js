@@ -1,4 +1,4 @@
-AVE.Modules['BackCompatibility'] = { //Turn it into a proto class
+AVE.Modules['BackCompatibility'] = {
     ID: 'BackCompatibility',
     Name: 'BackCompatibility Module',
     Desc: 'Migrate data from V1 to V2.',
@@ -17,8 +17,10 @@ AVE.Modules['BackCompatibility'] = { //Turn it into a proto class
 
     Migrate: function (type) {
         if (type == "shortcuts") {
+            if (GM_getValue("Voat_Subverses") == undefined) { return;}
             self.Store.SetValue(AVE.Modules['Shortcuts'].StorageName, GM_getValue("Voat_Subverses"));
         } else if (type == "usertags") {
+            if (GM_getValue("Voat_Tags") == undefined) { return; }
             var tags = GM_getValue("Voat_Tags").split(",");
             var opt, user, tag;
             for (var i in tags) {
@@ -33,7 +35,7 @@ AVE.Modules['BackCompatibility'] = { //Turn it into a proto class
     },
 
     DeleteOldData: function () {
-        var prefNames = ["Voat_Subverses", "Voat_Tags", "Images", "Videos", "Self-texts", "MediaTypes", "ShowVersionChangeNotification"]
+        var prefNames = ["Voat_Subverses", "Voat_Tags", "Images", "Videos", "Self-texts", "MediaTypes", "ShowVersionChangeNotification"];
         $.each(prefNames, function (value) {
             if (GM_getValue(prefNames[value]) != undefined) {
                 GM_deleteValue(prefNames[value]);
@@ -44,7 +46,7 @@ AVE.Modules['BackCompatibility'] = { //Turn it into a proto class
     },
 
     GetV1DataStat: function () {
-        var ret = [0, 0, 0]
+        var ret = [0, 0, 0];
         if (GM_getValue("Voat_Subverses") != null) {
             ret[0] = GM_getValue("Voat_Subverses").split(",").length;
         }
@@ -52,7 +54,7 @@ AVE.Modules['BackCompatibility'] = { //Turn it into a proto class
             ret[1] = GM_getValue("Voat_Tags").split(",").length;
         }
 
-        var prefNames = ["Images", "Videos", "Self-texts", "MediaTypes", "ShowVersionChangeNotification"]
+        var prefNames = ["Images", "Videos", "Self-texts", "MediaTypes", "ShowVersionChangeNotification"];
         $.each(prefNames, function (value) {
             if (GM_getValue(prefNames[value]) != undefined) {
                 ret++;

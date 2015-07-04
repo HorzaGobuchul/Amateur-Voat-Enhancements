@@ -40,8 +40,8 @@ AVE.Modules['SelectPost'] = {
         var colours = ["ContentColour", "QuoteCodeColour", "VoteCountBoxColour", "ContextColour"];
         $.each(colours, function (index, value) {
             self.Options[value].Value[AVE.Utils.CSSstyle == "dark" ? 0 : 1] = POST[value];
-            print(POST[value]);
         });
+        self.Options.Enabled.Value = POST.Enabled;
 
         self.Store.SetValue(self.Store.Prefix + self.ID, JSON.stringify(self.Options));
     },
@@ -58,7 +58,7 @@ AVE.Modules['SelectPost'] = {
         if (Opt !== null) {
             self.Options = JSON.parse(Opt);
         }
-        //alert(JSON.stringify(self.Options));
+
         self.Enabled = self.Options.Enabled.Value;
     },
 

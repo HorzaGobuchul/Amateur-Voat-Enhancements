@@ -25,7 +25,7 @@ AVE.Modules['UserTag'] = {
         this.tag = tag.toString();
         this.colour = colour;
         this.ignored = (typeof ignored === "boolean" ? ignored : false);
-        this.balance = ((typeof balance === "number" && !isNaN(balance)) ? balance : 0);
+        this.balance = (typeof balance === "number" ? (!isNaN(balance) ? balance : 0) : 0);
     },
 
     SavePref: function (POST) {
@@ -151,7 +151,7 @@ table#formTable{\
         if ($.inArray(AVE.Utils.currentPageType, ["user", "user-comments", "user-submissions"]) >= 0) {
             name = $(".alert-title").text().split(" ")[3].replace(".", "").toLowerCase();
             tag = this.GetTag(name);
-            Tag_html = '<span style="background-color:"' + tag.colour + ';border:1px solid gray;border-radius:2px" class="GM_UserTag" id="' + name + '">' + (!tag.tag ? "+" : tag.tag) + '</span>';
+            Tag_html = '<span style="background-color:"' + tag.colour + ';border:1px solid gray;border-radius:4px" class="GM_UserTag" id="' + name + '">' + (!tag.tag ? "+" : tag.tag) + '</span>';
             $(".alert-title").html("Profile overview for " + name + Tag_html + ".");
         }
     },
@@ -167,13 +167,24 @@ table#formTable{\
         var sel = /\/user\/[^/]*\/?$/i;
 
         $("a[href*='/user/']").each(function () {
-            if ($(this).parent().find("span.GM_UserTag").length > 0) { return; }
-            if (!$(this).attr('href').match(sel)) return true;
-            name = $(this).html().replace("@", "").replace("/u/", "").toLowerCase(); //Accepts: Username, @Username, /u/Username
-            if ($(this).attr('href').split("/")[2].toLowerCase() != name) return true;
+            if (!$(this).attr('href').match(sel)) { return true; } //useful?
+            //if ($(this).parent().find("span.AVE_UserTag").length > 0) { return; } //don't add if it already exists
+            if ($(this).parents("div#header-account").length > 0) { return true; } //don't add if it the userpage link in the account header
+            //if ($(this).attr('href').split("/")[2].toLowerCase() != name) { return true; } //don't add if this is a link whose label isn't the username
 
-            tag = this.GetTag(name);
-            Tag_html = '<span class="GM_UserTag" id="' + name + '" style="border:1px solid gray;border-radius:2px">' + (!tag.tag ? "+" : tag.tag) + '</span>';
+            name = $(this).html().replace("@", "").replace("/u/", "").toLowerCase(); //Accepts: Username, @Username, /u/Username
+            tag = self.GetTag(name);
+            if (tag == false) {
+                return true;
+            }
+
+            Tag_html = '<span class="AVE_UserTag" id="' + name + '" style="cursor:pointer;margin-left:4px;padding: 0px 4px;border:1px solid gray;border-radius:4px;">' + (!tag.tag ? "+" : tag.tag) + '</span>';
+            if (tag.balance != 0) {
+                var sign = tag.balance > 0 ? "+" : "";
+                Tag_html += '<span class="AVE_UserBalance" id="' + name + '" style="padding: 0px 4px;font-size: 10px;">[ ' + sign + tag.balance + ' ]</span>';
+            } else {
+                Tag_html += '<span class="AVE_UserBalance" id="' + name + '" style="padding: 0px 4px;font-size: 10px;"></span>';
+            }
             $(Tag_html).insertAfter($(this));
 
             var r, g, b;
@@ -182,8 +193,9 @@ table#formTable{\
             r = parseInt(newColour.substring(1, 3), 16);
             g = parseInt(newColour.substring(3, 5), 16);
             b = parseInt(newColour.substring(5, 7), 16);
-            $(this).find(".GM_UserTag").css("background-color", tag.colour);
-            $(this).find(".GM_UserTag").css("color", AVE.Utils.GetBestFontColour(r, g, b));
+
+            $(this).parent().find(".AVE_UserTag").css("background-color", tag.colour);
+            $(this).parent().find(".AVE_UserTag").css("color", AVE.Utils.GetBestFontColour(r, g, b));
         });
 
         $("<style></style>").appendTo("head").html(self.style);
@@ -220,6 +232,8 @@ table#formTable{\
                 balance: parseInt($("tr#SetBalance > td > input#voteBalance").val(), 10),
             };
 
+            if (isNaN(opt.balance)) { opt.balance = 0;}
+
             if (opt.tag.length > 0) {
                 self.SetTag(opt);
             }
@@ -228,11 +242,12 @@ table#formTable{\
                 opt.tag = "+";
             }
 
-            self.UpdateUserTag(opt.username, opt.tag, opt.colour);
+            self.UpdateUserTag(opt);
 
             ; $("#UserTagBox").hide();
         });
 
+        //If Enter/Return is pressed while the focus is on one of the two text input, we save the tag.
         $(document).on("keyup", function (e) {
             if (e.which == 13) {
                 if ($(e.target).attr("class") == "UserTagTextInput") {
@@ -245,8 +260,8 @@ table#formTable{\
     Listeners: function () {
         var self = AVE.Modules['UserTag'];
 
-        $(".GM_UserTag").off("click");
-        $(".GM_UserTag").on("click", function () {
+        $(".AVE_UserTag").off("click");
+        $(".AVE_UserTag").on("click", function () {
             var username = $(this).attr("id").toLowerCase();
             var oldTag = $(this).text();
 
@@ -273,18 +288,25 @@ table#formTable{\
         });
     },
 
-    UpdateUserTag: function (name, tag, colour) {
-        $("span[class*='GM_UserTag'][id*='" + name + "']").each(function () {
-            $(this).text(tag);
+    UpdateUserTag: function (tag) {
+        $("span[class*='AVE_UserTag'][id*='" + tag.username + "']").each(function () {
+            $(this).text(tag.tag);
 
             var r, g, b;
-            var newColour = colour;
+            var newColour = tag.colour;
             //from www.javascripter.net/faq/hextorgb.htm
             r = parseInt(newColour.substring(1, 3), 16);
             g = parseInt(newColour.substring(3, 5), 16);
             b = parseInt(newColour.substring(5, 7), 16);
-            $(this).css("background-color", colour);
+            $(this).css("background-color", tag.colour);
             $(this).css("color", AVE.Utils.GetBestFontColour(r, g, b));
+
+            if (tag.balance != 0) {
+                var sign = tag.balance > 0 ? "+" : "-";
+                $(this).parent().find("span.AVE_UserBalance").text('[ ' + sign + tag.balance + ' ]');
+            } else {
+                $(this).parent().find("span.AVE_UserBalance").text("");
+            }
         });
     },
 
@@ -304,9 +326,7 @@ table#formTable{\
 
     GetTag: function (userName) {
         var self = AVE.Modules['UserTag'];
-        var usertag = self.usertags[userName];
-        if (usertag == undefined) { return false; }
-        return usertag;
+        return self.usertags[userName] || false;
     },
 
     GetTagCount: function () {

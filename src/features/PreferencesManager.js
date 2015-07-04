@@ -282,13 +282,15 @@ AVE.Modules['PreferenceManager'] = {
                     $(this).find("input").each(function () {
                         var key = $(this).prop("id")
                         if ($(this).attr("type").toLowerCase() == "checkbox") {
-                            POST[ModKey][key] = this.checked;
+                            POST[ModKey][key] = $(this).is(":checked");
                         } else {
                             POST[ModKey][key] = $(this).val();
                         }
                     });
                     //Send new pref to module
-                    AVE.Modules[ModKey].SavePref(POST);
+                    if (typeof AVE.Modules[ModKey].SavePref === "function") {
+                        AVE.Modules[ModKey].SavePref(POST);
+                    }
                 });
 
             });
