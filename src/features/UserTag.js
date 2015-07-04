@@ -8,9 +8,11 @@ AVE.Modules['UserTag'] = {
     Enabled: false,
 
     Store: {},
+
     StorageName: "",
     usertags: "",
     style: "",
+    html: "",
 
     Options: {
         Enabled: {
@@ -51,7 +53,91 @@ AVE.Modules['UserTag'] = {
         this.SetOptionsFromPref();
 
         if (this.Enabled) {
-            this.style = "border:1px solid #" + (AVE.Utils.CSSstyle == "dark" ? "5452A8" : "D1D0FE") + ";background-color:#" + (AVE.Utils.CSSstyle == "dark" ? "304757" : "F4FCFF") + ";font-size:10px;padding:0px 4px;color:#6CA9E4;font-weight:bold;margin-left:4px;cursor: pointer;";
+            this.style = '\
+div#UserTagBox{\
+    background-color: #333;\
+    z-index: 1000 !important;\
+    position:absolute;\
+    left:0px;\
+    top:0px;\
+    border: 2px solid black;\
+    border-radius:3px;\
+    width:280px;\
+}\
+div#UserTagHeader{\
+    font-weight:bold;   \
+    height:20px;\
+    border-bottom: 2px solid black;\
+    padding-left:5px;\
+}\
+div#UserTagHeader > span#username{\
+    display: inline-block;\
+    width: 170px;\
+    overflow: hidden;\
+    vertical-align: middle;\
+    text-overflow: ellipsis;\
+}\
+input.UserTagTextInput{\
+    background-color:#292929;\
+    border: 1px solid black;\
+    border-radius:2px;\
+    height:20px;\
+    padding-left:5px;\
+}\
+tr#ShowPreview > td > span#PreviewBox {\
+    display: inline-block;\
+    max-width: 130px;\
+    overflow: hidden;\
+    vertical-align: middle;\
+    text-overflow: ellipsis;\
+    padding-left:4px;\
+    padding-right:4px;\
+    border:1px solid gray;\
+    border-radius:4px;\
+}\
+table#formTable{\
+    border-collapse: separate;\
+    border-spacing: 5px;\
+    margin: 0 auto;\
+    font-size:12px;\
+}';
+            this.html = '\
+<div id="UserTagBox">\
+    <div id="UserTagHeader">Set tag for <span id="username"></span><span style="margin-right:5px;float:right;"><a id="CloseTagWin" href="javascript:void(0)">Close</a></span></div>\
+    <div id="UserTagBody">\
+        <table id="formTable">\
+            <tr id="SetTag">\
+                <td>Tag</td>\
+                <td style="width:10px;"></td>\
+                <td>\
+                    <input class="UserTagTextInput" type="text" value="" id="ChooseTag" style="width:130px;"/>\
+                </td>\
+            </tr>\
+            <tr id="SetColour">\
+                <td>Colour</td>\
+                <td style="width:10px;"></td>\
+                <td><input name="color" type="color" title="Click me!" id="ChooseColor" value="#303030" style="width:60px;" />\</td>\
+            </tr>\
+            <tr id="ShowPreview">\
+                <td>Preview</td>\
+                <td style="width:10px;"></td>\
+                <td><span id="PreviewBox"></span></td>\
+            </tr>\
+            <tr id="SetIgnore">\
+                <td>Ignore</td>\
+                <td style="width:10px;"></td>\
+                <td><input type="checkbox" id="ToggleIgnore" class="tagInput" /></td>\
+            </tr>\
+            <tr id="SetBalance">\
+                <td>Vote balance</td>\
+                <td style="width:10px;"></td>\
+                <td><input style="width:80px;" class="UserTagTextInput" type="number" id="ToggleIgnore" class="tagInput" value="0" step="1" />\
+                <a href="javascript:void(0)" style="position: absolute;right: 5px;font-weight:bold;" id="SaveTag">Save</a>\
+                </td>\
+            </tr>\
+        </table>\
+    </div>\
+</div>';
             this.StorageName = this.Store.Prefix + this.ID + "_Tags";
             this.usertags = this.Store.GetValue(this.StorageName, "");
             //OLD StorageName: "Voat_Tags"
@@ -64,7 +150,6 @@ AVE.Modules['UserTag'] = {
         this.Listeners();
 
         //var a = new this.UserTagObj("aa", "bb", "#000", false, 10);
-        //alert(typeof a);
 
         //Username in userpages
         if ($.inArray(AVE.Utils.currentPageType, ["user", "user-comments", "user-submissions"]) >= 0) {
@@ -80,9 +165,6 @@ AVE.Modules['UserTag'] = {
     },
 
     AppendToPage: function () {
-        style = this.style;
-        GetTag = this.GetTag;
-
         var Tag_html, name, tag;
         //All mention of an username as a link.
         var sel = /\/user\/[^/]*\/?$/i;
@@ -93,9 +175,34 @@ AVE.Modules['UserTag'] = {
             name = $(this).html().replace("@", "").replace("/u/", "").toLowerCase(); //Accepts: Username, @Username, /u/Username
             if ($(this).attr('href').split("/")[2].toLowerCase() != name) return true;
 
-            tag = GetTag(name);
+            tag = this.GetTag(name);
             Tag_html = '<span class="GM_UserTag" id="' + name + '" style="' + style + '">' + (!tag ? "+" : tag) + '</span>';
             $(Tag_html).insertAfter($(this));
+        });
+
+        $("<style></style>").appendTo("head").html(this.style);
+        $(this.html).appendTo("body");
+        $("#UserTagBox").hide();
+
+        //Close button
+        $("div#UserTagHeader > span > a#CloseTagWin").on("click", function () {
+            $("#UserTagBox").hide();
+        }),
+        //Show in the preview box the tag
+        $("tr#SetTag > td > input.UserTagTextInput").on('keyup', function () {
+            $("tr#ShowPreview > td > span#PreviewBox").text($(this).val());
+        });
+        //Show in the preview box the colour chosen and change the font-colour accordingly
+        $("tr#SetColour > td > input#ChooseColor").on('change', function () {
+            var r,g,b;
+            var newColour = $(this).val();
+            //from www.javascripter.net/faq/hextorgb.htm
+            r = parseInt(newColour.substring(1, 3), 16);
+            g = parseInt(newColour.substring(3, 5), 16);
+            b = parseInt(newColour.substring(5, 7), 16);
+
+            $("tr#ShowPreview > td > span#PreviewBox").css("background-color", $(this).val());
+            $("tr#ShowPreview > td > span#PreviewBox").css("color", AVE.Utils.GetBestFontColour(r,g,b));
         });
     },
 
@@ -108,24 +215,35 @@ AVE.Modules['UserTag'] = {
         $(".GM_UserTag").on("click", function (event) {
             var username = $(this).attr("id");
             var oldTag = $(this).text();
-            var newTag = prompt("Tag for " + username, oldTag !== "+" ? oldTag : "").replace(/[:,]/g, "-") || "";
-            if (newTag.length > 0) {
-                if (oldTag !== "+") {
-                    UpdateTag(username, newTag);
-                } else {
-                    SetTag(username, newTag);
-                }
-            }
-            else if (newTag.length == 0) {
-                if (oldTag != "+") {
-                    RemoveTag(username);
-                }
-                newTag = "+";
-            }
-            $(this).text(newTag);
-            UpdateUserTag(username, newTag);
+            //var newTag = prompt("Tag for " + username, oldTag !== "+" ? oldTag : "").replace(/[:,]/g, "-") || "";
+            
+            $("div#UserTagHeader > span#username").text(username);
 
-            event.stopPropagation();
+            var position = $(this).offset();
+            position.top += 20;
+            $("#UserTagBox").css(position);
+            $("#UserTagBox").show();
+            //if tag exist insert it
+            //Same for color, ignore and vote balance
+            //  Else: insert default values
+
+            //if (newTag.length > 0) {
+            //    if (oldTag !== "+") {
+            //        UpdateTag(username, newTag);
+            //    } else {
+            //        SetTag(username, newTag);
+            //    }
+            //}
+            //else if (newTag.length == 0) {
+            //    if (oldTag != "+") {
+            //        RemoveTag(username);
+            //    }
+            //    newTag = "+";
+            //}
+            //$(this).text(newTag);
+            //UpdateUserTag(username, newTag);
+
+            //event.stopPropagation();
         });
     },
 
@@ -136,6 +254,12 @@ AVE.Modules['UserTag'] = {
         });
     },
 
+    //this.usertags is now an array of tag object
+    // {username : UserTagObj}, {username : UserTagObj}
+    //https://stackoverflow.com/questions/9273157/javascript-how-to-get-index-of-an-object-in-an-associative-array
+    //$.each(_map, function(key, value) {
+    //});
+
     RemoveTag: function (userName) {
         var self = AVE.Modules['UserTag'];
         userName = userName.toLowerCase();
@@ -145,7 +269,7 @@ AVE.Modules['UserTag'] = {
             alert("AVE: RemoveTag -> couldn't find user " + userName + ".");
             return true;
         }
-        usertags.splice(idx, 1);
+        usertags.splice(idx, 1); //remove()
 
         self.usertags = usertags.join(",");
         self.Store.SetValue(self.StorageName, this.usertags);
