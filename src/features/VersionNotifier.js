@@ -23,29 +23,29 @@ AVE.Modules['VersionNotifier'] = {
     },
     
     SavePref: function (POST) {
-        var self = AVE.Modules['VersionNotifier'];
+        var _this = AVE.Modules['VersionNotifier'];
 
-        self.Store.SetValue(self.Store.Prefix + self.ID, JSON.stringify(POST[self.ID]));
+        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
     SetOptionsFromPref: function () {
-        var self = this;
-        var Opt = self.Store.GetValue(self.Store.Prefix + self.ID);
+        var _this = this;
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
-        if (Opt !== null) {
+        if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                self.Options[key].Value = value;
+                _this.Options[key].Value = value;
             });
         }
-        self.Enabled = self.Options.Enabled.Value;
+        _this.Enabled = _this.Options.Enabled.Value;
     },
 
     Load: function () {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
-        this.Enabled = self.Enabled && GM_getValue(this.Store.Prefix + this.ID + "_Version") !== GM_info.script.version;
+        this.Enabled = this.Enabled && this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") !== GM_info.script.version;
 
         if (this.Enabled) {
             this.Start();
@@ -121,7 +121,7 @@ AVE.Modules['VersionNotifier'] = {
     },
 
     Listeners: function () {
-        var self = AVE.Modules['VersionNotifier'];
+        var _this = AVE.Modules['VersionNotifier'];
         var ChangeLog = this.ChangeLog;
         var VersionBox = $(".VersionBox");
 
@@ -133,8 +133,7 @@ AVE.Modules['VersionNotifier'] = {
             ChangeLogHTML += '</textarea>';
             $(this).remove();
             $(ChangeLogHTML).insertAfter(VersionBox.find("p.VersionBoxInfo"));
-
-
+            
             $("textarea.VersionBoxText").animate({
                 height: "370px",
             }, 1000);
@@ -145,7 +144,7 @@ AVE.Modules['VersionNotifier'] = {
         });
         $("div.VersionBoxClose").on("click", function () {
             VersionBox.hide("slow");
-            self.Store.SetValue(self.Store.Prefix + self.ID + "_Version", GM_info.script.version);
+            _this.Store.SetValue(_this.Store.Prefix + _this.ID + "_Version", GM_info.script.version);
         });
     },
     //When re-enabled via the pref manager, make it display next page-load. (Set value as '')

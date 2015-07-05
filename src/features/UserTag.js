@@ -20,7 +20,7 @@ AVE.Modules['UserTag'] = {
             Value: true,
         },
     },
-    //Issue with the fact that the username in the profil overview is in lower case
+    //Possible issues with the fact that the username in the profil overview is in lower case
     UserTagObj: function (tag, colour, ignored, balance) {
         this.tag = tag.toString();
         this.colour = colour;
@@ -29,22 +29,23 @@ AVE.Modules['UserTag'] = {
     },
 
     SavePref: function (POST) {
-        var self = AVE.Modules['UserTag'];
+        var _this = AVE.Modules['UserTag'];
+        //alert(JSON.stringify(this));
 
-        self.Store.SetValue(self.Store.Prefix + self.ID, JSON.stringify(POST[self.ID]));
+        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
     SetOptionsFromPref: function () {
-        var self = this;
-        var Opt = self.Store.GetValue(self.Store.Prefix + self.ID);
+        var _this = AVE.Modules['UserTag'];
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
-        if (Opt !== null) {
+        if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                self.Options[key].Value = value;
+                _this.Options[key].Value = value;
             });
         }
-        self.Enabled = self.Options.Enabled.Value;
+        _this.Enabled = _this.Options.Enabled.Value;
     },
 
     Load: function () {
@@ -87,12 +88,10 @@ tr#ShowPreview > td > span#PreviewBox {\
     display: inline-block;\
     max-width: 130px;\
     overflow: hidden;\
-    vertical-align: middle;\
     text-overflow: ellipsis;\
-    padding-left:4px;\
-    padding-right:4px;\
-    border:1px solid gray;\
-    border-radius:4px;\
+    padding: 0px 4px;\
+    border:1px solid #FFF;\
+    border-radius:3px;\
 }\
 table#formTable{\
     border-collapse: separate;\
@@ -138,6 +137,11 @@ table#formTable{\
     </div>\
 </div>';
             this.StorageName = this.Store.Prefix + this.ID + "_Tags";
+
+            //alert(this.StorageName)
+            //alert(this.Store.GetValue(this.StorageName, "{}"))
+            //this.Store.DeleteValue(this.StorageName);
+
             this.usertags = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
             this.Start();
         }
@@ -151,7 +155,7 @@ table#formTable{\
         if ($.inArray(AVE.Utils.currentPageType, ["user", "user-comments", "user-submissions"]) >= 0) {
             name = $(".alert-title").text().split(" ")[3].replace(".", "").toLowerCase();
             tag = this.GetTag(name);
-            Tag_html = '<span style="background-color:"' + tag.colour + ';border:1px solid gray;border-radius:4px" class="GM_UserTag" id="' + name + '">' + (!tag.tag ? "+" : tag.tag) + '</span>';
+            Tag_html = '<span style="background-color:"' + tag.colour + ';border:1px solid #FFF;border-radius:3px;font-size:10px;" class="AVE_UserTag" id="' + name + '">' + (!tag.tag ? "+" : tag.tag) + '</span>';
             $(".alert-title").html("Profile overview for " + name + Tag_html + ".");
         }
     },
@@ -161,24 +165,23 @@ table#formTable{\
     },
 
     AppendToPage: function () {
-        var self = AVE.Modules['UserTag'];
+        var _this = AVE.Modules['UserTag'];
         var Tag_html, name, tag;
         //All mention of an username as a link.
         var sel = /\/user\/[^/]*\/?$/i;
 
         $("a[href*='/user/']").each(function () {
             if (!$(this).attr('href').match(sel)) { return true; } //useful?
-            //if ($(this).parent().find("span.AVE_UserTag").length > 0) { return; } //don't add if it already exists
+            if ($(this).parent().find("span.AVE_UserTag").length > 0) { return true; } //don't add if it already exists
             if ($(this).parents("div#header-account").length > 0) { return true; } //don't add if it the userpage link in the account header
-            //if ($(this).attr('href').split("/")[2].toLowerCase() != name) { return true; } //don't add if this is a link whose label isn't the username
 
             name = $(this).html().replace("@", "").replace("/u/", "").toLowerCase(); //Accepts: Username, @Username, /u/Username
-            tag = self.GetTag(name);
-            if (tag == false) {
-                return true;
-            }
 
-            Tag_html = '<span class="AVE_UserTag" id="' + name + '" style="cursor:pointer;margin-left:4px;padding: 0px 4px;border:1px solid gray;border-radius:4px;">' + (!tag.tag ? "+" : tag.tag) + '</span>';
+            if ($(this).attr('href').split("/")[2].toLowerCase() != name) { return true; } //don't add if this is a link whose label isn't the username
+
+            tag = _this.GetTag(name) || new _this.UserTagObj("", "#d1d1d1", false, 0);
+
+            Tag_html = '<span class="AVE_UserTag" id="' + name + '" style="cursor:pointer;margin-left:4px;padding: 0px 4px;border:1px solid #FFF;border-radius:3px;font-size:10px;">' + (!tag.tag ? "+" : tag.tag) + '</span>';
             if (tag.balance != 0) {
                 var sign = tag.balance > 0 ? "+" : "";
                 Tag_html += '<span class="AVE_UserBalance" id="' + name + '" style="padding: 0px 4px;font-size: 10px;">[ ' + sign + tag.balance + ' ]</span>';
@@ -198,8 +201,8 @@ table#formTable{\
             $(this).parent().find(".AVE_UserTag").css("color", AVE.Utils.GetBestFontColour(r, g, b));
         });
 
-        $("<style></style>").appendTo("head").html(self.style);
-        $(self.html).appendTo("body");
+        $("<style></style>").appendTo("head").html(_this.style);
+        $(_this.html).appendTo("body");
         $("#UserTagBox").hide();
 
         //Close button
@@ -235,14 +238,14 @@ table#formTable{\
             if (isNaN(opt.balance)) { opt.balance = 0;}
 
             if (opt.tag.length > 0) {
-                self.SetTag(opt);
+                _this.SetTag(opt);
             }
             else if (opt.tag.length == 0) {
-                self.RemoveTag(opt.username);
+                _this.RemoveTag(opt.username);
                 opt.tag = "+";
             }
 
-            self.UpdateUserTag(opt);
+            _this.UpdateUserTag(opt);
 
             ; $("#UserTagBox").hide();
         });
@@ -258,14 +261,14 @@ table#formTable{\
     },
 
     Listeners: function () {
-        var self = AVE.Modules['UserTag'];
+        var _this = AVE.Modules['UserTag'];
 
         $(".AVE_UserTag").off("click");
         $(".AVE_UserTag").on("click", function () {
             var username = $(this).attr("id").toLowerCase();
             var oldTag = $(this).text();
 
-            var usertag = self.usertags[username];
+            var usertag = _this.usertags[username];
 
             var position = $(this).offset();
             position.top += 20;
@@ -286,6 +289,50 @@ table#formTable{\
             $("tr#SetTag > td > input.UserTagTextInput").focus();
             $("tr#SetTag > td > input.UserTagTextInput").select();
         });
+
+        $("div[class*='midcol']").OnAttrChange(function (e) {//persistent with UpdateAfterLoadingMore?
+            if (!e.oldValue || e.oldValue.split(" ").length != 2) { return true; }
+
+            _this.ChangeVoteBalance(e.target, e.oldValue);
+        });
+    },
+
+    //Because the .click JQuery event triggered by the shortkeys in ShortKeys.js triggers an OnAttrChange with false mutation values (oldValue, attributeName),
+    //      we use a second function that keypresses in ShortKeys.js can invoke directly.
+    // Ten mimutes later it works perfectly well. Maybe, voat's current instability is to blame. I'm not changing it back, anyway...
+    ChangeVoteBalance: function (target, oldValue) {
+        var _this = AVE.Modules['UserTag'];
+
+        //print("target: "+target);
+        //print("oldvalue: "+oldValue);
+        //print("newvalue: "+$(target).attr('class'));
+
+        var username = $(target).parent().find(".AVE_UserTag").attr("id").toLowerCase();
+        if (username == undefined) { return true; }
+
+        var tag = _this.GetTag(username);
+        var opt = { username: username, tag: tag.tag || "", colour: tag.colour || "#d1d1d1", ignore: tag.ignore || false, balance: tag.balance || 0 };
+
+        //If the previous status was "unvoted"
+        if (oldValue == "midcol unvoted") {
+            if ($(target).hasClass('likes')) { opt.balance += 1; }
+            else if ($(target).hasClass('dislikes')) { opt.balance -= 1; }
+        }
+        else {
+            //If the previous status was "upvoted"
+            if (oldValue == "midcol likes") {
+                if ($(target).hasClass('unvoted')) { opt.balance -= 1; }
+                else if ($(target).hasClass('dislikes')) { opt.balance -= 2; }
+            }
+                //If the previous status was "downvoted"
+            else if (oldValue == "midcol dislikes") {
+                if ($(target).hasClass('likes')) { opt.balance += 2; }
+                else if ($(target).hasClass('unvoted')) { opt.balance += 1; }
+            }
+        }
+
+        _this.SetTag(opt);
+        _this.UpdateUserTag(opt);
     },
 
     UpdateUserTag: function (tag) {
@@ -302,7 +349,7 @@ table#formTable{\
             $(this).css("color", AVE.Utils.GetBestFontColour(r, g, b));
 
             if (tag.balance != 0) {
-                var sign = tag.balance > 0 ? "+" : "-";
+                var sign = tag.balance > 0 ? "+" : "";
                 $(this).parent().find("span.AVE_UserBalance").text('[ ' + sign + tag.balance + ' ]');
             } else {
                 $(this).parent().find("span.AVE_UserBalance").text("");
@@ -311,22 +358,22 @@ table#formTable{\
     },
 
     RemoveTag: function (opt) {
-        var self = AVE.Modules['UserTag'];
-        delete self.usertags[opt.username];
+        var _this = AVE.Modules['UserTag'];
+        delete _this.usertags[opt.username];
 
-        self.Store.SetValue(self.StorageName, JSON.stringify(self.usertags));
+        _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.usertags));
     },
 
     SetTag: function (opt) {
-        var self = AVE.Modules['UserTag'];
-        self.usertags[opt.username] = new self.UserTagObj(opt.tag, opt.colour, opt.ignore, opt.balance);
+        var _this = AVE.Modules['UserTag'];
+        _this.usertags[opt.username] = new _this.UserTagObj(opt.tag, opt.colour, opt.ignore, opt.balance);
 
-        self.Store.SetValue(self.StorageName, JSON.stringify(self.usertags));
+        _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.usertags));
     },
 
     GetTag: function (userName) {
-        var self = AVE.Modules['UserTag'];
-        return self.usertags[userName] || false;
+        var _this = AVE.Modules['UserTag'];
+        return _this.usertags[userName] || false;
     },
 
     GetTagCount: function () {

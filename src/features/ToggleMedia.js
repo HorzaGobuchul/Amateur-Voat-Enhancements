@@ -16,7 +16,7 @@ AVE.Modules['ToggleMedia'] = {
         },
         MediaTypes: {
             Type: 'string',
-            Value: "110", // Images, Videos, Self-Texts
+            Value: "110", // Images, Videos, self-Texts
         },
         ToggleInSidebar: {
             Desc: 'Also toggle Media present in the sidebar of the subverse.',
@@ -28,32 +28,33 @@ AVE.Modules['ToggleMedia'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var self = AVE.Modules['ToggleMedia'];
-        POST = POST[self.ID];
+        var _this = AVE.Modules['ToggleMedia'];
+        POST = POST[_this.ID];
         var opt = {};
         opt.Enabled = POST.Enabled;
-        opt.MediaTypes = (POST.Images ? "1" : "0") + (POST.Videos ? "1" : "0") + (POST["Self-texts"] ? "1" : "0")
+        opt.MediaTypes = (POST.Images ? "1" : "0") + (POST.Videos ? "1" : "0") + (POST["self-texts"] ? "1" : "0")
         opt.ToggleInSidebar = POST.ToggleInSidebar;
 
         //Add ToggleInSidebar
-        self.Store.SetValue(self.Store.Prefix + self.ID, JSON.stringify(opt));
+        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(opt));
     },
 
     ResetPref: function () {
-        var self = AVE.Modules['ToggleMedia'];
-        self.Options = JSON.parse(self.OriginalOptions);
+        var _this = AVE.Modules['ToggleMedia'];
+        _this.Options = JSON.parse(_this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
-        var self = this;
-        var Opt = self.Store.GetValue(self.Store.Prefix + self.ID);
-        if (Opt !== null) {
+        var _this = this;
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
+
+        if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                self.Options[key].Value = value;
+                _this.Options[key].Value = value;
             });
         }
-        self.Enabled = self.Options.Enabled.Value;
+        _this.Enabled = _this.Options.Enabled.Value;
     },
 
     Load: function () {
@@ -135,9 +136,9 @@ AVE.Modules['ToggleMedia'] = {
 
     AppendToPreferenceManager: {
         html: function () {
-            var self = AVE.Modules['ToggleMedia']
-            var mediaTypes = ["Images", "Videos", "Self-texts"];
-            var value = self.Options.MediaTypes.Value;
+            var _this = AVE.Modules['ToggleMedia']
+            var mediaTypes = ["Images", "Videos", "self-texts"];
+            var value = _this.Options.MediaTypes.Value;
             var htmlString = '<div style="margin-left:30px;padding:5px 0 0 5px;border-left:2px solid #' + (AVE.Utils.CSSstyle == "dark" ? "222" : "DDD") + ';">';
             for (var i in mediaTypes) {
                 htmlString += '<span style="margin-right:20px;" >' +
@@ -146,8 +147,8 @@ AVE.Modules['ToggleMedia'] = {
                                '</span>';
             }
             //ToggleInSidebar
-            htmlString += '<br /><input ' + (self.Options.ToggleInSidebar.Value ? 'checked="checked"' : '') + ' id="ToggleInSidebar" name="ToggleInSidebar" type="checkbox"></input>' +
-            '<label for="ToggleInSidebar">' + self.Options.ToggleInSidebar.Desc + '</label>';
+            htmlString += '<br /><input ' + (_this.Options.ToggleInSidebar.Value ? 'checked="checked"' : '') + ' id="ToggleInSidebar" name="ToggleInSidebar" type="checkbox"></input>' +
+            '<label for="ToggleInSidebar">' + _this.Options.ToggleInSidebar.Desc + '</label>';
 
             return htmlString+'</div>';
         },

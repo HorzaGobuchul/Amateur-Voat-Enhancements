@@ -26,27 +26,27 @@ AVE.Modules['ShortcutKeys'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var self = AVE.Modules['ShortcutKeys'];
+        var _this = AVE.Modules['ShortcutKeys'];
 
-        self.Store.SetValue(self.Store.Prefix + self.ID, JSON.stringify(POST[self.ID]));
+        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
     ResetPref: function () {
-        var self = AVE.Modules['ShortcutKeys'];
-        self.Options = JSON.parse(self.OriginalOptions);
+        var _this = AVE.Modules['ShortcutKeys'];
+        _this.Options = JSON.parse(_this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
-        var self = this;
-        var Opt = self.Store.GetValue(self.Store.Prefix + self.ID);
+        var _this = this;
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
-        if (Opt !== null) {
+        if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                self.Options[key].Value = value;
+                _this.Options[key].Value = value;
             });
         }
-        self.Enabled = self.Options.Enabled.Value;
+        _this.Enabled = _this.Options.Enabled.Value;
     },
 
     Load: function () {
@@ -68,9 +68,16 @@ AVE.Modules['ShortcutKeys'] = {
 
             if (AVE.Utils.SelectedPost != undefined) {
                 if (event.key.toUpperCase() == up.toUpperCase()) { // upvote
-                    AVE.Utils.SelectedPost.parent().find(".midcol").find("div[aria-label='upvote']").first().click();
+                    //if (AVE.Modules['UserTag']) {
+                    //    AVE.Modules['UserTag'].ChangeVoteBalance(AVE.Utils.SelectedPost.parent().find(".midcol"), AVE.Utils.SelectedPost.parent().find(".midcol").attr("class"));
+                    //    print("src: " + AVE.Utils.SelectedPost.parent().find(".midcol").attr("class"));
+                    //}
+                    AVE.Utils.SelectedPost.parent().find(".midcol").find("div[aria-label='upvote']").triggerHandler("click", ["Custom", "Event"]);
                     }
                 else if (event.key.toUpperCase() == down.toUpperCase()) { // downvote
+                    if (AVE.Modules['UserTag']) {
+                        AVE.Modules['UserTag'].ChangeVoteBalance(AVE.Utils.SelectedPost.parent().find(".midcol"), AVE.Utils.SelectedPost.parent().find(".midcol").attr("class"));
+                    }
                     AVE.Utils.SelectedPost.parent().find(".midcol").find("div[aria-label='downvote']").first().click();
                 }
             }
@@ -79,10 +86,10 @@ AVE.Modules['ShortcutKeys'] = {
 
     AppendToPreferenceManager: {
         html: function () {
-            var self = AVE.Modules['ShortcutKeys'];
+            var _this = AVE.Modules['ShortcutKeys'];
             var htmlStr = "";
-            htmlStr += 'Upvote key: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="UpvoteKey" value="' + self.Options.UpvoteKey.Value + '"></input>';
-            htmlStr += ' &nbsp; Downvote key: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="DownvoteKey" value="' + self.Options.DownvoteKey.Value + '"></input>';
+            htmlStr += 'Upvote key: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="UpvoteKey" value="' + _this.Options.UpvoteKey.Value + '"></input>';
+            htmlStr += ' &nbsp; Downvote key: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="DownvoteKey" value="' + _this.Options.DownvoteKey.Value + '"></input>';
             return htmlStr;
         },
     },

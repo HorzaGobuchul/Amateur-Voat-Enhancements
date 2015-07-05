@@ -18,7 +18,7 @@ AVE.Modules['BackCompatibility'] = {
     Migrate: function (type) {
         if (type == "shortcuts") {
             if (GM_getValue("Voat_Subverses") == undefined) { return;}
-            self.Store.SetValue(AVE.Modules['Shortcuts'].StorageName, GM_getValue("Voat_Subverses"));
+            _this.Store.SetValue(AVE.Modules['Shortcuts'].StorageName, GM_getValue("Voat_Subverses"));
         } else if (type == "usertags") {
             if (GM_getValue("Voat_Tags") == undefined) { return; }
             var tags = GM_getValue("Voat_Tags").split(",");
@@ -35,7 +35,7 @@ AVE.Modules['BackCompatibility'] = {
     },
 
     DeleteOldData: function () {
-        var prefNames = ["Voat_Subverses", "Voat_Tags", "Images", "Videos", "Self-texts", "MediaTypes", "ShowVersionChangeNotification"];
+        var prefNames = ["Voat_Subverses", "Voat_Tags", "Images", "Videos", "_this-texts", "MediaTypes", "ShowVersionChangeNotification"];
         $.each(prefNames, function (value) {
             if (GM_getValue(prefNames[value]) != undefined) {
                 GM_deleteValue(prefNames[value]);
@@ -54,7 +54,7 @@ AVE.Modules['BackCompatibility'] = {
             ret[1] = GM_getValue("Voat_Tags").split(",").length;
         }
 
-        var prefNames = ["Images", "Videos", "Self-texts", "MediaTypes", "ShowVersionChangeNotification"];
+        var prefNames = ["Images", "Videos", "_this-texts", "MediaTypes", "ShowVersionChangeNotification"];
         $.each(prefNames, function (value) {
             if (GM_getValue(prefNames[value]) != undefined) {
                 ret++;
@@ -66,8 +66,8 @@ AVE.Modules['BackCompatibility'] = {
 
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager
         html: function () {
-            var self = AVE.Modules['BackCompatibility'];
-            var s = self.GetV1DataStat();
+            var _this = AVE.Modules['BackCompatibility'];
+            var s = _this.GetV1DataStat();
             var htmlStr = "";
             htmlStr += '<p>You have, stored from V1:<br />&nbsp;&nbsp;<b>' + s[0] + '</b> subverses/sets as your custom shortcuts.<br />&nbsp;&nbsp;<b>' + s[1] + '</b> tagged users.<br />&nbsp;&nbsp;<b>' + s[2] + '</b> module preferences.</p>';
 
@@ -76,12 +76,12 @@ AVE.Modules['BackCompatibility'] = {
             return htmlStr;
         },
         callback: function () {
-            var self = AVE.Modules['BackCompatibility'];
+            var _this = AVE.Modules['BackCompatibility'];
             $("input#MigrateV1Data").on("click", function () {
-                self.Migrate($(this).attr("module"));
+                _this.Migrate($(this).attr("module"));
             });
             $("input#ClearAllV1Data").on("click", function () {
-                self.DeleteOldData();
+                _this.DeleteOldData();
             });
         },
     },

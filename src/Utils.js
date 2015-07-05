@@ -82,13 +82,14 @@ AVE.Utils = {
         if (MutationObserver) {
             var options = {
                 attributes: true,
+                attributeOldValue: true,
             };
 
             //https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationRecord
             var observer = new MutationObserver(function (mutations) {
                 mutations.forEach(function (e) {
                     if (e.attributeName != null) {
-                        callback.call(e.target);
+                        callback.call(e.target, e);
                     }
                 });
             });

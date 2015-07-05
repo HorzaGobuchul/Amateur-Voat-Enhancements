@@ -13,19 +13,19 @@ AVE.Modules['PreferenceManager'] = {
     },
 
     SavePref: function (POST) {
-        var self = AVE.Modules['PreferenceManager'];
+        var _this = AVE.Modules['PreferenceManager'];
 
-        self.Store.SetValue(self.Store.Prefix + self.ID, JSON.stringify(POST[self.ID]));
+        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
     SetOptionsFromPref: function () {
-        var self = this;
-        var Opt = self.Store.GetValue(self.Store.Prefix + self.ID);
+        var _this = this;
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
-        if (Opt !== null) {
+        if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                self.Options[key].Value = value;
+                _this.Options[key].Value = value;
             });
         }
     },
@@ -36,7 +36,7 @@ AVE.Modules['PreferenceManager'] = {
     },
 
     Start: function () {
-        var self = this;
+        var _this = this;
         this.MngWinStyle = '\
             div.overlay{\
                 z-index: 1000 !important;\
@@ -181,8 +181,8 @@ AVE.Modules['PreferenceManager'] = {
             </div>',
 
         $.each(AVE.Modules, function () {
-            if ($.inArray(this.ID, self.Modules) === -1) {
-                self.Modules.push(this.ID);
+            if ($.inArray(this.ID, _this.Modules) === -1) {
+                _this.Modules.push(this.ID);
             }
         });
         this.Modules.sort();
@@ -190,7 +190,7 @@ AVE.Modules['PreferenceManager'] = {
         this.AppendToPage();
         this.Listeners();
 
-        //self.BuildManager(); //If uncommented, it is processed before some module can load their own pref from the local storage
+        //_this.BuildManager(); //If uncommented, it is processed before some module can load their own pref from the local storage
     },
 
     MngWinStyle: '',
@@ -208,25 +208,25 @@ AVE.Modules['PreferenceManager'] = {
     },
 
     Listeners: function () {
-        var self = this;
+        var _this = this;
         $("a[title='AVE_Manager']").on("click", function () {
             if ($(".MngrWin").length > 0) {
                 $(".MngrWin").slideDown();
             }
-            else { self.BuildManager(); }
+            else { _this.BuildManager(); }
 
             $(".overlay").slideDown();
         });
     },
 
     BuildManager: function () {
-        var self = AVE.Modules['PreferenceManager'];
-        var MngWinHTML = self.MngWinHTML.replace('@{version}', GM_info.script.version);
+        var _this = AVE.Modules['PreferenceManager'];
+        var MngWinHTML = _this.MngWinHTML.replace('@{version}', GM_info.script.version);
         $(MngWinHTML).appendTo("body");//only .show() if exists already
         $(".MngrWin").hide();
         $(".MngrWin").slideDown();
 
-        $.each(self.Categories, function () {
+        $.each(_this.Categories, function () {
             //Make it into a function to be used more easily by the reset function
             var cat = this;
             //Create category togglers
@@ -238,11 +238,11 @@ AVE.Modules['PreferenceManager'] = {
             var module;
             var enabled;
             var alwaysEnabled;
-            $.each(self.Modules, function () {
+            $.each(_this.Modules, function () {
                 module = AVE.Modules[this];
                 if (module.Category != cat) { return; }
 
-                self.AddModule(module, cat);
+                _this.AddModule(module, cat);
             });
         });
 
@@ -271,7 +271,7 @@ AVE.Modules['PreferenceManager'] = {
         //Save Data
         $("div.MngrWin > div.MngWinHeader > div.TopButtons > a#SaveData").on("click", function () {
             var input;
-            $.each(self.Categories, function () {
+            $.each(_this.Categories, function () {
                 moduleForms = $("form[cat='" + this + "'] > div.ModuleBlock");
                 
                 moduleForms.each(function () {
@@ -317,7 +317,7 @@ AVE.Modules['PreferenceManager'] = {
     },
 
     AddModule: function (module, cat, pos) {
-        var self = AVE.Modules['PreferenceManager'];
+        var _this = AVE.Modules['PreferenceManager'];
         if (module.Options.Enabled != undefined) {
             enabled = module.Options.Enabled.Value;
             alwaysEnabled = false;
@@ -366,8 +366,8 @@ AVE.Modules['PreferenceManager'] = {
 
                 $(this).parents(".ModuleBlock:first").remove();
                 AVE.Modules[ID].ResetPref();
-                //self.SaveModule(ID);
-                self.AddModule(AVE.Modules[ID], category, position);
+                //_this.SaveModule(ID);
+                _this.AddModule(AVE.Modules[ID], category, position);
             });
         }
 

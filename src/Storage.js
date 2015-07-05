@@ -6,8 +6,21 @@ AVE.Storage = {
         } catch (e) { return false;}
     },
 
+    //localStorage: window.localStorage,
+
+    Persistence: function(){
+        var val = { GM: "", LS: "" };
+        //val.GM = GM_setValue("GM_Persistence", "true")
+        //val.LS = this.SetValue("LS_Persistence", "true")
+
+        val.GM = GM_getValue("GM_Persistence", "null")
+        val.LS = this.GetValue("LS_Persistence", "null")
+        return val;
+    },
+
     GetValue: function (key, def) {
-        var val = localStorage.getItem(key);
+        //var val = localStorage.getItem(key);
+        var val = GM_getValue(key);
         if (val == undefined) {
             if (def == undefined) {
                 return null;
@@ -16,23 +29,17 @@ AVE.Storage = {
     },
 
     SetValue: function (key, val) {
-        localStorage.setItem(key, val);
+        var val = GM_setValue(key, val);
+        //localStorage.setItem(key, val);
     },
 
     DeleteValue: function (key) {
-        localStorage.removeItem(key);
-    },
-
-    ExportToXml: function () {
-        return 'Not Implemented Yet';
+        var val = GM_deleteValue(key);
+        //localStorage.removeItem(key);
     },
 
     ExportToJSON: function () {
         //Get options from all modules
-        return 'Not Implemented Yet';
-    },
-
-    ImportToXml: function () {
         return 'Not Implemented Yet';
     },
 

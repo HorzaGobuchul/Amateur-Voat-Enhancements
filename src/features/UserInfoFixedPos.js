@@ -17,22 +17,22 @@ AVE.Modules['UserInfoFixedPos'] = {
     },
 
     SavePref: function (POST) {
-        var self = AVE.Modules['UserInfoFixedPos'];
+        var _this = AVE.Modules['UserInfoFixedPos'];
 
-        self.Store.SetValue(self.Store.Prefix + self.ID, JSON.stringify(POST[self.ID]));
+        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
     SetOptionsFromPref: function () {
-        var self = this;
-        var Opt = self.Store.GetValue(self.Store.Prefix + self.ID);
+        var _this = this;
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
-        if (Opt !== null) {
+        if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                self.Options[key].Value = value;
+                _this.Options[key].Value = value;
             });
         }
-        self.Enabled = self.Options.Enabled.Value;
+        _this.Enabled = _this.Options.Enabled.Value;
     },
 
     Load: function () {
