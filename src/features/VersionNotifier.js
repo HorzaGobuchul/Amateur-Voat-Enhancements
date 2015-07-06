@@ -10,42 +10,12 @@ AVE.Modules['VersionNotifier'] = {
     Store: {},
 
     Options: {
-        Enabled: {
-            Type: 'boolean',
-            Value: true,
-        },
-        CurrentVersion: {
-            //When disabled by prefManager, set this as ""
-            //  Through a hidden and empty text input
-            Type: 'string',
-            Value: "",
-        },
-    },
-    
-    SavePref: function (POST) {
-        var _this = AVE.Modules['VersionNotifier'];
-
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
-    },
-
-    SetOptionsFromPref: function () {
-        var _this = this;
-        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
-
-        if (Opt != undefined) {
-            Opt = JSON.parse(Opt);
-            $.each(Opt, function (key, value) {
-                _this.Options[key].Value = value;
-            });
-        }
-        _this.Enabled = _this.Options.Enabled.Value;
     },
 
     Load: function () {
         this.Store = AVE.Storage;
-        this.SetOptionsFromPref();
 
-        this.Enabled = this.Enabled && this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") !== GM_info.script.version;
+        this.Enabled = this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") !== GM_info.script.version;
 
         if (this.Enabled) {
             this.Start();

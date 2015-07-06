@@ -19,8 +19,8 @@ AVE.Utils = {
 
     Page: function () {
         var RegExpTypes = {
-            frontpage: /voat.co\/?$/i,
-            subverse: /voat.co\/v\/[a-z]*\/?$/i,
+            frontpage: /voat.co\/?(\?page=[0-9]*)?$/i,
+            subverse: /voat.co\/v\/[a-z]*\/?(\?page=[0-9]*)?/i,
             thread: /voat.co\/v\/[a-z]*\/comments\/\d*/i,
             subverses: /voat.co\/subverses/i,
             set: /voat.co\/set\/\d*/i,

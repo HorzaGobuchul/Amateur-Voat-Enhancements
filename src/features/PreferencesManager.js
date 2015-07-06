@@ -211,11 +211,10 @@ AVE.Modules['PreferenceManager'] = {
         var _this = this;
         $("a[title='AVE_Manager']").on("click", function () {
             if ($(".MngrWin").length > 0) {
-                $(".MngrWin").slideDown();
+                $(".MngrWin").show();
             }
             else { _this.BuildManager(); }
-
-            $(".overlay").slideDown();
+            $(".overlay").show();
         });
     },
 
@@ -223,8 +222,7 @@ AVE.Modules['PreferenceManager'] = {
         var _this = AVE.Modules['PreferenceManager'];
         var MngWinHTML = _this.MngWinHTML.replace('@{version}', GM_info.script.version);
         $(MngWinHTML).appendTo("body");//only .show() if exists already
-        $(".MngrWin").hide();
-        $(".MngrWin").slideDown();
+        $(".MngrWin").show();
 
         $.each(_this.Categories, function () {
             //Make it into a function to be used more easily by the reset function
@@ -238,6 +236,7 @@ AVE.Modules['PreferenceManager'] = {
             var module;
             var enabled;
             var alwaysEnabled;
+            
             $.each(_this.Modules, function () {
                 module = AVE.Modules[this];
                 if (module.Category != cat) { return; }
@@ -263,8 +262,8 @@ AVE.Modules['PreferenceManager'] = {
         $("div.ModuleToggle:first").click();
 
         $("#CloseWinMngr").on("click", function (event) {
-            $(".MngrWin").slideUp();
-            $(".overlay").slideUp();
+            $(".MngrWin").hide();
+            $(".overlay").hide();
 
             event.stopPropagation();
         });
@@ -318,6 +317,7 @@ AVE.Modules['PreferenceManager'] = {
 
     AddModule: function (module, cat, pos) {
         var _this = AVE.Modules['PreferenceManager'];
+
         if (module.Options.Enabled != undefined) {
             enabled = module.Options.Enabled.Value;
             alwaysEnabled = false;

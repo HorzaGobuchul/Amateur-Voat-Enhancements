@@ -10,7 +10,7 @@ AVE.Modules['UserTag'] = {
     Store: {},
 
     StorageName: "",
-    usertags: "",
+    usertags: {},
     style: "",
     html: "",
 
@@ -25,12 +25,11 @@ AVE.Modules['UserTag'] = {
         this.tag = tag.toString();
         this.colour = colour;
         this.ignored = (typeof ignored === "boolean" ? ignored : false);
-        this.balance = (typeof balance === "number" ? (!isNaN(balance) ? balance : 0) : 0);
+        this.balance = (typeof balance === "number" ? balance : 0);
     },
 
     SavePref: function (POST) {
         var _this = AVE.Modules['UserTag'];
-        //alert(JSON.stringify(this));
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
@@ -39,12 +38,11 @@ AVE.Modules['UserTag'] = {
         var _this = AVE.Modules['UserTag'];
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
-        if (Opt != undefined) {
-            Opt = JSON.parse(Opt);
-            $.each(Opt, function (key, value) {
-                _this.Options[key].Value = value;
-            });
-        }
+        Opt = JSON.parse(Opt);
+        $.each(Opt, function (key, value) {
+            _this.Options[key].Value = value;
+        });
+
         _this.Enabled = _this.Options.Enabled.Value;
     },
 
@@ -55,19 +53,20 @@ AVE.Modules['UserTag'] = {
         if (this.Enabled) {
             this.style = '\
 div#UserTagBox{\
-    background-color: #333;\
+    background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "333" : "FFF") + ';\
+    ' + (AVE.Utils.CSSstyle == "dark" ? "" : "color: #707070;") + '\
     z-index: 1000 !important;\
     position:absolute;\
     left:0px;\
     top:0px;\
-    border: 2px solid black;\
+    border: 2px solid #' + (AVE.Utils.CSSstyle == "dark" ? "000" : "D1D1D1") + ';\
     border-radius:3px;\
     width:280px;\
 }\
 div#UserTagHeader{\
     font-weight:bold;   \
     height:20px;\
-    border-bottom: 2px solid black;\
+    border-bottom: 2px solid #' + (AVE.Utils.CSSstyle == "dark" ? "000" : "D1D1D1") + ';\
     padding-left:5px;\
 }\
 div#UserTagHeader > span#username{\
@@ -78,8 +77,8 @@ div#UserTagHeader > span#username{\
     text-overflow: ellipsis;\
 }\
 input.UserTagTextInput{\
-    background-color:#292929;\
-    border: 1px solid black;\
+    background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "333" : "FFF") + ';\
+    border: 1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "000" : "D1D1D1") + ';\
     border-radius:2px;\
     height:20px;\
     padding-left:5px;\
@@ -90,7 +89,7 @@ tr#ShowPreview > td > span#PreviewBox {\
     overflow: hidden;\
     text-overflow: ellipsis;\
     padding: 0px 4px;\
-    border:1px solid #FFF;\
+    border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "484848") + ';\
     border-radius:3px;\
 }\
 table#formTable{\
@@ -137,9 +136,6 @@ table#formTable{\
     </div>\
 </div>';
             this.StorageName = this.Store.Prefix + this.ID + "_Tags";
-
-            //alert(this.StorageName)
-            //alert(this.Store.GetValue(this.StorageName, "{}"))
             //this.Store.DeleteValue(this.StorageName);
 
             this.usertags = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
@@ -152,12 +148,12 @@ table#formTable{\
         this.Listeners();
 
         //Username in userpages
-        if ($.inArray(AVE.Utils.currentPageType, ["user", "user-comments", "user-submissions"]) >= 0) {
-            name = $(".alert-title").text().split(" ")[3].replace(".", "").toLowerCase();
-            tag = this.GetTag(name);
-            Tag_html = '<span style="background-color:"' + tag.colour + ';border:1px solid #FFF;border-radius:3px;font-size:10px;" class="AVE_UserTag" id="' + name + '">' + (!tag.tag ? "+" : tag.tag) + '</span>';
-            $(".alert-title").html("Profile overview for " + name + Tag_html + ".");
-        }
+        //if ($.inArray(AVE.Utils.currentPageType, ["user", "user-comments", "user-submissions"]) >= 0) {
+        //    name = $(".alert-title").text().split(" ")[3].replace(".", "").toLowerCase();
+        //    tag = this.GetTag(name);
+        //    Tag_html = '<span style="font-weight:bold;background-color:"' + tag.colour + ';border:1px solid #FFF;border-radius:3px;font-size:10px;" class="AVE_UserTag" id="' + name + '">' + (!tag.tag ? "+" : tag.tag) + '</span>';
+        //    $(".alert-title").html("Profile overview for " + name + Tag_html + ".");
+        //}
     },
 
     Update: function () {
@@ -181,7 +177,7 @@ table#formTable{\
 
             tag = _this.GetTag(name) || new _this.UserTagObj("", "#d1d1d1", false, 0);
 
-            Tag_html = '<span class="AVE_UserTag" id="' + name + '" style="cursor:pointer;margin-left:4px;padding: 0px 4px;border:1px solid #FFF;border-radius:3px;font-size:10px;">' + (!tag.tag ? "+" : tag.tag) + '</span>';
+            Tag_html = '<span class="AVE_UserTag" id="' + name + '" style="font-weight:bold;cursor:pointer;margin-left:4px;padding: 0px 4px;border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "484848") + ';border-radius:3px;font-size:10px;">' + (!tag.tag ? "+" : tag.tag) + '</span>';
             if (tag.balance != 0) {
                 var sign = tag.balance > 0 ? "+" : "";
                 Tag_html += '<span class="AVE_UserBalance" id="' + name + '" style="padding: 0px 4px;font-size: 10px;">[ ' + sign + tag.balance + ' ]</span>';
@@ -190,15 +186,18 @@ table#formTable{\
             }
             $(Tag_html).insertAfter($(this));
 
-            var r, g, b;
-            var newColour = tag.colour;
-            //from www.javascripter.net/faq/hextorgb.htm
-            r = parseInt(newColour.substring(1, 3), 16);
-            g = parseInt(newColour.substring(3, 5), 16);
-            b = parseInt(newColour.substring(5, 7), 16);
 
-            $(this).parent().find(".AVE_UserTag").css("background-color", tag.colour);
-            $(this).parent().find(".AVE_UserTag").css("color", AVE.Utils.GetBestFontColour(r, g, b));
+            if (tag.tag) {
+                var r, g, b;
+                var newColour = tag.colour;
+                //from www.javascripter.net/faq/hextorgb.htm
+                r = parseInt(newColour.substring(1, 3), 16);
+                g = parseInt(newColour.substring(3, 5), 16);
+                b = parseInt(newColour.substring(5, 7), 16);
+
+                $(this).parent().find(".AVE_UserTag").css("background-color", tag.colour);
+                $(this).parent().find(".AVE_UserTag").css("color", AVE.Utils.GetBestFontColour(r, g, b));
+            }
         });
 
         $("<style></style>").appendTo("head").html(_this.style);
@@ -235,19 +234,18 @@ table#formTable{\
                 balance: parseInt($("tr#SetBalance > td > input#voteBalance").val(), 10),
             };
 
-            if (isNaN(opt.balance)) { opt.balance = 0;}
+            if (isNaN(opt.balance)) { opt.balance = 0; }
 
-            if (opt.tag.length > 0) {
-                _this.SetTag(opt);
-            }
-            else if (opt.tag.length == 0) {
+            if (opt.tag.length == 0 && opt.ignore == false && opt.balance == 0) {
                 _this.RemoveTag(opt.username);
                 opt.tag = "+";
+            } else {
+                _this.SetTag(opt);
             }
 
             _this.UpdateUserTag(opt);
 
-            ; $("#UserTagBox").hide();
+            $("#UserTagBox").hide();
         });
 
         //If Enter/Return is pressed while the focus is on one of the two text input, we save the tag.
@@ -256,6 +254,10 @@ table#formTable{\
                 if ($(e.target).attr("class") == "UserTagTextInput") {
                     $("tr#SetBalance > td > a#SaveTag").click();
                 }
+            }
+            if (e.which == 27 && $("#UserTagBox").is(":visible")) {
+                $("div#UserTagHeader > span > a#CloseTagWin").click();
+                $("#UserTagBox").hide();
             }
         });
     },
@@ -303,15 +305,15 @@ table#formTable{\
     ChangeVoteBalance: function (target, oldValue) {
         var _this = AVE.Modules['UserTag'];
 
-        //print("target: "+target);
-        //print("oldvalue: "+oldValue);
-        //print("newvalue: "+$(target).attr('class'));
+        print("target: "+target);
+        print("oldvalue: "+oldValue);
+        print("newvalue: "+$(target).attr('class'));
 
         var username = $(target).parent().find(".AVE_UserTag").attr("id").toLowerCase();
         if (username == undefined) { return true; }
 
         var tag = _this.GetTag(username);
-        var opt = { username: username, tag: tag.tag || "", colour: tag.colour || "#d1d1d1", ignore: tag.ignore || false, balance: tag.balance || 0 };
+        var opt = { username: username, tag: tag.tag || '', colour: tag.colour || "#d1d1d1", ignore: tag.ignore || false, balance: tag.balance || 0 };
 
         //If the previous status was "unvoted"
         if (oldValue == "midcol unvoted") {
@@ -337,16 +339,20 @@ table#formTable{\
 
     UpdateUserTag: function (tag) {
         $("span[class*='AVE_UserTag'][id*='" + tag.username + "']").each(function () {
-            $(this).text(tag.tag);
 
-            var r, g, b;
-            var newColour = tag.colour;
-            //from www.javascripter.net/faq/hextorgb.htm
-            r = parseInt(newColour.substring(1, 3), 16);
-            g = parseInt(newColour.substring(3, 5), 16);
-            b = parseInt(newColour.substring(5, 7), 16);
-            $(this).css("background-color", tag.colour);
-            $(this).css("color", AVE.Utils.GetBestFontColour(r, g, b));
+            if (tag.tag != "") {
+
+                $(this).text(tag.tag);
+                var r, g, b;
+                var newColour = tag.colour;
+                //from www.javascripter.net/faq/hextorgb.htm
+                r = parseInt(newColour.substring(1, 3), 16);
+                g = parseInt(newColour.substring(3, 5), 16);
+                b = parseInt(newColour.substring(5, 7), 16);
+
+                $(this).css("background-color", tag.colour);
+                $(this).css("color", AVE.Utils.GetBestFontColour(r, g, b));
+            }
 
             if (tag.balance != 0) {
                 var sign = tag.balance > 0 ? "+" : "";
@@ -357,9 +363,9 @@ table#formTable{\
         });
     },
 
-    RemoveTag: function (opt) {
+    RemoveTag: function (username) {
         var _this = AVE.Modules['UserTag'];
-        delete _this.usertags[opt.username];
+        delete _this.usertags[username];
 
         _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.usertags));
     },
@@ -378,5 +384,31 @@ table#formTable{\
 
     GetTagCount: function () {
         return this.usertags.length;
+    },
+
+    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+        html: function () {
+            var _this = AVE.Modules['UserTag'];
+            if (_this.Enabled) {
+                var TagLen = 0;
+                var VoteLen = 0;
+                var IgnoreLen = 0;
+                var htmlStr = "";
+
+                $.each(_this.usertags, function (key, value) {
+                    if (value.tag.length > 0) { TagLen++; }
+                    if (value.balance != 0) { VoteLen++; }
+                    if (value.ignored == true) { IgnoreLen++; }
+                });
+
+                htmlStr += '<ul style="list-style:inside circle;"><li>You have tagged ' + TagLen + ' users.</li>';
+                htmlStr += "<li>You have voted on submissions made by " + VoteLen + " users.</li>";
+                htmlStr += "<li>You have chosen to ignore " + IgnoreLen + " users.</li></ul>";
+                print(htmlStr);
+                return htmlStr;
+            }
+        },
+        callback: function () {
+        },
     },
 };

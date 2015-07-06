@@ -61,17 +61,21 @@ AVE.Modules['ReplyWithQuote'] = {
         var SelectedText = this.getSelectedText;
         var Quote = this.Quote;
 
-        $("div[class*='entry']").OnNodeChange(function (event) {
+        $("div[class*='entry']").OnNodeChange(function () {
             if (Quote == "") { return; }
             var ReplyBox = $(this).find("textarea[class='commenttextarea'][id='CommentContent']");
             if (ReplyBox.length > 0) {
                 ReplyBox.val(Quote + "\n\n");
             }
-            event.stopPropagation();
         });
 
-        $(".usertext").on("mouseup", function (event) {
+        $(".usertext").on("mouseup", function () {
             var nodes = SelectedNodes();
+
+            if (!nodes) {
+                Quote = "";
+                return;
+            }
             if ($(nodes[0]).parents(".usertext").attr("id") == undefined ||
                 $(nodes[0]).parents(".usertext").attr("id") != $(nodes[1]).parents(".usertext").attr("id")) {
                 Quote = "";
@@ -79,7 +83,7 @@ AVE.Modules['ReplyWithQuote'] = {
             }
 
             Quote = AVE.Utils.ParseQuotedText(SelectedText().toString());
-            event.stopPropagation();
+            //event.stopPropagation();
         });
     },
     getSelectedNodes: function () {

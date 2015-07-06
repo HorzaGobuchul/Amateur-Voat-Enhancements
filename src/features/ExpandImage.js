@@ -56,53 +56,51 @@ AVE.Modules['FixExpandImage'] = {
 
     Listeners: function () {
         var ImgMedia = "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']";
-        if (AVE.Utils.currentPageType == "thread") {
-            $("a" + ImgMedia).OnNodeChange(function () {
-                var container = $(this).parent().find(".link-expando:first");
-                var img = container.find("img:first");
 
-                if (img.length > 0) {
-                    img.css("position", "absolute")
-                       .css("margin-top", "20px");
+        $("a" + ImgMedia).OnNodeChange(function () {
+            var container = $(this).parent().find("span.link-expando:first");
+            //alert(".link-expando: " + container.attr("class"));
+            var img = container.find("img:first");
 
-                    img.OnAttrChange(function () {
-                        window.getSelection().removeAllRanges();
-                        container.width(img.width());
-                        container.height(img.height() + 20);
-                    });
+            var parentWidth = $(this).parent().parent().width();
 
+            if (img.length > 0) {
+                img.css("position", "absolute")
+                   .css("margin-top", "20px");
 
-                    container.animate({
-                        width: img.width() + "px",
-                        height: img.height() + 20 + "px",
-                    }, 1000);
-                }
+                img.OnAttrChange(function () {
+                    window.getSelection().removeAllRanges();
+                    container.width(parentWidth);//img.width());
+                    container.height(img.height() + 20);
+                });
 
-                event.stopPropagation();
-            });
+                container.animate({
+                    width: parentWidth + "px", //just enough width to let the media info show
+                    height: img.height() + 20 + "px",
+                }, 1000);
+            }
+            //event.stopPropagation() //Because of UpdateAfterLoadingMore
+        });
 
-        } else {
-            $(".expando").OnNodeChange(function () {
-                var img = $(this).find("img:first");
-                if (img.length > 0) {
-                    var exp = $(this);
-                    img.css("position", "absolute")
-                       .css("margin-top", "20px");
+        $("div[class='expando'][title]").OnNodeChange(function () {
+            var img = $(this).find("img:first");
+            if (img.length > 0) {
+                var exp = $(this);
+                img.css("position", "absolute")
+                   .css("margin-top", "20px");
 
-                    img.OnAttrChange(function () {
-                        window.getSelection().removeAllRanges();
-                        exp.width(img.width());
-                        exp.height(img.height() + 20);
-                    });
+                img.OnAttrChange(function () {
+                    window.getSelection().removeAllRanges();
+                    exp.width(150);//img.width());
+                    exp.height(img.height() + 20);
+                });
 
-                    exp.animate({
-                        width: img.width() + "px",
-                        height: img.height() + 20 + "px",
-                    }, 1000);
-                }
-
-                event.stopPropagation();
-            });
-        }
+                exp.animate({
+                    width: 150 + "px",
+                    height: img.height() + 20 + "px",
+                }, 1000);
+            }
+            //event.stopPropagation() //Because of UpdateAfterLoadingMore
+        });
     },
 };
