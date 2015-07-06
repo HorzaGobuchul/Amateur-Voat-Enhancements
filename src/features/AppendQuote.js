@@ -67,12 +67,13 @@ AVE.Modules['AppendQuote'] = {
         $("ul[class*='flat-list']").each(function () {
             if ($(this).find("a#AVE_QuotePost").length > 0) { return; }
 
-            $('<li><a id="AVE_QuotePost" href="javascript:void(0)" style="font-weight:bold;">quote</a></li>').insertBefore($(this).find("li:contains(reply)"));
+            $('<li><a id="AVE_QuotePost" href="javascript:void(0)" style="font-weight:bold;">quote</a></li>').insertAfter($(this).find("li:contains(source)"));
         });
     },
 
     Listeners: function () {
         var _this = AVE.Modules['AppendQuote'];
+        $("a#AVE_QuotePost").off("click");
         $("a#AVE_QuotePost").on("click", function () {
             var comment = AVE.Utils.ParseQuotedText($(this).parent().parent().parent().find('.md:first').html())
             var permaLink = $(this).parents("ul[class*='flat-list']").first().find("a[class*='bylink']").attr("href");

@@ -83,7 +83,6 @@ AVE.Modules['ReplyWithQuote'] = {
             }
 
             Quote = AVE.Utils.ParseQuotedText(SelectedText().toString());
-            //event.stopPropagation();
         });
     },
     getSelectedNodes: function () {

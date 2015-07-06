@@ -113,7 +113,7 @@ table#formTable{\
             <tr id="SetColour">\
                 <td>Colour</td>\
                 <td style="width:10px;"></td>\
-                <td><input name="color" type="color" title="Click me!" id="ChooseColor" value="#303030" style="width:60px;" />\</td>\
+                <td><input name="color" type="color" title="Click me!" id="ChooseColor" style="width:60px;" />\</td>\
             </tr>\
             <tr id="ShowPreview">\
                 <td>Preview</td>\
@@ -175,7 +175,7 @@ table#formTable{\
 
             if ($(this).attr('href').split("/")[2].toLowerCase() != name) { return true; } //don't add if this is a link whose label isn't the username
 
-            tag = _this.GetTag(name) || new _this.UserTagObj("", "#d1d1d1", false, 0);
+            tag = _this.GetTag(name) || new _this.UserTagObj("",  (AVE.Utils.CSSstyle == "dark" ? "#d1d1d1" : "#e1fcff"), false, 0);
 
             Tag_html = '<span class="AVE_UserTag" id="' + name + '" style="font-weight:bold;cursor:pointer;margin-left:4px;padding: 0px 4px;border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "484848") + ';border-radius:3px;font-size:10px;">' + (!tag.tag ? "+" : tag.tag) + '</span>';
             if (tag.balance != 0) {
@@ -287,6 +287,9 @@ table#formTable{\
                 $("tr#SetColour > td > input#ChooseColor").change();
                 if (usertag.ignored) { $("tr#SetIgnore > td > input#ToggleIgnore").prop('checked', "true"); }
                 $("tr#SetBalance > td > input#voteBalance").val(usertag.balance);
+            } else {
+                $("tr#SetColour > td > input#ChooseColor").val((AVE.Utils.CSSstyle == "dark" ? "#d1d1d1" : "#e1fcff"));
+                $("tr#SetColour > td > input#ChooseColor").change();
             }
             $("tr#SetTag > td > input.UserTagTextInput").focus();
             $("tr#SetTag > td > input.UserTagTextInput").select();
@@ -404,7 +407,6 @@ table#formTable{\
                 htmlStr += '<ul style="list-style:inside circle;"><li>You have tagged ' + TagLen + ' users.</li>';
                 htmlStr += "<li>You have voted on submissions made by " + VoteLen + " users.</li>";
                 htmlStr += "<li>You have chosen to ignore " + IgnoreLen + " users.</li></ul>";
-                print(htmlStr);
                 return htmlStr;
             }
         },

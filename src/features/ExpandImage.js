@@ -51,20 +51,17 @@ AVE.Modules['FixExpandImage'] = {
         this.Listeners();
     },
 
-    AppendToPage: function () {
-    },
-
     Listeners: function () {
         var ImgMedia = "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']";
 
         $("a" + ImgMedia).OnNodeChange(function () {
-            var container = $(this).parent().find("span.link-expando:first");
-            //alert(".link-expando: " + container.attr("class"));
+            var container = $(this).parent().find("div.link-expando:first");
             var img = container.find("img:first");
 
-            var parentWidth = $(this).parent().parent().width();
 
             if (img.length > 0) {
+                var parentWidth = $(this).parent().parent().width();
+
                 img.css("position", "absolute")
                    .css("margin-top", "20px");
 
@@ -75,14 +72,13 @@ AVE.Modules['FixExpandImage'] = {
                 });
 
                 container.animate({
-                    width: parentWidth + "px", //just enough width to let the media info show
+                    width: parentWidth + "px",
                     height: img.height() + 20 + "px",
                 }, 1000);
             }
-            //event.stopPropagation() //Because of UpdateAfterLoadingMore
         });
 
-        $("div[class='expando'][title]").OnNodeChange(function () {
+        $("div[class*='expando']").OnNodeChange(function () {
             var img = $(this).find("img:first");
             if (img.length > 0) {
                 var exp = $(this);
@@ -96,11 +92,10 @@ AVE.Modules['FixExpandImage'] = {
                 });
 
                 exp.animate({
-                    width: 150 + "px",
+                    width: 150 + "px", //just enough width to let the media info show
                     height: img.height() + 20 + "px",
                 }, 1000);
             }
-            //event.stopPropagation() //Because of UpdateAfterLoadingMore
         });
     },
 };

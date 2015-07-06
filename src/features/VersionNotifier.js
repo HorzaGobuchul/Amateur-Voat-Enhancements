@@ -14,7 +14,7 @@ AVE.Modules['VersionNotifier'] = {
 
     Load: function () {
         this.Store = AVE.Storage;
-
+        //this.Store.DeleteValue(this.Store.Prefix + this.ID + "_Version")
         this.Enabled = this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") !== GM_info.script.version;
 
         if (this.Enabled) {
@@ -27,9 +27,37 @@ AVE.Modules['VersionNotifier'] = {
         this.Listeners();
     },
 
-    ChangeLog: ["New feature: FixExpandImage",
-                "ReplyWhithQuote: Simplified main method",
-                "PreferenceManager: Simplified main method"],
+    LabelNew: "New Version downloaded:",
+    LabelShow: "Changelog, version",
+    Trigger: "new",
+
+    ChangeLog: [
+        "Refactoring:",
+        "    all modules are now completely separated/autonomous",
+        "    the module class can implement functions",
+        "        to save/load/reset data through the prefMngr",
+        "        to inject custom html (e.g. inputs) into the prefMngr and retrieve form data",
+        "        to insert elements into the current page",
+        "        to add custom event listeners",
+        "        to update when triggered by UpdateAfterLoadingMore",
+        "Feature: New PrefManager",
+        "Feature: UpdateAfterLoadingMore",
+        "    Modules update again when more content is loaded at the end of a thread",
+        "Feature: BackCompatibility",
+        "    Import data from v1",
+        "Feature: ToggleChildComment",
+        "    Adds \"Hide child comments\" link to hide a chain of posts",
+        "Improved ExpandImage:",
+        "    Works in subverse and thread pages",
+        "improved Usertagging:",
+        "    A tag box appears below the username instead of the javascript prompt",
+        "    You can choose a colour to go with the tag",
+        "Feature: vote balance (in UserTag)",
+        "Design implementation of Ignore (but not yet implemented)",
+        "AppendQuote: added \"quote\" link to self-text OP in thread pages",
+        "Storage Module with GM_storage (localStorage later)",
+        "Added an option to ToggleMedia: toggle media in the sidebar (default: false)",
+        "Light and Dark theme for the PrefMngr and Tax box", ],
 
     AppendToPage: function () {
         var CSSstyle = 'div.VersionBox' +
@@ -81,7 +109,7 @@ AVE.Modules['VersionNotifier'] = {
                        '}';
         var notifierHTML = '<div class="VersionBox">' +
                                 '<p class="VersionBoxTitle">' + GM_info.script.name + '</p>' +
-                                '<p class="VersionBoxInfo">New Version downloaded: <strong style="font-size:14px">' + GM_info.script.version + '</strong></p>' +
+                                '<p class="VersionBoxInfo">' + (this.Trigger == "new" ? this.LabelNew : this.LabelShow) + ' <strong style="font-size:14px">' + GM_info.script.version + '</strong></p>' +
                                 '<p class="VersionBoxToggle"><a href="javascript:void(0)" id="ShowChangelog">See Changelog?</a><p>' +
                                 '<div class="VersionBoxClose">Close</div>' +
                             '</div>';
@@ -103,7 +131,7 @@ AVE.Modules['VersionNotifier'] = {
             ChangeLogHTML += '</textarea>';
             $(this).remove();
             $(ChangeLogHTML).insertAfter(VersionBox.find("p.VersionBoxInfo"));
-            
+
             $("textarea.VersionBoxText").animate({
                 height: "370px",
             }, 1000);
@@ -117,5 +145,4 @@ AVE.Modules['VersionNotifier'] = {
             _this.Store.SetValue(_this.Store.Prefix + _this.ID + "_Version", GM_info.script.version);
         });
     },
-    //When re-enabled via the pref manager, make it display next page-load. (Set value as '')
 };

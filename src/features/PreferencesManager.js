@@ -167,7 +167,7 @@ AVE.Modules['PreferenceManager'] = {
             <div class="overlay">\
                 <div class="MngrWin" id="MngWin">\
                     <div class="MngWinHeader">\
-                        <span class="MngrWinTitle"><a target="_blank" href="https://voat.co/v/AVE">AVE</a></span> <span style="font-size:10px;" id="AVE_Version">Version @{version}</span>\
+                        <span class="MngrWinTitle"><a target="_blank" href="https://voat.co/v/AVE">AVE</a></span> <span style="cursor:pointer;font-size:10px;" id="AVE_Version">Version @{version}</span>\
                         <div class="TopButtons">\
                             <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub" id="SaveData">Save Changes</a>\
                             <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default" id="CloseWinMngr">×</a>\
@@ -260,6 +260,14 @@ AVE.Modules['PreferenceManager'] = {
             $("form[cat*='" + $(this).text() + "']").show();
         });
         $("div.ModuleToggle:first").click();
+        //Show changelog when clicking the version number
+        $("span#AVE_Version").on("click", function () {
+            if (AVE.Modules['VersionNotifier']) {
+                AVE.Modules['VersionNotifier'].Trigger = "changelog";
+                AVE.Modules['VersionNotifier'].Start();
+                $("p.VersionBoxToggle").click();
+            }
+        });
 
         $("#CloseWinMngr").on("click", function (event) {
             $(".MngrWin").hide();
