@@ -88,10 +88,13 @@ AVE.Modules['FixExpandImage'] = {
         if (this.obsInThread) {
             this.obsInThread.disconnect();
         }
-        this.obsInThread = new OnNodeChange($("div[class*='expando']"), function (e) {
+
+        this.obsInThread = new OnNodeChange($("div.expando:hidden"), function (e) {
+            //if ($(this).is(":not(div.expando)")) { print("a!!"); return true; }
+
             var img = $(e.target).find("img:first");
             if (img.length > 0) {
-                var exp = $(this);
+                var exp = $(this).hasClass("link-expando") ? $(this) : $(this).find("div.expando-link");
                 img.css("position", "absolute")
                    .css("margin-top", "20px");
 

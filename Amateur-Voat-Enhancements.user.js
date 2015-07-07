@@ -1,12 +1,12 @@
 // ==UserScript==
-// @name        Amateur Voat Enhancements Beta Version
+// @name        Amateur Voat Enhancements
 // @author      Horza
 // @date        2015-07-07
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.15.0.2
+// @version     2.15.0.7
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -717,6 +717,8 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.15.0.7: fixed and improved expanding images",
+        "V2:",
         "Refactoring:",
         "    all modules are now completely separated/autonomous",
         "    the module class can implement default methods:",
@@ -1864,10 +1866,13 @@ AVE.Modules['FixExpandImage'] = {
         if (this.obsInThread) {
             this.obsInThread.disconnect();
         }
-        this.obsInThread = new OnNodeChange($("div[class*='expando']"), function (e) {
+
+        this.obsInThread = new OnNodeChange($("div.expando:hidden"), function (e) {
+            //if ($(this).is(":not(div.expando)")) { print("a!!"); return true; }
+
             var img = $(e.target).find("img:first");
             if (img.length > 0) {
-                var exp = $(this);
+                var exp = $(this).hasClass("link-expando") ? $(this) : $(this).find("div.expando-link");
                 img.css("position", "absolute")
                    .css("margin-top", "20px");
 

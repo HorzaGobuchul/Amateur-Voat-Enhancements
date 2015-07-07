@@ -32,6 +32,8 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.15.0.7: fixed and improved expanding images",
+        "V2:",
         "Refactoring:",
         "    all modules are now completely separated/autonomous",
         "    the module class can implement default methods:",
