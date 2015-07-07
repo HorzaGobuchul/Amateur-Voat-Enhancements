@@ -1,4 +1,4 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name        Amateur Voat Enhancements Beta Version
 // @author      Horza
 // @date        2015-07-07
