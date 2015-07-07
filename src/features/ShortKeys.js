@@ -67,17 +67,15 @@ AVE.Modules['ShortcutKeys'] = {
             if ($(":input").is(":focus")) { return; }
 
             if (AVE.Utils.SelectedPost != undefined) {
-                if (event.key.toUpperCase() == up.toUpperCase()) { // upvote
-                    //if (AVE.Modules['UserTag']) {
-                    //    AVE.Modules['UserTag'].ChangeVoteBalance(AVE.Utils.SelectedPost.parent().find(".midcol"), AVE.Utils.SelectedPost.parent().find(".midcol").attr("class"));
-                    //    print("src: " + AVE.Utils.SelectedPost.parent().find(".midcol").attr("class"));
-                    //}
-                    AVE.Utils.SelectedPost.parent().find(".midcol").find("div[aria-label='upvote']").triggerHandler("click", ["Custom", "Event"]);
-                    }
-                else if (event.key.toUpperCase() == down.toUpperCase()) { // downvote
-                    if (AVE.Modules['UserTag']) {
-                        AVE.Modules['UserTag'].ChangeVoteBalance(AVE.Utils.SelectedPost.parent().find(".midcol"), AVE.Utils.SelectedPost.parent().find(".midcol").attr("class"));
-                    }
+                if (event.key == undefined) { //Chrome
+                    var key = String.fromCharCode(event.charCode).toUpperCase();
+                } else {
+                    var key = event.key.toUpperCase();
+                }
+                if (key == up.toUpperCase()) { // upvote
+                    AVE.Utils.SelectedPost.parent().find(".midcol").find("div[aria-label='upvote']").first().click();
+                }
+                else if (key == down.toUpperCase()) { // downvote
                     AVE.Utils.SelectedPost.parent().find(".midcol").find("div[aria-label='downvote']").first().click();
                 }
             }

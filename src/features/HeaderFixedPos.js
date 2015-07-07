@@ -51,11 +51,11 @@ AVE.Modules['HeaderFixedPos'] = {
         AVE.Utils.ListHeaderHeight = $('#sr-header-area').height();
 
         $('.width-clip').css('position', 'fixed')
-//!Chrome
             .css("z-index", "1000")
-//End
             .css('border-bottom', '1px solid ' + (AVE.Utils.CSSstyle == "dark" ? "#222" : "#DCDCDC"))
             .css("height", AVE.Utils.ListHeaderHeight + "px")
             .css("background-color", AVE.Utils.CSSstyle == "dark" ? "#333" : "#FFF");
+
+        $('.width-clip').find("br:last").remove();//Chrome
     },
 };

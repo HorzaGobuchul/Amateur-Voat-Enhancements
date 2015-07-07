@@ -51,13 +51,19 @@ AVE.Modules['FixExpandImage'] = {
         this.Listeners();
     },
 
+    obsInSub: null,
+    obsInThread: null,
+
     Listeners: function () {
         var ImgMedia = "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']";
 
-        $("a" + ImgMedia).OnNodeChange(function () {
-            var container = $(this).parent().find("div.link-expando:first");
+        if (this.obsInSub) {
+            this.obsInSub.disconnect();
+            //Instead of disconnecting and recreating, maybe I could add the new targets to the observer.
+        }
+        this.obsInSub = new OnNodeChange($("a" + ImgMedia), function (e) {
+            var container = $(e.target).parent().find("div.link-expando:first");
             var img = container.find("img:first");
-
 
             if (img.length > 0) {
                 var parentWidth = $(this).parent().parent().width();
@@ -77,9 +83,13 @@ AVE.Modules['FixExpandImage'] = {
                 }, 1000);
             }
         });
+        this.obsInSub.observe();
 
-        $("div[class*='expando']").OnNodeChange(function () {
-            var img = $(this).find("img:first");
+        if (this.obsInThread) {
+            this.obsInThread.disconnect();
+        }
+        this.obsInThread = new OnNodeChange($("div[class*='expando']"), function (e) {
+            var img = $(e.target).find("img:first");
             if (img.length > 0) {
                 var exp = $(this);
                 img.css("position", "absolute")
@@ -97,5 +107,6 @@ AVE.Modules['FixExpandImage'] = {
                 }, 1000);
             }
         });
+        this.obsInThread.observe()
     },
 };

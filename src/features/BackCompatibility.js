@@ -5,7 +5,6 @@ AVE.Modules['BackCompatibility'] = {
     Category: 'Misc.',
 
     Index: 200,
-    Debug: true,
     Enabled: false,
 
     Options: {
@@ -28,7 +27,7 @@ AVE.Modules['BackCompatibility'] = {
                 tag = tags[i].split(":")[1];
                 if (tag == undefined) { continue;}
 
-                opt = { username: user, tag: tag, colour: "#d1d1d1", ignore: false, balance: 0 };
+                opt = { username: user, tag: tag, colour: (AVE.Utils.CSSstyle == "dark" ? "#d1d1d1" : "#e1fcff"), ignore: false, balance: 0 };
                 AVE.Modules['UserTag'].SetTag(opt);
             }
         }
@@ -51,20 +50,20 @@ AVE.Modules['BackCompatibility'] = {
             ret[0] = GM_getValue("Voat_Subverses").split(",").length;
         }
         if (GM_getValue("Voat_Tags") != null) {
-            ret[1] = GM_getValue("Voat_Tags").split(",").length;
+            ret[1] = GM_getValue("Voat_Tags").split(",").length - 1;
         }
 
         var prefNames = ["Images", "Videos", "_this-texts", "MediaTypes", "ShowVersionChangeNotification"];
         $.each(prefNames, function (value) {
             if (GM_getValue(prefNames[value]) != undefined) {
-                ret++;
+                ret[2]++;
             }
         });
 
         return ret;
     },
 
-    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+    AppendToPreferenceManager: {
         html: function () {
             var _this = AVE.Modules['BackCompatibility'];
             var s = _this.GetV1DataStat();

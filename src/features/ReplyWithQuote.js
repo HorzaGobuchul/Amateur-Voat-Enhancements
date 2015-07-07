@@ -69,6 +69,7 @@ AVE.Modules['ReplyWithQuote'] = {
             }
         });
 
+        $(".usertext").off("mouseup");
         $(".usertext").on("mouseup", function () {
             var nodes = SelectedNodes();
 

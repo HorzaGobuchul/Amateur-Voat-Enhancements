@@ -1,11 +1,10 @@
 AVE.Modules['PreferenceManager'] = {
     ID: 'PreferenceManager',
     Name: 'Preference manager',
-    Desc: 'Adds option to modify preferences in voat.co/account/manage under the title "AVE Preferences"',
+    Desc: 'AVE\'s preference manager. Will contain a button to reset all data stored soon.',
     Category: 'Manager',
 
     Index: 0,
-    Debug: true,
 
     Store: {},
 
@@ -189,8 +188,6 @@ AVE.Modules['PreferenceManager'] = {
 
         this.AppendToPage();
         this.Listeners();
-
-        //_this.BuildManager(); //If uncommented, it is processed before some module can load their own pref from the local storage
     },
 
     MngWinStyle: '',
@@ -221,7 +218,7 @@ AVE.Modules['PreferenceManager'] = {
     BuildManager: function () {
         var _this = AVE.Modules['PreferenceManager'];
         var MngWinHTML = _this.MngWinHTML.replace('@{version}', GM_info.script.version);
-        $(MngWinHTML).appendTo("body");//only .show() if exists already
+        $(MngWinHTML).appendTo("body");
         $(".MngrWin").show();
 
         $.each(_this.Categories, function () {
@@ -236,7 +233,7 @@ AVE.Modules['PreferenceManager'] = {
             var module;
             var enabled;
             var alwaysEnabled;
-            
+
             $.each(_this.Modules, function () {
                 module = AVE.Modules[this];
                 if (module.Category != cat) { return; }
@@ -251,7 +248,7 @@ AVE.Modules['PreferenceManager'] = {
                 $(this).css("border-bottom-right-radius", "");
                 $(this).css("border-right", "");
                 $(this).css("margin-right", "10px");
-                $("form[cat*='"+$(this).text()+"']").hide();
+                $("form[cat*='" + $(this).text() + "']").hide();
             });
             $(this).css("border-top-right-radius", "0px");
             $(this).css("border-bottom-right-radius", "0px");
@@ -280,7 +277,7 @@ AVE.Modules['PreferenceManager'] = {
             var input;
             $.each(_this.Categories, function () {
                 moduleForms = $("form[cat='" + this + "'] > div.ModuleBlock");
-                
+
                 moduleForms.each(function () {
                     var ModKey = $(this).attr("id");
                     var POST = {};
@@ -314,12 +311,12 @@ AVE.Modules['PreferenceManager'] = {
 
     AppendToPreferenceManager: {
         html: function () {
-            return 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="submit" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
+            //return 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="submit" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
         },
         callback: function () {
-            $("input#ResetAllData").on("click", function (param) {
-                alert(typeof param);
-            });
+            //$("input#ResetAllData").on("click", function (param) {
+            //    alert(typeof param);
+            //});
         },
     },
 

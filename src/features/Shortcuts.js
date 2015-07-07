@@ -5,7 +5,6 @@ AVE.Modules['Shortcuts'] = {
     Category: 'General',
 
     Order: 4,
-    Debug: true,
     Enabled: false,
 
     Store: {},
@@ -104,7 +103,7 @@ AVE.Modules['Shortcuts'] = {
         });
     },
 
-    //// Special to voat.co/subverses: adds a "shortcut" button for each subverse////
+    // Special to voat.co/subverses: adds a "shortcut" button for each subverse////
     AddShortcutsButtonInSubversesPage: function () {
         _this = AVE.Modules['Shortcuts'];
         var inShortcut = false;

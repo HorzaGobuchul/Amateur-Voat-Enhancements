@@ -48,10 +48,9 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
         this.Listeners();
     },
 
-
     Listeners: function () {
         $("a#loadmorebutton").OnNodeChange(function () {
-            if ($(this).is(":contains('load more')")) {
+            if ($(this).text().split(" ")[0] == "load") {
                 setTimeout(AVE.Init.UpdateModules, 500);
             }
         });

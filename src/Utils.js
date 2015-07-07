@@ -108,6 +108,7 @@ AVE.Utils = {
             var options = {
                 subtree: true,
                 childList: true,
+                characterData: true,//needed for it to work in Chrome
             };
 
             //https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationRecord
@@ -127,4 +128,38 @@ AVE.Utils = {
 })(jQuery);
 function print(str) { console.log(str); }
 //Thanks to Paolo Bergantino https://stackoverflow.com/questions/965816/what-jquery-selector-excludes-items-with-a-parent-that-matches-a-given-selector#answer-965962
-jQuery.expr[':'].parents = function (a, i, m){return jQuery(a).parents(m[3]).length < 1;};
+jQuery.expr[':'].parents = function (a, i, m) { return jQuery(a).parents(m[3]).length < 1; };
+
+//Might be overkill, but I need to be able to disconnect the listener before updating.
+var OnNodeChange = (function () {
+    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+
+    cls = function (t, c) {
+        this.options = {
+            subtree: true,
+            childList: true,
+        };
+        this.targets = t;
+
+        this.observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (e) {
+                if (e.addedNodes != null) {
+                    c.call(e.target, e);
+                }
+            });
+        });
+
+        this.observe = function () {
+            _this = this;
+            return this.targets.each(function () {
+                _this.observer.observe(this, _this.options);
+            });
+        };
+
+        this.disconnect = function () {
+            this.observer.disconnect();
+        };
+    };
+
+    return cls;
+})();

@@ -200,66 +200,11 @@ table#formTable{\
             }
         });
 
-        $("<style></style>").appendTo("head").html(_this.style);
-        $(_this.html).appendTo("body");
-        $("#UserTagBox").hide();
-
-        //Close button
-        $("div#UserTagHeader > span > a#CloseTagWin").on("click", function () {
+        if ($("#UserTagBox").length == 0) {
+            $("<style></style>").appendTo("head").html(_this.style);
+            $(_this.html).appendTo("body");
             $("#UserTagBox").hide();
-        }),
-        //Show in the preview box the tag
-        $("tr#SetTag > td > input.UserTagTextInput").on('keyup', function () {
-            $("tr#ShowPreview > td > span#PreviewBox").text($(this).val());
-        });
-        //Show in the preview box the colour chosen and change the font-colour accordingly
-        $("tr#SetColour > td > input#ChooseColor").on('change', function () {
-            var r, g, b;
-            var newColour = $(this).val();
-            //from www.javascripter.net/faq/hextorgb.htm
-            r = parseInt(newColour.substring(1, 3), 16);
-            g = parseInt(newColour.substring(3, 5), 16);
-            b = parseInt(newColour.substring(5, 7), 16);
-
-            $("tr#ShowPreview > td > span#PreviewBox").css("background-color", $(this).val());
-            $("tr#ShowPreview > td > span#PreviewBox").css("color", AVE.Utils.GetBestFontColour(r, g, b));
-        });
-        //Saving tag
-        $("tr#SetBalance > td > a#SaveTag").on("click", function () {
-            var opt = {
-                username: $("div#UserTagHeader > span#username").text(),
-                tag: $("tr#SetTag > td > input.UserTagTextInput").val(),//.replace(/[:,]/g, "-")
-                colour: $("tr#SetColour > td > input#ChooseColor").val(),
-                ignore: $("tr#SetIgnore > td > input#ToggleIgnore").get(0).checked,
-                balance: parseInt($("tr#SetBalance > td > input#voteBalance").val(), 10),
-            };
-
-            if (isNaN(opt.balance)) { opt.balance = 0; }
-
-            if (opt.tag.length == 0 && opt.ignore == false && opt.balance == 0) {
-                _this.RemoveTag(opt.username);
-                opt.tag = "+";
-            } else {
-                _this.SetTag(opt);
-            }
-
-            _this.UpdateUserTag(opt);
-
-            $("#UserTagBox").hide();
-        });
-
-        //If Enter/Return is pressed while the focus is on one of the two text input, we save the tag.
-        $(document).on("keyup", function (e) {
-            if (e.which == 13) {
-                if ($(e.target).attr("class") == "UserTagTextInput") {
-                    $("tr#SetBalance > td > a#SaveTag").click();
-                }
-            }
-            if (e.which == 27 && $("#UserTagBox").is(":visible")) {
-                $("div#UserTagHeader > span > a#CloseTagWin").click();
-                $("#UserTagBox").hide();
-            }
-        });
+        }
     },
 
     Listeners: function () {
@@ -273,6 +218,7 @@ table#formTable{\
             var usertag = _this.usertags[username];
 
             var position = $(this).offset();
+
             position.top += 20;
             $("#UserTagBox").css(position);
             $("#UserTagBox").show();
@@ -300,17 +246,81 @@ table#formTable{\
 
             _this.ChangeVoteBalance(e.target, e.oldValue);
         });
+
+        //Close button
+        $("div#UserTagHeader > span > a#CloseTagWin").off("click");
+        $("div#UserTagHeader > span > a#CloseTagWin").on("click", function () {
+            $("#UserTagBox").hide();
+        }),
+        //Show in the preview box the tag
+        $("tr#SetTag > td > input.UserTagTextInput").off('keyup');
+        $("tr#SetTag > td > input.UserTagTextInput").on('keyup', function () {
+            $("tr#ShowPreview > td > span#PreviewBox").text($(this).val());
+        });
+        //Show in the preview box the colour chosen and change the font-colour accordingly
+        $("tr#SetColour > td > input#ChooseColor").off('change');
+        $("tr#SetColour > td > input#ChooseColor").on('change', function () {
+            var r, g, b;
+            var newColour = $(this).val();
+            //from www.javascripter.net/faq/hextorgb.htm
+            r = parseInt(newColour.substring(1, 3), 16);
+            g = parseInt(newColour.substring(3, 5), 16);
+            b = parseInt(newColour.substring(5, 7), 16);
+
+            $("tr#ShowPreview > td > span#PreviewBox").css("background-color", $(this).val());
+            $("tr#ShowPreview > td > span#PreviewBox").css("color", AVE.Utils.GetBestFontColour(r, g, b));
+        });
+        //Saving tag
+        $("tr#SetBalance > td > a#SaveTag").off("click")
+        $("tr#SetBalance > td > a#SaveTag").on("click", function () {
+            var opt = {
+                username: $("div#UserTagHeader > span#username").text(),
+                tag: $("tr#SetTag > td > input.UserTagTextInput").val(),//.replace(/[:,]/g, "-")
+                colour: $("tr#SetColour > td > input#ChooseColor").val(),
+                ignore: $("tr#SetIgnore > td > input#ToggleIgnore").get(0).checked,
+                balance: parseInt($("tr#SetBalance > td > input#voteBalance").val(), 10),
+            };
+
+            if (isNaN(opt.balance)) { opt.balance = 0; }
+
+            if (opt.tag.length == 0 && opt.ignore == false) {
+                if (opt.balance == 0) {
+                    _this.RemoveTag(opt.username);
+                } // the balance isn't 0, we don't want to remove the tag, nor update it.
+                opt.tag = "+";
+            } else {
+                _this.SetTag(opt);
+            }
+
+            _this.UpdateUserTag(opt);
+
+            $("#UserTagBox").hide();
+        });
+
+        //If Enter/Return is pressed while the focus is on one of the two text input, we save the tag.
+        $(document).off("keyup");
+        $(document).on("keyup", function (e) {
+            if (e.which == 13) {
+                if ($(e.target).attr("class") == "UserTagTextInput") {
+                    $("tr#SetBalance > td > a#SaveTag").click();
+                }
+            }
+            if (e.which == 27 && $("#UserTagBox").is(":visible")) {
+                $("div#UserTagHeader > span > a#CloseTagWin").click();
+                $("#UserTagBox").hide();
+            }
+        });
     },
 
     //Because the .click JQuery event triggered by the shortkeys in ShortKeys.js triggers an OnAttrChange with false mutation values (oldValue, attributeName),
     //      we use a second function that keypresses in ShortKeys.js can invoke directly.
-    // Ten mimutes later it works perfectly well. Maybe, voat's current instability is to blame. I'm not changing it back, anyway...
+    // Ten mimutes later it works perfectly well. Maybe, voat's current instability was to blame. I'm not changing it back, anyway...
     ChangeVoteBalance: function (target, oldValue) {
         var _this = AVE.Modules['UserTag'];
 
-        print("target: "+target);
-        print("oldvalue: "+oldValue);
-        print("newvalue: "+$(target).attr('class'));
+        //print("target: "+target);
+        //print("oldvalue: "+oldValue);
+        //print("newvalue: "+$(target).attr('class'));
 
         var username = $(target).parent().find(".AVE_UserTag").attr("id").toLowerCase();
         if (username == undefined) { return true; }

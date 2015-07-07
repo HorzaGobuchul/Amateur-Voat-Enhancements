@@ -5,7 +5,6 @@ AVE.Modules['ToggleChildComment'] = {
     Category: 'Thread',
 
     Index: 100,
-    Debug: true,
     Enabled: false,
 
     Store: {},
