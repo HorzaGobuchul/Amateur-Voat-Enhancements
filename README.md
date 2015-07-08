@@ -2,53 +2,15 @@
 
 AVE is a light Enhancement Suite for Voat.co.
 
-It is a userscript written for [GreaseMonkey](http://www.greasespot.net/).
+Written as a userscript for [GreaseMonkey](http://www.greasespot.net/) (firefox) and [TamperMonkey](http://tampermonkey.net/) (chrome).
 
-[TamperMonkey version for Chrome](https://github.com/HorzaGobuchul/AVE-for-Chrome)
-
-# Features:
-#### All css modifications support both Dark and Light themes.
-
-## [Tags:](https://i.imgur.com/azBCRIB.png)
-* If a username is detected [+] will appear at its right.
-* Click [+] to set or modify a tag.
-
-## Toggle Images:
-
-[Adds a button](https://i.imgur.com/8rcfCgz.png) at the top if there are media to display in the current page.
-
-## [Header List:](https://i.imgur.com/qbh3fIq.jpg)
-
-Supports Subverses and Sets (in bold & italic)
-* Add/remove a Subverse from:
-    * [Any subverse page](https://i.imgur.com/3pOTais.jpg)
-    * [voat.co/subverses](https://i.imgur.com/YnTKD8U.jpg)
-* [Add/remove a Set from:](https://i.imgur.com/pYbhsW2.png)
-    * voat.co/sets
-    * voat.co/mysets
-
-## Keyboard Shortcuts:
-Click a thread or a comment to select it. examples: [post](https://i.imgur.com/kzrO4rV.png), [comment](https://i.imgur.com/j99RDj6.png).
-
-
-On a selected posts you can press:
-
-* A to upvote
-* Z to downvote
-
-Supports:
-
-* Subverse page,
-* Set page,
-* Thread,
-* user/Submision,
-* user/Comments,
-* messaging/postreplies,
-* "blockquote" html blocks,
-* Highlighted Comments.
-
-## [Fixed element position:](https://i.imgur.com/OLs5waM.png)
-* User info block at the top right
-* Top Subverse Header
-
-## [Features/Options Manager](https://i.imgur.com/FfgXjg6.png)
+# Currently implemented Features:
+* [Tag users](https://i.imgur.com/azBCRIB.png)
+* [Toggle all media (Images, Videos, Self-Texts) at once in a page](https://i.imgur.com/8rcfCgz.png)
+* Use A to upvote and Z to downvote
+* [Replace the header list of subverses with your own (and even with sets)](https://i.imgur.com/qbh3fIq.jpg)
+* [Fix the position of the header list and of the user info to the top of the screen](https://i.imgur.com/OLs5waM.png)
+* [Autoquote](http://veuwer.com/2oyl.png)
+* [Reply with a quote automatically inserted](http://veuwer.com/2oyk.png)
+* [Have images expand over the sidebar](http://veuwer.com/2oym.png)
+* [Hide/Show chains of comments]()
