@@ -6,7 +6,7 @@
 // @license     MIT; https://github.com/HorzaGobuchul/{@repoName}/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.16.0.3
+// @version     2.16.0.4
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue

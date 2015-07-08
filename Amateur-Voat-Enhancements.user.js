@@ -6,7 +6,7 @@
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.16.0.3
+// @version     2.16.0.4
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -2019,6 +2019,10 @@ AVE.Modules['IgnoreUsers'] = {
                 }
             });
         } else if ($.inArray(AVE.Utils.currentPageType, ["user", "user-comments", "user-submissions"]) !== -1) { // userpages
+            var name = $("div.alert-title").text().split(" ");
+            name = name[name.length - 1].replace('.', '');
+            if (!name || $.inArray(name.toLowerCase(), _this.IgnoreList) === -1) { return true; }
+
             $("<span> [Ignored User]</span>").appendTo("div.alert-title")
                 .css("font-weight", "bold")
                 .css("color", "#B45656");
