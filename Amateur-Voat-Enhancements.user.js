@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        2015-07-07
+// @date        2015-07-08
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.15.0.7
+// @version     2.15.0.8
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1709,6 +1709,7 @@ AVE.Modules['AppendQuote'] = {
         $("a#AVE_QuotePost").on("click", function () {
             var comment = AVE.Utils.ParseQuotedText($(this).parent().parent().parent().find('.md:first').html())
             var permaLink = $(this).parents("ul[class*='flat-list']").first().find("a[class*='bylink']").attr("href");
+            if (!permaLink) { permaLink = window.location.href; }
             var userpageLink = $(this).parents("ul[class*='flat-list']").first().parent().find("a[class*='author']").attr("href");
             var username = $(this).parents("ul[class*='flat-list']").first().parent().find("a[class*='author']").text();
             

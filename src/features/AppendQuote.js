@@ -77,6 +77,7 @@ AVE.Modules['AppendQuote'] = {
         $("a#AVE_QuotePost").on("click", function () {
             var comment = AVE.Utils.ParseQuotedText($(this).parent().parent().parent().find('.md:first').html())
             var permaLink = $(this).parents("ul[class*='flat-list']").first().find("a[class*='bylink']").attr("href");
+            if (!permaLink) { permaLink = window.location.href; }
             var userpageLink = $(this).parents("ul[class*='flat-list']").first().parent().find("a[class*='author']").attr("href");
             var username = $(this).parents("ul[class*='flat-list']").first().parent().find("a[class*='author']").text();
             
