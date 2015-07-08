@@ -15,7 +15,7 @@ AVE.Modules['VersionNotifier'] = {
     Load: function () {
         this.Store = AVE.Storage;
         //this.Store.DeleteValue(this.Store.Prefix + this.ID + "_Version")
-        this.Enabled = this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") !== GM_info.script.version;
+        this.Enabled = this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") != GM_info.script.version;
 
         if (this.Enabled) {
             this.Start();
@@ -32,6 +32,11 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.16.0.3:",
+        "    New feature: IgnoreUsers (deactivated by default)",
+        "    Reinstated css fixes for chrome that were erased during refactoring",
+        "    implemented a solution for users who have so many subscriptions that the \"my subverses\" list goes out of the screen",
+        "V2.15.0.8: in AppendQuote, fixed issue with quoting self-text posts.",
         "V2.15.0.7: fixed and improved expanding images",
         "V2:",
         "Refactoring:",

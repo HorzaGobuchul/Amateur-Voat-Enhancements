@@ -71,12 +71,10 @@ AVE.Modules['Shortcuts'] = {
             tempSetId = $(this).find(".h4").attr("href").substr(5);
             inShortcut = this.isSubInShortcuts(tempSetName + ":" + tempSetId);
 
-            var btnHTML = '<div style="float: left; width: 100%; margin-top: 10px;" class="midcol">\
-                            <button id="GM_Sets_Shortcut" setName="' + tempSetName + '" setId="' + tempSetId + '" type="button" class="btn-whoaverse-paging btn-xs btn-default' + (inShortcut ? "" : "btn-sub") + '">'
+            var btnHTML = '<br /><buttonstyle="margin-top:5px;" id="GM_Sets_Shortcut" setName="' + tempSetName + '" setId="' + tempSetId + '" type="button" class="btn-whoaverse-paging btn-xs btn-default' + (inShortcut ? "" : "btn-sub") + '">'
                                     + (inShortcut ? "-" : "+") + ' shortcut\
-                            </button>\
-                      </div>';
-            $(btnHTML).insertAfter($(this).find(".midcol").first());
+                            </button>';
+            $(btnHTML).appendTo($(this).find(".midcol").first());
         });
 
         $(document).on("click", "#GM_Sets_Shortcut", function () {
@@ -113,12 +111,8 @@ AVE.Modules['Shortcuts'] = {
             tempSubName = $(this).find(".h4").attr("href").substr(3);
             inShortcut = _this.isSubInShortcuts(tempSubName);
 
-            var btnHTML = '<div style="float: left; width: 100%; margin-top: 10px;" class="midcol">\
-                            <button id="GM_Subverses_Shortcut" subverse="'+ tempSubName + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'
-                                    + (inShortcut ? "-" : "+") + ' shortcut\
-                            </button>\
-                      </div>';
-            $(btnHTML).insertAfter($(this).find(".midcol").first());
+            var btnHTML = '<br /><button style="margin-top:5px;" id="GM_Subverses_Shortcut" subverse="'+ tempSubName + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'+ (inShortcut ? "-" : "+") + ' shortcut </button>';
+            $(btnHTML).appendTo($(this).find(".midcol").first());
         });
 
         $(document).on("click", "#GM_Subverses_Shortcut", function () {

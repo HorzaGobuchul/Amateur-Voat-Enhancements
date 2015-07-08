@@ -57,5 +57,20 @@ AVE.Modules['HeaderFixedPos'] = {
             .css("background-color", AVE.Utils.CSSstyle == "dark" ? "#333" : "#FFF");
 
         $('.width-clip').find("br:last").remove();//Chrome
+
+        //If you have so many subscriptions that the "my subverses" list goes out of the screen, this is for you.
+        var li_Height = $("ul.whoaSubscriptionMenu > li > ul:first").find("li > a").outerHeight();
+        if (($(window).height() - AVE.Utils.ListHeaderHeight - li_Height) < $("ul.whoaSubscriptionMenu > li > ul:first").height()) {
+            var li_Width = $("ul.whoaSubscriptionMenu > li > ul:first").find("li > a").outerWidth();
+            var elPerCol = parseInt(($(window).height() - AVE.Utils.ListHeaderHeight) / li_Height) - 1;
+            var columns = $("ul.whoaSubscriptionMenu > li > ul:first").find("li").length / elPerCol - 1;
+
+            for (var col = 0; col < columns; col++) {
+                el = $("ul.whoaSubscriptionMenu > li > ul:nth(" + col + ")").find("li:gt(" + (elPerCol - 1) + ")");
+                $('<ul style="width:' + li_Width + 'px;margin-left:' + (li_Width * (col + 1)) + 'px"></ul>')
+                            .insertAfter("ul.whoaSubscriptionMenu > li > ul:nth(" + col + ")")
+                            .append(el);
+            }
+        }
     },
 };

@@ -35,8 +35,8 @@ AVE.Utils = {
         var url = window.location.href;
 
         if (RegExpTypes.frontpage.test(url)) { return "frontpage"; }
-        else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
         else if (RegExpTypes.thread.test(url)) { return "thread"; }
+        else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
         else if (RegExpTypes.subverses.test(url)) { return "subverses"; }
         else if (RegExpTypes.set.test(url)) { return "set"; }
         else if (RegExpTypes.mySet.test(url)) { return "mysets"; }

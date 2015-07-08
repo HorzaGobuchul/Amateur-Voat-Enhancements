@@ -198,6 +198,13 @@ table#formTable{\
                 $(this).parent().find(".AVE_UserTag").css("background-color", tag.colour);
                 $(this).parent().find(".AVE_UserTag").css("color", AVE.Utils.GetBestFontColour(r, g, b));
             }
+
+            if (AVE.Modules['IgnoreUsers'] && tag.ignored) {
+                if ($.inArray(name, AVE.Modules['IgnoreUsers'].IgnoreList) == -1) {
+                    AVE.Modules['IgnoreUsers'].IgnoreList.push(name);
+                }
+
+            }
         });
 
         if ($("#UserTagBox").length == 0) {
@@ -417,6 +424,9 @@ table#formTable{\
                 htmlStr += '<ul style="list-style:inside circle;"><li>You have tagged ' + TagLen + ' users.</li>';
                 htmlStr += "<li>You have voted on submissions made by " + VoteLen + " users.</li>";
                 htmlStr += "<li>You have chosen to ignore " + IgnoreLen + " users.</li></ul>";
+
+                //Add option to remove oldest tags.
+                //  Seeing as this.usertags is ordered oldest first, propose to remove X tags at the beginning of the list.
                 return htmlStr;
             }
         },

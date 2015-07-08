@@ -6,7 +6,7 @@
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.15.0.8
+// @version     2.16.0.3
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -88,8 +88,8 @@ AVE.Utils = {
         var url = window.location.href;
 
         if (RegExpTypes.frontpage.test(url)) { return "frontpage"; }
-        else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
         else if (RegExpTypes.thread.test(url)) { return "thread"; }
+        else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
         else if (RegExpTypes.subverses.test(url)) { return "subverses"; }
         else if (RegExpTypes.set.test(url)) { return "set"; }
         else if (RegExpTypes.mySet.test(url)) { return "mysets"; }
@@ -570,7 +570,7 @@ AVE.Modules['PreferenceManager'] = {
                 });
 
             });
-            $("div.ModuleToggle:first").click();
+            $("#CloseWinMngr").click();
         });
 
         //Close the pref Manager with a click outside of it.
@@ -700,7 +700,7 @@ AVE.Modules['VersionNotifier'] = {
     Load: function () {
         this.Store = AVE.Storage;
         //this.Store.DeleteValue(this.Store.Prefix + this.ID + "_Version")
-        this.Enabled = this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") !== GM_info.script.version;
+        this.Enabled = this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") != GM_info.script.version;
 
         if (this.Enabled) {
             this.Start();
@@ -717,6 +717,11 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.16.0.3:",
+        "    New feature: IgnoreUsers (deactivated by default)",
+        "    Reinstated css fixes for chrome that were erased during refactoring",
+        "    implemented a solution for users who have so many subscriptions that the \"my subverses\" list goes out of the screen",
+        "V2.15.0.8: in AppendQuote, fixed issue with quoting self-text posts.",
         "V2.15.0.7: fixed and improved expanding images",
         "V2:",
         "Refactoring:",
@@ -1033,6 +1038,21 @@ AVE.Modules['HeaderFixedPos'] = {
             .css("background-color", AVE.Utils.CSSstyle == "dark" ? "#333" : "#FFF");
 
         $('.width-clip').find("br:last").remove();//Chrome
+
+        //If you have so many subscriptions that the "my subverses" list goes out of the screen, this is for you.
+        var li_Height = $("ul.whoaSubscriptionMenu > li > ul:first").find("li > a").outerHeight();
+        if (($(window).height() - AVE.Utils.ListHeaderHeight - li_Height) < $("ul.whoaSubscriptionMenu > li > ul:first").height()) {
+            var li_Width = $("ul.whoaSubscriptionMenu > li > ul:first").find("li > a").outerWidth();
+            var elPerCol = parseInt(($(window).height() - AVE.Utils.ListHeaderHeight) / li_Height) - 1;
+            var columns = $("ul.whoaSubscriptionMenu > li > ul:first").find("li").length / elPerCol - 1;
+
+            for (var col = 0; col < columns; col++) {
+                el = $("ul.whoaSubscriptionMenu > li > ul:nth(" + col + ")").find("li:gt(" + (elPerCol - 1) + ")");
+                $('<ul style="width:' + li_Width + 'px;margin-left:' + (li_Width * (col + 1)) + 'px"></ul>')
+                            .insertAfter("ul.whoaSubscriptionMenu > li > ul:nth(" + col + ")")
+                            .append(el);
+            }
+        }
     },
 };
 /// END Fix header position ///
@@ -1237,6 +1257,13 @@ table#formTable{\
 
                 $(this).parent().find(".AVE_UserTag").css("background-color", tag.colour);
                 $(this).parent().find(".AVE_UserTag").css("color", AVE.Utils.GetBestFontColour(r, g, b));
+            }
+
+            if (AVE.Modules['IgnoreUsers'] && tag.ignored) {
+                if ($.inArray(name, AVE.Modules['IgnoreUsers'].IgnoreList) == -1) {
+                    AVE.Modules['IgnoreUsers'].IgnoreList.push(name);
+                }
+
             }
         });
 
@@ -1457,6 +1484,9 @@ table#formTable{\
                 htmlStr += '<ul style="list-style:inside circle;"><li>You have tagged ' + TagLen + ' users.</li>';
                 htmlStr += "<li>You have voted on submissions made by " + VoteLen + " users.</li>";
                 htmlStr += "<li>You have chosen to ignore " + IgnoreLen + " users.</li></ul>";
+
+                //Add option to remove oldest tags.
+                //  Seeing as this.usertags is ordered oldest first, propose to remove X tags at the beginning of the list.
                 return htmlStr;
             }
         },
@@ -1894,6 +1924,127 @@ AVE.Modules['FixExpandImage'] = {
 };
 /// END Fix expanding images ///
 
+/// Ignore users:  Lets you tag users as Ignored. Replacing all their comments\' content with [ignored]. ///
+AVE.Modules['IgnoreUsers'] = {
+    ID: 'IgnoreUsers',
+    Name: 'Ignore users',
+    Desc: 'Lets you tag users as Ignored. Replacing all their comments\' content with [ignored].',
+    Category: 'General',
+
+    Index: 100, //must be called after the UserTagging module.
+    Enabled: false,
+
+    Store: {},
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: false,
+        },
+        HardIgnore: {
+            Type: 'boolean',
+            Desc: 'Remove entirely from the page posts and chain comments made by the ignored users.',
+            Value: false,
+        },
+    },
+
+    IgnoreList: [],
+
+    OriginalOptions: "", //If ResetPref is used
+
+    SavePref: function (POST) {
+        var _this = AVE.Modules['IgnoreUsers'];
+
+        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
+    },
+
+    ResetPref: function () {// will add the reset option in the pref manager. Can be deleted.
+        var _this = AVE.Modules['IgnoreUsers'];
+        _this.Options = JSON.parse(_this.OriginalOptions);
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = AVE.Modules['IgnoreUsers'];
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
+
+        Opt = JSON.parse(Opt);
+        $.each(Opt, function (key, value) {
+            _this.Options[key].Value = value;
+        });
+
+        _this.Enabled = _this.Options.Enabled.Value;
+    },
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.OriginalOptions = JSON.stringify(this.Options); //If ResetPref is used
+        this.SetOptionsFromPref();
+
+        //Cannot work without the userTag module
+        if (!AVE.Modules['UserTag'] || !AVE.Modules['UserTag'].Enabled) { this.Enabled = false; }
+
+        if (this.Enabled) {
+            this.Start();
+        }
+    },
+
+    Start: function () {
+        var _this = AVE.Modules['IgnoreUsers'];
+        if (AVE.Utils.currentPageType == "thread") { // comments
+            $("p.tagline > a.author").each(function () {
+                var name = $(this).attr("data-username");
+                if ($.inArray(name.toLowerCase(), _this.IgnoreList) === -1) { return true; }
+
+                if (_this.Options.HardIgnore.Value) {
+                    print('Removed comment by ' + name)
+                    $(this).parents("div.comment[class*='id-']:first").remove();
+                } else {
+                    $(this).parent().parent().find("div[id*='commentContent-']")
+                        .text('[Ignored User]')
+                        .css("font-size", "10px")
+                        .css("margin-left", "20px")
+                        .css("font-weight", "bold");
+                }
+            });
+        } else if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse"]) !== -1) { // submissions
+            $("p.tagline > a.author").each(function () {
+                var name = $(this).attr("data-username");
+                if (!name || $.inArray(name.toLowerCase(), _this.IgnoreList) === -1) { return true; }
+
+                if (_this.Options.HardIgnore.Value) {
+                    print('Removed submissions titled: "'+$(this).parents("div.entry:first").find("p.title > a[class*='title']:first").text()+'" by '+name)
+                    $(this).parents("div.submission").remove();
+                } else {
+                    $(this).parents("div.entry:first").find("p.title > a[class*='title']:first").text('[Ignored User]').css("font-size", "13px");
+                }
+            });
+        } else if ($.inArray(AVE.Utils.currentPageType, ["user", "user-comments", "user-submissions"]) !== -1) { // userpages
+            $("<span> [Ignored User]</span>").appendTo("div.alert-title")
+                .css("font-weight", "bold")
+                .css("color", "#B45656");
+        }
+    },
+
+    Update: function () {//Use if this module needs to be update by UpdateAfterLoadingMore, remove otherwise
+        this.Start();
+    },
+
+    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+        html: function () {
+            var htmlStr = "";
+            htmlStr += '<input id="HardIgnore" type="checkbox"/><label for="HardIgnore"> Hard ignore</label><br />If checked all submissions and (chain)-comments of ignored users will be hidden.';
+            if (!AVE.Modules['UserTag'] || !AVE.Modules['UserTag'].Enabled) {
+                htmlStr += '<br /><span style="font-weigth:bold;color:#D84C4C;">The User tagging module is not activated, this module cannot work without it.</span>';
+            }
+            //show a warning if usertag is disabled
+            return htmlStr;
+        },
+        callback: function () {
+        },
+    },
+};
+/// END Ignore users ///
+
 /// Reply with quote:  Insert selected/highlighted text (in a comment) into the reply box toggled by "reply". ///
 AVE.Modules['ReplyWithQuote'] = {
     ID: 'ReplyWithQuote',
@@ -2256,12 +2407,10 @@ AVE.Modules['Shortcuts'] = {
             tempSetId = $(this).find(".h4").attr("href").substr(5);
             inShortcut = this.isSubInShortcuts(tempSetName + ":" + tempSetId);
 
-            var btnHTML = '<div style="float: left; width: 100%; margin-top: 10px;" class="midcol">\
-                            <button id="GM_Sets_Shortcut" setName="' + tempSetName + '" setId="' + tempSetId + '" type="button" class="btn-whoaverse-paging btn-xs btn-default' + (inShortcut ? "" : "btn-sub") + '">'
+            var btnHTML = '<br /><buttonstyle="margin-top:5px;" id="GM_Sets_Shortcut" setName="' + tempSetName + '" setId="' + tempSetId + '" type="button" class="btn-whoaverse-paging btn-xs btn-default' + (inShortcut ? "" : "btn-sub") + '">'
                                     + (inShortcut ? "-" : "+") + ' shortcut\
-                            </button>\
-                      </div>';
-            $(btnHTML).insertAfter($(this).find(".midcol").first());
+                            </button>';
+            $(btnHTML).appendTo($(this).find(".midcol").first());
         });
 
         $(document).on("click", "#GM_Sets_Shortcut", function () {
@@ -2298,12 +2447,8 @@ AVE.Modules['Shortcuts'] = {
             tempSubName = $(this).find(".h4").attr("href").substr(3);
             inShortcut = _this.isSubInShortcuts(tempSubName);
 
-            var btnHTML = '<div style="float: left; width: 100%; margin-top: 10px;" class="midcol">\
-                            <button id="GM_Subverses_Shortcut" subverse="'+ tempSubName + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'
-                                    + (inShortcut ? "-" : "+") + ' shortcut\
-                            </button>\
-                      </div>';
-            $(btnHTML).insertAfter($(this).find(".midcol").first());
+            var btnHTML = '<br /><button style="margin-top:5px;" id="GM_Subverses_Shortcut" subverse="'+ tempSubName + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'+ (inShortcut ? "-" : "+") + ' shortcut </button>';
+            $(btnHTML).appendTo($(this).find(".midcol").first());
         });
 
         $(document).on("click", "#GM_Subverses_Shortcut", function () {

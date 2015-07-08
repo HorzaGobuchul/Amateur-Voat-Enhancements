@@ -298,7 +298,7 @@ AVE.Modules['PreferenceManager'] = {
                 });
 
             });
-            $("div.ModuleToggle:first").click();
+            $("#CloseWinMngr").click();
         });
 
         //Close the pref Manager with a click outside of it.
