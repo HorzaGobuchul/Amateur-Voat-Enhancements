@@ -1,7 +1,7 @@
 AVE.Modules['IgnoreUsers'] = {
     ID: 'IgnoreUsers',
     Name: 'Ignore users',
-    Desc: 'Lets you tag users as Ignored. Replacing all their comments\' content with [ignored].',
+    Desc: 'Lets you tag users as Ignored. Replacing all their comments\' content with [Ignored User].',
     Category: 'General',
 
     Index: 100, //must be called after the UserTagging module.

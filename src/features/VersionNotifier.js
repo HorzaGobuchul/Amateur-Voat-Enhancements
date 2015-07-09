@@ -32,6 +32,8 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.17.0.2:",
+        "    New feature: FixContainerWidth",
         "V2.16.0.3:",
         "    New feature: IgnoreUsers (deactivated by default)",
         "    Reinstated css fixes for chrome that were erased during refactoring",
