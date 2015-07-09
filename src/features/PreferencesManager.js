@@ -194,7 +194,7 @@ AVE.Modules['PreferenceManager'] = {
     MngWinHTML: '',
     ModuleHTML: '',
 
-    Categories: ["General", "Thread", "Posts", "Manager", "Misc."],//Available Categories to show //backward compatibility in misc
+    Categories: ["General", "Subverse", "Thread", "Posts", "Manager", "Misc."],//Available Categories to show //backward compatibility in misc
     Modules: [],//List of all modules
 
     AppendToPage: function () {

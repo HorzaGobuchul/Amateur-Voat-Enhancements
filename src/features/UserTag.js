@@ -92,6 +92,24 @@ tr#ShowPreview > td > span#PreviewBox {\
     border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "484848") + ';\
     border-radius:3px;\
 }\
+span.AVE_UserTag{\
+    font-weight:bold;\
+    cursor:pointer;\
+    margin-left:4px;\
+    padding: 0px 4px;\
+    border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "484848") + ';\
+    color:#' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "000") + ';\
+    border-radius:3px;font-size:10px;\
+}\
+span.AVE_UserTag:empty{\
+    border:0px;\
+    height: 14px;\
+    width: 14px;\
+    margin: -3px -5px -3px 5px;\
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23' + (AVE.Utils.CSSstyle == "dark" ? "ABABAB" : "BBB") + '%22%20d%3D%22M5%2C0H0v5l9%2C9l5-5L5%2C0z%20M3%2C4C2.447%2C4%2C2%2C3.553%2C2%2C3s0.447-1%2C1-1s1%2C0.447%2C1%2C1S3.553%2C4%2C3%2C4z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E");\
+    background-repeat: no-repeat;\
+    display: inline-block;\
+}\
 table#formTable{\
     border-collapse: separate;\
     border-spacing: 5px;\
@@ -177,7 +195,7 @@ table#formTable{\
 
             tag = _this.GetTag(name) || new _this.UserTagObj("",  (AVE.Utils.CSSstyle == "dark" ? "#d1d1d1" : "#e1fcff"), false, 0);
 
-            Tag_html = '<span class="AVE_UserTag" id="' + name + '" style="font-weight:bold;cursor:pointer;margin-left:4px;padding: 0px 4px;border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "484848") + ';border-radius:3px;font-size:10px;">' + (!tag.tag ? "+" : tag.tag) + '</span>';
+            Tag_html = '<span class="AVE_UserTag" id="' + name + '">' + (!tag.tag ? "" : tag.tag) + '</span>';
             if (tag.balance != 0) {
                 var sign = tag.balance > 0 ? "+" : "";
                 Tag_html += '<span class="AVE_UserBalance" id="' + name + '" style="padding: 0px 4px;font-size: 10px;">[ ' + sign + tag.balance + ' ]</span>';
@@ -294,7 +312,7 @@ table#formTable{\
                 if (opt.balance == 0) {
                     _this.RemoveTag(opt.username);
                 } // the balance isn't 0, we don't want to remove the tag, nor update it.
-                opt.tag = "+";
+                opt.tag = "";
             } else {
                 _this.SetTag(opt);
             }
@@ -358,6 +376,7 @@ table#formTable{\
     },
 
     UpdateUserTag: function (tag) {
+        var _this = AVE.Modules['UserTag'];
         $("span[class*='AVE_UserTag'][id*='" + tag.username + "']").each(function () {
 
             if (tag.tag != "") {
