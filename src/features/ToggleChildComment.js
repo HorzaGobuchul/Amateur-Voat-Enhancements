@@ -1,6 +1,6 @@
 AVE.Modules['ToggleChildComment'] = {
     ID: 'ToggleChildComment',
-    Name: 'Toggle display chlild comments',
+    Name: 'Toggle display child comments',
     Desc: 'Adds "Hide child comments" link to hide a chain of posts',
     Category: 'Thread',
 
@@ -40,6 +40,8 @@ AVE.Modules['ToggleChildComment'] = {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
+        if (AVE.Utils.currentPageType !== "thread") { this.Enabled = false; }
+
         if (this.Enabled) {
             this.Start();
         }
@@ -51,7 +53,9 @@ AVE.Modules['ToggleChildComment'] = {
     },
 
     Update: function () {
-        this.Start();
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     AppendToPage: function () {

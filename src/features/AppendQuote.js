@@ -49,6 +49,8 @@ AVE.Modules['AppendQuote'] = {
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
 
+        if (AVE.Utils.currentPageType !== "thread") { this.Enabled = false; }
+
         if (this.Enabled) {
             this.Start();
         }
@@ -60,7 +62,9 @@ AVE.Modules['AppendQuote'] = {
     },
 
     Update: function () {
-        this.Start();
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     AppendToPage: function () {

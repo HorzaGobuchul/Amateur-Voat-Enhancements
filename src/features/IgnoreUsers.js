@@ -102,8 +102,10 @@ AVE.Modules['IgnoreUsers'] = {
         }
     },
 
-    Update: function () {//Use if this module needs to be update by UpdateAfterLoadingMore, remove otherwise
-        this.Start();
+    Update: function () {
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager

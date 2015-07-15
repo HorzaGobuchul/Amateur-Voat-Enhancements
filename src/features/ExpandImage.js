@@ -48,7 +48,9 @@ AVE.Modules['FixExpandImage'] = {
     },
 
     Update: function () {
-        this.Listeners();
+        if (this.Enabled) {
+            this.Listeners();
+        }
     },
 
     obsInSub: null,

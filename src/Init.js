@@ -10,13 +10,14 @@ AVE.Init = {
         AVE.Utils.Set();
 
         //print(AVE.Storage.Persistence());
-
-        $(document).ready(function () {
-            $.each(AVE.Modules, function () {
-                //print("Loading: "+this.Name + " - " + Object.keys(AVE.Modules).length+ " modules.");
-                this.Load();
+        if (AVE.Utils.currentPageType != null) {
+            $(document).ready(function () {
+                $.each(AVE.Modules, function () {
+                    //print("Loading: "+this.Name + " - " + Object.keys(AVE.Modules).length+ " modules.");
+                    this.Load();
+                });
             });
-        });
+        }
     },
 
     UpdateModules: function () { //Get this in the reload module?

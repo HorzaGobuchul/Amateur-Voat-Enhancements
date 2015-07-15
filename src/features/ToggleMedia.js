@@ -96,7 +96,9 @@ AVE.Modules['ToggleMedia'] = {
     },
 
     Update: function () {
-        this.Start();
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     AppendToPage: function () {

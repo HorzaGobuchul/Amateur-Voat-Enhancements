@@ -105,10 +105,17 @@ span.AVE_UserTag:empty{\
     border:0px;\
     height: 14px;\
     width: 14px;\
-    margin: -3px -5px -3px 5px;\
+    margin: 0px 0px -3px 4px;\
+    /* SVG from Jquery Mobile Icons Set */\
     background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23' + (AVE.Utils.CSSstyle == "dark" ? "ABABAB" : "BBB") + '%22%20d%3D%22M5%2C0H0v5l9%2C9l5-5L5%2C0z%20M3%2C4C2.447%2C4%2C2%2C3.553%2C2%2C3s0.447-1%2C1-1s1%2C0.447%2C1%2C1S3.553%2C4%2C3%2C4z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E");\
     background-repeat: no-repeat;\
     display: inline-block;\
+}\
+span.AVE_UserBalance{\
+    padding: 0px 4px;font-size: 10px;\
+}\
+span.AVE_UserBalance:empty{\
+    padding: 0px;\
 }\
 table#formTable{\
     border-collapse: separate;\
@@ -175,7 +182,9 @@ table#formTable{\
     },
 
     Update: function () {
-        this.Start();
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     AppendToPage: function () {
@@ -198,9 +207,9 @@ table#formTable{\
             Tag_html = '<span class="AVE_UserTag" id="' + name + '">' + (!tag.tag ? "" : tag.tag) + '</span>';
             if (tag.balance != 0) {
                 var sign = tag.balance > 0 ? "+" : "";
-                Tag_html += '<span class="AVE_UserBalance" id="' + name + '" style="padding: 0px 4px;font-size: 10px;">[ ' + sign + tag.balance + ' ]</span>';
+                Tag_html += '<span class="AVE_UserBalance" id="' + name + '">[ ' + sign + tag.balance + ' ]</span>';
             } else {
-                Tag_html += '<span class="AVE_UserBalance" id="' + name + '" style="padding: 0px 4px;font-size: 10px;"></span>';
+                Tag_html += '<span class="AVE_UserBalance" id="' + name + '"></span>';
             }
             $(Tag_html).insertAfter($(this));
 
@@ -221,7 +230,6 @@ table#formTable{\
                 if ($.inArray(name, AVE.Modules['IgnoreUsers'].IgnoreList) == -1) {
                     AVE.Modules['IgnoreUsers'].IgnoreList.push(name);
                 }
-
             }
         });
 
@@ -308,11 +316,8 @@ table#formTable{\
 
             if (isNaN(opt.balance)) { opt.balance = 0; }
 
-            if (opt.tag.length == 0 && opt.ignore == false) {
-                if (opt.balance == 0) {
-                    _this.RemoveTag(opt.username);
-                } // the balance isn't 0, we don't want to remove the tag, nor update it.
-                opt.tag = "";
+            if (opt.tag.length == 0 && opt.ignore == false && opt.balance == 0) {
+                _this.RemoveTag(opt.username);
             } else {
                 _this.SetTag(opt);
             }
@@ -380,8 +385,8 @@ table#formTable{\
         $("span[class*='AVE_UserTag'][id*='" + tag.username + "']").each(function () {
 
             if (tag.tag != "") {
-
                 $(this).text(tag.tag);
+
                 var r, g, b;
                 var newColour = tag.colour;
                 //from www.javascripter.net/faq/hextorgb.htm
@@ -391,6 +396,10 @@ table#formTable{\
 
                 $(this).css("background-color", tag.colour);
                 $(this).css("color", AVE.Utils.GetBestFontColour(r, g, b));
+            }
+            else {
+                $(this).text("");
+                $(this).removeAttr("style");
             }
 
             if (tag.balance != 0) {

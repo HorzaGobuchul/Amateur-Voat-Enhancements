@@ -38,6 +38,8 @@ AVE.Modules['ReplyWithQuote'] = {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
+        if (AVE.Utils.currentPageType !== "thread") { this.Enabled = false; }
+
         if (this.Enabled) {
             this.Start();
         }
@@ -48,7 +50,9 @@ AVE.Modules['ReplyWithQuote'] = {
     },
 
     Update: function () {
-        this.Start();
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     AppendToPage: function () {

@@ -78,7 +78,9 @@ AVE.Modules['SelectPost'] = {
     },
 
     Update: function () {
-        this.Start();
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     Listeners: function () {
