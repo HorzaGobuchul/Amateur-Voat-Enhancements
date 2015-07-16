@@ -5,7 +5,6 @@ AVE.Modules['NeverEndingVoat'] = {
     Category: 'Subverse',
 
     Index: 100,
-    Debug: true,
     Enabled: false,
 
     Store: {},
@@ -15,19 +14,19 @@ AVE.Modules['NeverEndingVoat'] = {
             Type: 'boolean',
             Value: true,
         },
-        Auto: {
+        AutoLoad: {
             Type: 'boolean',
-            Desc: 'If true, a new page will be loaded whent the user scrolls below the "load more" line, if false the user needs to click the "Load more" button.',
+            Desc: 'If checked, scroll to load more content. Click the "load more" button to load the next page otherwise.',
             Value: true,
         },
         ExpandSubmissionBlock: {
             Type: 'boolean',
-            Desc: 'If true, the new submissions will expand over the empty sidebar\'s space',
+            Desc: 'Expand the new submission posts over the empty sidebar\'s space',
             Value: true,
         },
         DisplayDuplicates: {
             Type: 'boolean',
-            Desc: 'If true duplicate submissions will be displayed, albeit greyed.',
+            Desc: 'Display duplicate submissions (greyed).',
             Value: true,
         },
     },
@@ -61,7 +60,8 @@ AVE.Modules['NeverEndingVoat'] = {
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
 
-        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse"]) == -1) {
+        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse"]) == -1 ||
+            $("div.pagination-container").find("li.btn-whoaverse-paging").length == 0) {
             this.Enabled = false;
         }
 
@@ -75,8 +75,6 @@ AVE.Modules['NeverEndingVoat'] = {
     PostsIDs: [],
     SepStyle: '',
     currentPage: 0,
-    //!!Write it so it works fine even if voat loads a page that isn't the first one!!
-    //Get the #p=x value and load all pages between the current href location and the last x page.
 
     Start: function () {
         var _this = this;
@@ -110,54 +108,74 @@ AVE.Modules['NeverEndingVoat'] = {
     },
 
     LoadMore: function () {
+        //Don't load another page if one is already being loaded.
+        if ($("a#AVE_loadmorebutton").text() == this.Labels[1]) { return false; }
+
         var _this = this;
+
         $("a#AVE_loadmorebutton").text(this.Labels[1]);
         var nextPageURL = window.location.href;
         if (nextPageURL.indexOf("?page=") != -1) {
             nextPageURL = nextPageURL.replace(/\?page\=[0-9]*/, "?page=" + (this.currentPage + 1));
         } else {
-            nextPageURL = "https://"+window.location.hostname + window.location.pathname + "?page=" + (this.currentPage + 1);
+            nextPageURL = "https://" + window.location.hostname + window.location.pathname + "?page=" + (this.currentPage + 1);
         }
         print("loading page: " + nextPageURL);
         $.ajax({
             url: nextPageURL,
-            cache: false
+            cache: false,
         }).done(function (html) {
-            if ($(html).find("div.submission[class*='id-']").length == 0) { $("a#AVE_loadmorebutton").text(_this.Labels[2]);return false; } //catchall for error pages
+            if ($(html).find("div.submission[class*='id-']").length == 0) { $("a#AVE_loadmorebutton").text(_this.Labels[2]); return false; } //catchall for error pages
             _this.currentPage++;
 
             if (_this.Options.ExpandSubmissionBlock.Value && $("div.content[role='main']").css("margin-right") != "0") {
                 $("div.content[role='main']").css("margin", "0px 10px");
             }
 
-            $("div.sitetable.linklisting").append('<div style="' + _this.SepStyle + '" class="AVE_postSeparator">Page ' + (_this.currentPage) + '</div>');
+            $("div.sitetable").append('<div style="' + _this.SepStyle + '" class="AVE_postSeparator">Page ' + (_this.currentPage) + '</div>');
+
             //$("div.sitetable.linklisting").append('<div class="AVE_postSeparator alert-singlethread">Page ' + (_this.currentPage) + '</div>');
             $(html).find("div.submission[class*='id-']").each(function () {
                 if ($.inArray($(this).attr("data-fullname"), _this.PostsIDs) == -1) {
                     _this.PostsIDs.push($(this).attr("data-fullname"));
-                    $("div.sitetable.linklisting").append($(this));
-                } else if (_this.Options.DisplayDuplicates.Value) {
-                    $("div.sitetable.linklisting").append($(this));
+                    $("div.sitetable").append($(this));
+                } else if (_this.Options.DisplayDuplicates.Value && !$(this).hasClass("stickied")) {
+                    $("div.sitetable").append($(this));
                     $(this).css("opacity", "0.45");
-                }
+                } else { print("AVE: oups error in NeverEndingVoat:LoadMore()"); }
             });
 
             $("a#AVE_loadmorebutton").text(_this.Labels[0]);
 
+            // Add expando links to the new submissions
+            location.assign("javascript:UI.ExpandoManager.execute();void(0)");
+            // from https://github.com/voat/voat/blob/master/Voat/Voat.UI/Scripts/voat.ui.js#L190
+
             setTimeout(AVE.Init.UpdateModules, 500);
+            window.location.hash = 'p=' + _this.currentPage;
+
+            //Next lines are needed because the front page (voat.co/) is a bit different from the subvese's pages. div.pagination-container isn't normally inside div.sitetable 
+            if ($("div.sitetable").find("div.pagination-container").length > 0) {
+                $("div.pagination-container").appendTo($("div.sitetable"))
+                //<a href="/random">or try a random subverse</a>
+                $("div.sitetable > a[href='/random']").appendTo($("div.sitetable"))
+            }
         }).fail(function () {
             $("a#AVE_loadmorebutton").text(_this.Labels[2]);
         });
-
-        window.location.hash = 'p='+this.currentPage;
     },
 
     AppendToPreferenceManager: {
         html: function () {
+            var _this = AVE.Modules['NeverEndingVoat'];
+
             var htmlStr = "";
+            var opt = ["AutoLoad", "ExpandSubmissionBlock", "DisplayDuplicates"];
+
+            $.each(opt, function () {
+                htmlStr += '<input id="' + this + '" ' + (_this.Options[this].Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="' + this + '"> ' + _this.Options[this].Desc + '</label><br />';
+            });
             return htmlStr;
-        },
-        callback: function () {
         },
     },
 };

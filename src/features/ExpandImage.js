@@ -2,7 +2,7 @@ AVE.Modules['FixExpandImage'] = {
     ID: 'FixExpandImage',
     Name: 'Fix expanding images',
     Desc: 'Let images expand over the sidebar and disallow the selection/highlight of the image.',
-    Category: 'Posts',
+    Category: 'Fixes',
 
     Enabled: false,
 

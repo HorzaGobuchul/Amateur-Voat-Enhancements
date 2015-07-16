@@ -89,6 +89,7 @@ AVE.Modules['ToggleMedia'] = {
             if (!this.Options.ToggleInSidebar.Value)
             { this.sel = $(this.sel).filter(':parents(.titlebox)'); }
 
+            //print(this.sel.length);
 
             this.AppendToPage();
             this.Listeners();

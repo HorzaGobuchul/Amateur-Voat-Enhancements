@@ -1,4 +1,4 @@
-﻿AVE.Modules['ID'] = {
+AVE.Modules['ID'] = {
     ID: 'ID',
     Name: 'Name',
     Desc: 'Desc',
@@ -56,8 +56,10 @@
         //this.Listeners();
     },
 
-    Update: function () {//Use if this module needs to be update by UpdateAfterLoadingMore, remove otherwise
-        this.Start();
+    Update: function () {//Use if this module needs to be update by UpdateAfterLoadingMore or NeverEndingVoat, remove otherwise
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     AppendToPage: function () { //To insert content into the page

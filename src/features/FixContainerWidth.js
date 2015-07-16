@@ -2,7 +2,7 @@ AVE.Modules['FixContainerWidth'] = {
     ID: 'FixContainerWidth',
     Name: 'Set Voat container\'s width.',
     Desc: 'By default, Voat shows a margin at both sides of the container. You can modify this by setting the new width as a percentage of the available horizontal space.',
-    Category: 'General',
+    Category: 'Fixes',
 
     Index: 100,
     Enabled: false,

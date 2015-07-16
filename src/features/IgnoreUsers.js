@@ -111,7 +111,7 @@ AVE.Modules['IgnoreUsers'] = {
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager
         html: function () {
             var htmlStr = "";
-            htmlStr += '<input id="HardIgnore" type="checkbox"/><label for="HardIgnore"> Hard ignore</label><br />If checked all submissions and (chain)-comments of ignored users will be hidden.';
+            htmlStr += '<input ' + (AVE.Modules['IgnoreUsers'].Options.HardIgnore.Value ? 'checked="true"' : "") + ' id="HardIgnore" type="checkbox"/><label for="HardIgnore"> Hard ignore</label><br />If checked all submissions and (chain)-comments of ignored users will be hidden.';
             if (!AVE.Modules['UserTag'] || !AVE.Modules['UserTag'].Enabled) {
                 htmlStr += '<br /><span style="font-weigth:bold;color:#D84C4C;">The User tagging module is not activated, this module cannot work without it.</span>';
             }

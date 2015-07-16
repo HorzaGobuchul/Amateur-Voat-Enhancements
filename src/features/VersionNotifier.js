@@ -32,6 +32,22 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "2.19.2.4:",
+        "   New fix: DisableShareALink",
+        "   NeverEndingVoat:",
+        "       won't show sticky submission duplicates anymore",
+        "       add expandos icon and feature to new submissions",
+        "       updates enabled modules (ToggleMedia, ExpandImage, UserTag, ...)",
+        "   IgnoreUsers:",
+        "       Forgot to let the module show its current setting in the prefMngr",
+        "   PreferenceManager:",
+        "       Fixed a bug where a module alone in its category wouldn't reset as it should",
+        "V2.18.0.1:",
+        "   New feature: NeverEndingVoat",
+        "   Fixed issue where NeverEndingVoat would update all updatable modules",
+        "   UserTag:",
+        "       Replaced empty tag (\"[ + ]\") with a tag icon",
+        "       Fixed bug that made deleting tags impossible",
         "V2.17.0.2:",
         "    New feature: FixContainerWidth",
         "V2.16.0.3:",
@@ -67,7 +83,7 @@ AVE.Modules['VersionNotifier'] = {
         "AppendQuote: added \"quote\" link to self-text OP in thread pages",
         "Storage Module with GM_storage (localStorage later)",
         "Added an option to ToggleMedia: toggle media in the sidebar (default: false)",
-        "Light and Dark theme for the PrefMngr and Tax box", ],
+        "Light and Dark theme for the PrefMngr and Tag box", ],
 
     AppendToPage: function () {
         var CSSstyle = 'div.VersionBox' +

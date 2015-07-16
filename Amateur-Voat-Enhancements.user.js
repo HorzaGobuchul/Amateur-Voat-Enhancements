@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        2015-07-09
+// @date        2015-07-16
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.17.0.2
+// @version     2.19.2.4
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -30,13 +30,15 @@ AVE.Init = {
         AVE.Utils.Set();
 
         //print(AVE.Storage.Persistence());
-
-        $(document).ready(function () {
-            $.each(AVE.Modules, function () {
-                //print("Loading: "+this.Name + " - " + Object.keys(AVE.Modules).length+ " modules.");
-                this.Load();
+        print(AVE.Utils.currentPageType);
+        if (AVE.Utils.currentPageType != "none") {
+            $(document).ready(function () {
+                $.each(AVE.Modules, function () {
+                    //print("Loading: "+this.Name + " - " + Object.keys(AVE.Modules).length+ " modules.");
+                    this.Load();
+                });
             });
-        });
+        }
     },
 
     UpdateModules: function () { //Get this in the reload module?
@@ -72,7 +74,7 @@ AVE.Utils = {
 
     Page: function () {
         var RegExpTypes = {
-            frontpage: /voat.co\/?(\?page=[0-9]*)?$/i,
+            frontpage: /voat.co\/?(\?page=[0-9]*)?(\#[^\\\/]*)?$/i,
             subverse: /voat.co\/v\/[a-z]*\/?(\?page=[0-9]*)?/i,
             thread: /voat.co\/v\/[a-z]*\/comments\/\d*/i,
             subverses: /voat.co\/subverses/i,
@@ -466,7 +468,7 @@ AVE.Modules['PreferenceManager'] = {
     MngWinHTML: '',
     ModuleHTML: '',
 
-    Categories: ["General", "Thread", "Posts", "Manager", "Misc."],//Available Categories to show //backward compatibility in misc
+    Categories: ["General", "Subverse", "Thread", "Posts", "Manager", "Fixes", "Misc."],//Available Categories to show //backward compatibility in misc
     Modules: [],//List of all modules
 
     AppendToPage: function () {
@@ -618,9 +620,15 @@ AVE.Modules['PreferenceManager'] = {
         if (pos == undefined) {
             $("form[cat='" + cat + "']").append(html);
         } else {
-            if (pos > 0) {
+            if (pos > 0) { //if the position isn't first of its category
                 $(html).insertAfter("form[cat='" + cat + "'] > div.ModuleBlock:nth(" + (pos - 1) + ")");
-            } else { $(html).insertBefore("form[cat='" + cat + "'] > div.ModuleBlock:nth(0)"); }
+            } else {
+                if ($("form[cat='" + cat + "'] > div.ModuleBlock").length > 0) {
+                    $(html).insertBefore("form[cat='" + cat + "'] > div.ModuleBlock:nth(0)");
+                } else { //if it is alone in its category
+                    $(html).appendTo("form[cat='" + cat + "']");
+                }
+            }
         }
 
         //Get special form element from the modules themselves.
@@ -717,6 +725,22 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.19.2.3:",
+        "   New fix: DisableShareALink",
+        "   NeverEndingVoat:",
+        "       won't show sticky submission duplicates anymore",
+        "       add expandos icon and feature to new submissions",
+        "       updates enabled modules (ToggleMedia, ExpandImage, UserTag, ...)",
+        "   IgnoreUsers:",
+        "       Forgot to let the module show its current setting in the prefMngr",
+        "   PreferenceManager:",
+        "       Fixed a bug where a module alone in its category wouldn't reset as it should",
+        "V2.18.0.1:",
+        "   New feature: NeverEndingVoat",
+        "   Fixed issue where NeverEndingVoat would update all updatable modules",
+        "   UserTag:",
+        "       Replaced empty tag (\"[ + ]\") with a tag icon",
+        "       Fixed bug that made deleting tags impossible",
         "V2.17.0.2:",
         "    New feature: FixContainerWidth",
         "V2.16.0.3:",
@@ -752,7 +776,7 @@ AVE.Modules['VersionNotifier'] = {
         "AppendQuote: added \"quote\" link to self-text OP in thread pages",
         "Storage Module with GM_storage (localStorage later)",
         "Added an option to ToggleMedia: toggle media in the sidebar (default: false)",
-        "Light and Dark theme for the PrefMngr and Tax box", ],
+        "Light and Dark theme for the PrefMngr and Tag box", ],
 
     AppendToPage: function () {
         var CSSstyle = 'div.VersionBox' +
@@ -1154,6 +1178,31 @@ tr#ShowPreview > td > span#PreviewBox {\
     border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "484848") + ';\
     border-radius:3px;\
 }\
+span.AVE_UserTag{\
+    font-weight:bold;\
+    cursor:pointer;\
+    margin-left:4px;\
+    padding: 0px 4px;\
+    border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "484848") + ';\
+    color:#' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "000") + ';\
+    border-radius:3px;font-size:10px;\
+}\
+span.AVE_UserTag:empty{\
+    border:0px;\
+    height: 14px;\
+    width: 14px;\
+    margin: 0px 0px -3px 4px;\
+    /* SVG from Jquery Mobile Icons Set */\
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23' + (AVE.Utils.CSSstyle == "dark" ? "ABABAB" : "BBB") + '%22%20d%3D%22M5%2C0H0v5l9%2C9l5-5L5%2C0z%20M3%2C4C2.447%2C4%2C2%2C3.553%2C2%2C3s0.447-1%2C1-1s1%2C0.447%2C1%2C1S3.553%2C4%2C3%2C4z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E");\
+    background-repeat: no-repeat;\
+    display: inline-block;\
+}\
+span.AVE_UserBalance{\
+    padding: 0px 4px;font-size: 10px;\
+}\
+span.AVE_UserBalance:empty{\
+    padding: 0px;\
+}\
 table#formTable{\
     border-collapse: separate;\
     border-spacing: 5px;\
@@ -1219,7 +1268,9 @@ table#formTable{\
     },
 
     Update: function () {
-        this.Start();
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     AppendToPage: function () {
@@ -1239,12 +1290,12 @@ table#formTable{\
 
             tag = _this.GetTag(name) || new _this.UserTagObj("",  (AVE.Utils.CSSstyle == "dark" ? "#d1d1d1" : "#e1fcff"), false, 0);
 
-            Tag_html = '<span class="AVE_UserTag" id="' + name + '" style="font-weight:bold;cursor:pointer;margin-left:4px;padding: 0px 4px;border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "484848") + ';border-radius:3px;font-size:10px;">' + (!tag.tag ? "+" : tag.tag) + '</span>';
+            Tag_html = '<span class="AVE_UserTag" id="' + name + '">' + (!tag.tag ? "" : tag.tag) + '</span>';
             if (tag.balance != 0) {
                 var sign = tag.balance > 0 ? "+" : "";
-                Tag_html += '<span class="AVE_UserBalance" id="' + name + '" style="padding: 0px 4px;font-size: 10px;">[ ' + sign + tag.balance + ' ]</span>';
+                Tag_html += '<span class="AVE_UserBalance" id="' + name + '">[ ' + sign + tag.balance + ' ]</span>';
             } else {
-                Tag_html += '<span class="AVE_UserBalance" id="' + name + '" style="padding: 0px 4px;font-size: 10px;"></span>';
+                Tag_html += '<span class="AVE_UserBalance" id="' + name + '"></span>';
             }
             $(Tag_html).insertAfter($(this));
 
@@ -1265,7 +1316,6 @@ table#formTable{\
                 if ($.inArray(name, AVE.Modules['IgnoreUsers'].IgnoreList) == -1) {
                     AVE.Modules['IgnoreUsers'].IgnoreList.push(name);
                 }
-
             }
         });
 
@@ -1352,11 +1402,8 @@ table#formTable{\
 
             if (isNaN(opt.balance)) { opt.balance = 0; }
 
-            if (opt.tag.length == 0 && opt.ignore == false) {
-                if (opt.balance == 0) {
-                    _this.RemoveTag(opt.username);
-                } // the balance isn't 0, we don't want to remove the tag, nor update it.
-                opt.tag = "+";
+            if (opt.tag.length == 0 && opt.ignore == false && opt.balance == 0) {
+                _this.RemoveTag(opt.username);
             } else {
                 _this.SetTag(opt);
             }
@@ -1420,11 +1467,12 @@ table#formTable{\
     },
 
     UpdateUserTag: function (tag) {
+        var _this = AVE.Modules['UserTag'];
         $("span[class*='AVE_UserTag'][id*='" + tag.username + "']").each(function () {
 
             if (tag.tag != "") {
-
                 $(this).text(tag.tag);
+
                 var r, g, b;
                 var newColour = tag.colour;
                 //from www.javascripter.net/faq/hextorgb.htm
@@ -1434,6 +1482,10 @@ table#formTable{\
 
                 $(this).css("background-color", tag.colour);
                 $(this).css("color", AVE.Utils.GetBestFontColour(r, g, b));
+            }
+            else {
+                $(this).text("");
+                $(this).removeAttr("style");
             }
 
             if (tag.balance != 0) {
@@ -1590,6 +1642,7 @@ AVE.Modules['ToggleMedia'] = {
             if (!this.Options.ToggleInSidebar.Value)
             { this.sel = $(this.sel).filter(':parents(.titlebox)'); }
 
+            //print(this.sel.length);
 
             this.AppendToPage();
             this.Listeners();
@@ -1597,7 +1650,9 @@ AVE.Modules['ToggleMedia'] = {
     },
 
     Update: function () {
-        this.Start();
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     AppendToPage: function () {
@@ -1713,6 +1768,8 @@ AVE.Modules['AppendQuote'] = {
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
 
+        if (AVE.Utils.currentPageType !== "thread") { this.Enabled = false; }
+
         if (this.Enabled) {
             this.Start();
         }
@@ -1724,7 +1781,9 @@ AVE.Modules['AppendQuote'] = {
     },
 
     Update: function () {
-        this.Start();
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     AppendToPage: function () {
@@ -1808,12 +1867,65 @@ AVE.Modules['AppendQuote'] = {
 };
 /// END Append quote ///
 
+/// Disable Share-a-Link:  This module will remove the Share-a-Link overlay block ///
+AVE.Modules['DisableShareALink'] = {
+    ID: 'DisableShareALink',
+    Name: 'Disable Share-a-Link',
+    Desc: 'This module will remove the Share-a-Link overlay block',
+    Category: 'Fixes',
+
+    Index: 100,
+    Enabled: false,
+
+    Store: {},
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: true,
+        },
+    },
+
+    SavePref: function (POST) {
+        var _this = AVE.Modules['DisableShareALink'];
+        POST = POST[_this.ID];
+
+        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST));
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = AVE.Modules['DisableShareALink'];
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
+
+        $.each(JSON.parse(Opt), function (key, value) {
+            _this.Options[key].Value = value;
+        });
+        _this.Enabled = _this.Options.Enabled.Value;
+    },
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.SetOptionsFromPref();
+
+        if (this.Enabled) {
+            this.Start();
+        }
+    },
+
+    Start: function () {
+        $('div#share-a-link-overlay').remove();
+        $("body").removeAttr("ondrop");
+        $("body").removeAttr("ondragover");
+    },
+};
+/// END Disable Share-a-Link ///
+
 /// Fix expanding images:  Let images expand over the sidebar and disallow the selection/highlight of the image. ///
 AVE.Modules['FixExpandImage'] = {
     ID: 'FixExpandImage',
     Name: 'Fix expanding images',
     Desc: 'Let images expand over the sidebar and disallow the selection/highlight of the image.',
-    Category: 'Posts',
+    Category: 'Fixes',
 
     Enabled: false,
 
@@ -1859,7 +1971,9 @@ AVE.Modules['FixExpandImage'] = {
     },
 
     Update: function () {
-        this.Listeners();
+        if (this.Enabled) {
+            this.Listeners();
+        }
     },
 
     obsInSub: null,
@@ -1931,7 +2045,7 @@ AVE.Modules['FixContainerWidth'] = {
     ID: 'FixContainerWidth',
     Name: 'Set Voat container\'s width.',
     Desc: 'By default, Voat shows a margin at both sides of the container. You can modify this by setting the new width as a percentage of the available horizontal space.',
-    Category: 'General',
+    Category: 'Fixes',
 
     Index: 100,
     Enabled: false,
@@ -2116,14 +2230,16 @@ AVE.Modules['IgnoreUsers'] = {
         }
     },
 
-    Update: function () {//Use if this module needs to be update by UpdateAfterLoadingMore, remove otherwise
-        this.Start();
+    Update: function () {
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager
         html: function () {
             var htmlStr = "";
-            htmlStr += '<input id="HardIgnore" type="checkbox"/><label for="HardIgnore"> Hard ignore</label><br />If checked all submissions and (chain)-comments of ignored users will be hidden.';
+            htmlStr += '<input ' + (AVE.Modules['IgnoreUsers'].Options.HardIgnore.Value ? 'checked="true"' : "") + ' id="HardIgnore" type="checkbox"/><label for="HardIgnore"> Hard ignore</label><br />If checked all submissions and (chain)-comments of ignored users will be hidden.';
             if (!AVE.Modules['UserTag'] || !AVE.Modules['UserTag'].Enabled) {
                 htmlStr += '<br /><span style="font-weigth:bold;color:#D84C4C;">The User tagging module is not activated, this module cannot work without it.</span>';
             }
@@ -2135,6 +2251,190 @@ AVE.Modules['IgnoreUsers'] = {
     },
 };
 /// END Ignore users ///
+
+/// Never Ending Voat:  Browse an entire subverse in one page. ///
+AVE.Modules['NeverEndingVoat'] = {
+    ID: 'NeverEndingVoat',
+    Name: 'Never Ending Voat',
+    Desc: 'Browse an entire subverse in one page.',
+    Category: 'Subverse',
+
+    Index: 100,
+    Enabled: false,
+
+    Store: {},
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: true,
+        },
+        AutoLoad: {
+            Type: 'boolean',
+            Desc: 'If checked, scroll to load more content. Click the "load more" button to load the next page otherwise.',
+            Value: true,
+        },
+        ExpandSubmissionBlock: {
+            Type: 'boolean',
+            Desc: 'Expand the new submission posts over the empty sidebar\'s space',
+            Value: true,
+        },
+        DisplayDuplicates: {
+            Type: 'boolean',
+            Desc: 'Display duplicate submissions (greyed).',
+            Value: true,
+        },
+    },
+
+    OriginalOptions: "",
+
+    SavePref: function (POST) {
+        var _this = AVE.Modules['NeverEndingVoat'];
+        POST = POST[_this.ID];
+
+        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST));
+    },
+
+    ResetPref: function () {
+        var _this = AVE.Modules['NeverEndingVoat'];
+        _this.Options = JSON.parse(_this.OriginalOptions);
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = AVE.Modules['NeverEndingVoat'];
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
+
+        $.each(JSON.parse(Opt), function (key, value) {
+            _this.Options[key].Value = value;
+        });
+        _this.Enabled = _this.Options.Enabled.Value;
+    },
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.OriginalOptions = JSON.stringify(this.Options);
+        this.SetOptionsFromPref();
+
+        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse"]) == -1 ||
+            $("div.pagination-container").find("li.btn-whoaverse-paging").length == 0) {
+            this.Enabled = false;
+        }
+
+        if (this.Enabled) {
+            this.SepStyle = 'background-color:#' + (AVE.Utils.CSSstyle == "dark" ? "5C5C5C" : "F6F6F6") + ';height:20px;text-align:center;border:1px dashed #' + (AVE.Utils.CSSstyle == "dark" ? "111" : "BCBCBC") + ';border-radius:3px;padding:2px 0px;margin:4px 0px;';
+            this.Start();
+        }
+    },
+
+    Labels: ["Load more", "Sit tight ...", "Sorry, I couldn't find more content"],
+    PostsIDs: [],
+    SepStyle: '',
+    currentPage: 0,
+
+    Start: function () {
+        var _this = this;
+        $("div.submission[class*='id-']").each(function () {
+            _this.PostsIDs.push($(this).attr("data-fullname"));
+        });
+
+        this.currentPage = window.location.href.match(/\?page\=([0-9]*)/);
+        if (!this.currentPage) { this.currentPage = 0; }
+        else { this.currentPage = parseInt(this.currentPage[1], 10); }
+
+        this.AppendToPage();
+        this.Listeners();
+    },
+
+    AppendToPage: function () {
+        if ($("a#AVE_loadmorebutton").length == 0 && $("div.pagination-container").find("li.btn-whoaverse-paging").length > 0) {
+            var LoadBtn = '<a href="javascript:void(0)" style="margin: 5px 0px;" class="btn-whoaverse btn-block" id="AVE_loadmorebutton">' + this.Labels[0] + '</a>';
+            $("div.pagination-container").html(LoadBtn);
+        }
+    },
+
+    Listeners: function () {
+        var _this = this;
+        $(window).scroll(function () {
+            if ($(document).scrollTop() + $(window).height() >= $("body").height()) {
+                _this.LoadMore();
+            }
+        });
+        $("a#AVE_loadmorebutton").on("click", function () { _this.LoadMore(); });
+    },
+
+    LoadMore: function () {
+        //Don't load another page if one is already being loaded.
+        if ($("a#AVE_loadmorebutton").text() == this.Labels[1]) { return false; }
+
+        var _this = this;
+
+        $("a#AVE_loadmorebutton").text(this.Labels[1]);
+        var nextPageURL = window.location.href;
+        if (nextPageURL.indexOf("?page=") != -1) {
+            nextPageURL = nextPageURL.replace(/\?page\=[0-9]*/, "?page=" + (this.currentPage + 1));
+        } else {
+            nextPageURL = "https://" + window.location.hostname + window.location.pathname + "?page=" + (this.currentPage + 1);
+        }
+        print("loading page: " + nextPageURL);
+        $.ajax({
+            url: nextPageURL,
+            cache: false,
+        }).done(function (html) {
+            if ($(html).find("div.submission[class*='id-']").length == 0) { $("a#AVE_loadmorebutton").text(_this.Labels[2]); return false; } //catchall for error pages
+            _this.currentPage++;
+
+            if (_this.Options.ExpandSubmissionBlock.Value && $("div.content[role='main']").css("margin-right") != "0") {
+                $("div.content[role='main']").css("margin", "0px 10px");
+            }
+
+            $("div.sitetable").append('<div style="' + _this.SepStyle + '" class="AVE_postSeparator">Page ' + (_this.currentPage) + '</div>');
+
+            //$("div.sitetable.linklisting").append('<div class="AVE_postSeparator alert-singlethread">Page ' + (_this.currentPage) + '</div>');
+            $(html).find("div.submission[class*='id-']").each(function () {
+                if ($.inArray($(this).attr("data-fullname"), _this.PostsIDs) == -1) {
+                    _this.PostsIDs.push($(this).attr("data-fullname"));
+                    $("div.sitetable").append($(this));
+                } else if (_this.Options.DisplayDuplicates.Value && !$(this).hasClass("stickied")) {
+                    $("div.sitetable").append($(this));
+                    $(this).css("opacity", "0.45");
+                } else { print("AVE: oups error in NeverEndingVoat:LoadMore()"); }
+            });
+
+            $("a#AVE_loadmorebutton").text(_this.Labels[0]);
+
+            // Add expando links to the new submissions
+            location.assign("javascript:UI.ExpandoManager.execute();void(0)");
+            // from https://github.com/voat/voat/blob/master/Voat/Voat.UI/Scripts/voat.ui.js#L190
+
+            setTimeout(AVE.Init.UpdateModules, 500);
+            window.location.hash = 'p=' + _this.currentPage;
+
+            //Next lines are needed because the front page (voat.co/) is a bit different from the subvese's pages. div.pagination-container isn't normally inside div.sitetable 
+            if ($("div.sitetable").find("div.pagination-container").length > 0) {
+                $("div.pagination-container").appendTo($("div.sitetable"))
+                //<a href="/random">or try a random subverse</a>
+                $("div.sitetable > a[href='/random']").appendTo($("div.sitetable"))
+            }
+        }).fail(function () {
+            $("a#AVE_loadmorebutton").text(_this.Labels[2]);
+        });
+    },
+
+    AppendToPreferenceManager: {
+        html: function () {
+            var _this = AVE.Modules['NeverEndingVoat'];
+
+            var htmlStr = "";
+            var opt = ["AutoLoad", "ExpandSubmissionBlock", "DisplayDuplicates"];
+
+            $.each(opt, function () {
+                htmlStr += '<input id="' + this + '" ' + (_this.Options[this].Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="' + this + '"> ' + _this.Options[this].Desc + '</label><br />';
+            });
+            return htmlStr;
+        },
+    },
+};
+/// END Never Ending Voat ///
 
 /// Reply with quote:  Insert selected/highlighted text (in a comment) into the reply box toggled by "reply". ///
 AVE.Modules['ReplyWithQuote'] = {
@@ -2177,6 +2477,8 @@ AVE.Modules['ReplyWithQuote'] = {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
+        if (AVE.Utils.currentPageType !== "thread") { this.Enabled = false; }
+
         if (this.Enabled) {
             this.Start();
         }
@@ -2187,7 +2489,9 @@ AVE.Modules['ReplyWithQuote'] = {
     },
 
     Update: function () {
-        this.Start();
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     AppendToPage: function () {
@@ -2331,7 +2635,9 @@ AVE.Modules['SelectPost'] = {
     },
 
     Update: function () {
-        this.Start();
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     Listeners: function () {
@@ -2787,10 +3093,10 @@ AVE.Modules['ShortcutKeys'] = {
 };
 /// END Shortcut keys ///
 
-/// Toggle display chlild comments:  Adds "Hide child comments" link to hide a chain of posts ///
+/// Toggle display child comments:  Adds "Hide child comments" link to hide a chain of posts ///
 AVE.Modules['ToggleChildComment'] = {
     ID: 'ToggleChildComment',
-    Name: 'Toggle display chlild comments',
+    Name: 'Toggle display child comments',
     Desc: 'Adds "Hide child comments" link to hide a chain of posts',
     Category: 'Thread',
 
@@ -2830,6 +3136,8 @@ AVE.Modules['ToggleChildComment'] = {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
+        if (AVE.Utils.currentPageType !== "thread") { this.Enabled = false; }
+
         if (this.Enabled) {
             this.Start();
         }
@@ -2841,7 +3149,9 @@ AVE.Modules['ToggleChildComment'] = {
     },
 
     Update: function () {
-        this.Start();
+        if (this.Enabled) {
+            this.Start();
+        }
     },
 
     AppendToPage: function () {
@@ -2870,7 +3180,7 @@ AVE.Modules['ToggleChildComment'] = {
         });
     },
 };
-/// END Toggle display chlild comments ///
+/// END Toggle display child comments ///
 
 /// BackCompatibility Module:  Migrate data from V1 to V2. ///
 AVE.Modules['BackCompatibility'] = {

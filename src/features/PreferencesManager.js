@@ -194,7 +194,7 @@ AVE.Modules['PreferenceManager'] = {
     MngWinHTML: '',
     ModuleHTML: '',
 
-    Categories: ["General", "Subverse", "Thread", "Posts", "Manager", "Misc."],//Available Categories to show //backward compatibility in misc
+    Categories: ["General", "Subverse", "Thread", "Posts", "Manager", "Fixes", "Misc."],//Available Categories to show //backward compatibility in misc
     Modules: [],//List of all modules
 
     AppendToPage: function () {
@@ -346,9 +346,15 @@ AVE.Modules['PreferenceManager'] = {
         if (pos == undefined) {
             $("form[cat='" + cat + "']").append(html);
         } else {
-            if (pos > 0) {
+            if (pos > 0) { //if the position isn't first of its category
                 $(html).insertAfter("form[cat='" + cat + "'] > div.ModuleBlock:nth(" + (pos - 1) + ")");
-            } else { $(html).insertBefore("form[cat='" + cat + "'] > div.ModuleBlock:nth(0)"); }
+            } else {
+                if ($("form[cat='" + cat + "'] > div.ModuleBlock").length > 0) {
+                    $(html).insertBefore("form[cat='" + cat + "'] > div.ModuleBlock:nth(0)");
+                } else { //if it is alone in its category
+                    $(html).appendTo("form[cat='" + cat + "']");
+                }
+            }
         }
 
         //Get special form element from the modules themselves.
