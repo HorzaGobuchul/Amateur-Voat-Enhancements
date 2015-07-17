@@ -116,29 +116,32 @@ AVE.Modules['ToggleMedia'] = {
     },
 
     Listeners: function () {
-        sel = this.sel;
+        var _this = this;
         var isExpanded = false;
         $("[id='GM_ExpandAllImages']").off("click");
         $("[id='GM_ExpandAllImages']").on("click", function () {
             if ($(this).hasClass("expanded")) {
-                $(this).text('View Media (' + sel.length + ')');
+                $(this).text('View Media (' + _this.sel.length + ')');
                 $(this).removeClass("expanded")
                 isExpanded = false;
             } else {
-                $(this).text('Hide Media (' + sel.length + ')');
+                $(this).text('Hide Media (' + _this.sel.length + ')');
                 $(this).addClass("expanded")
                 isExpanded = true;
             }
-
-            for (var el in sel) {
-                if (
-                    (isExpanded && sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
-                    isExpanded === sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
-                    ) {
-                    sel[el].click();
-                }
-            }
+            _this.ToggleMedia(isExpanded);
         });
+    },
+
+    ToggleMedia: function (state) {
+        for (var el in this.sel.get()) {
+            if (
+                (state && this.sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
+                state === this.sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
+                ) {
+                this.sel[el].click();
+            }
+        }
     },
 
     AppendToPreferenceManager: {

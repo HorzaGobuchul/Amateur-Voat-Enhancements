@@ -19,6 +19,11 @@ AVE.Modules['UserTag'] = {
             Type: 'boolean',
             Value: true,
         },
+        VoteBalance: {
+            Type: 'boolean',
+            Desc: 'Track votes and display vote balance next to usernames.',
+            Value: true,
+        },
     },
     //Possible issues with the fact that the username in the profil overview is in lower case
     UserTagObj: function (tag, colour, ignored, balance) {
@@ -29,13 +34,13 @@ AVE.Modules['UserTag'] = {
     },
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
     SetOptionsFromPref: function () {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         Opt = JSON.parse(Opt);
@@ -87,6 +92,7 @@ tr#ShowPreview > td > span#PreviewBox {\
     display: inline-block;\
     max-width: 130px;\
     overflow: hidden;\
+    white-space: nowrap;\
     text-overflow: ellipsis;\
     padding: 0px 4px;\
     border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "484848") + ';\
@@ -195,7 +201,7 @@ table#formTable{\
 
         $("a[href*='/user/']").each(function () {
             if (!$(this).attr('href').match(sel)) { return true; } //useful?
-            if ($(this).parent().find("span.AVE_UserTag").length > 0) { return true; } //don't add if it already exists
+            if ($(this).next("span.AVE_UserTag").length > 0) { return true; } //don't add if it already exists
             if ($(this).parents("div#header-account").length > 0) { return true; } //don't add if it the userpage link in the account header
 
             name = $(this).html().replace("@", "").replace("/u/", "").toLowerCase(); //Accepts: Username, @Username, /u/Username
@@ -222,8 +228,8 @@ table#formTable{\
                 g = parseInt(newColour.substring(3, 5), 16);
                 b = parseInt(newColour.substring(5, 7), 16);
 
-                $(this).parent().find(".AVE_UserTag").css("background-color", tag.colour);
-                $(this).parent().find(".AVE_UserTag").css("color", AVE.Utils.GetBestFontColour(r, g, b));
+                $(this).next(".AVE_UserTag").css("background-color", tag.colour);
+                $(this).next(".AVE_UserTag").css("color", AVE.Utils.GetBestFontColour(r, g, b));
             }
 
             if (AVE.Modules['IgnoreUsers'] && tag.ignored) {
@@ -346,13 +352,13 @@ table#formTable{\
     //      we use a second function that keypresses in ShortKeys.js can invoke directly.
     // Ten mimutes later it works perfectly well. Maybe, voat's current instability was to blame. I'm not changing it back, anyway...
     ChangeVoteBalance: function (target, oldValue) {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
 
         //print("target: "+target);
         //print("oldvalue: "+oldValue);
         //print("newvalue: "+$(target).attr('class'));
 
-        var username = $(target).parent().find(".AVE_UserTag").attr("id").toLowerCase();
+        var username = $(target).parent().find(".AVE_UserTag:first").attr("id").toLowerCase();
         if (username == undefined) { return true; }
 
         var tag = _this.GetTag(username);
@@ -404,9 +410,9 @@ table#formTable{\
 
             if (tag.balance != 0) {
                 var sign = tag.balance > 0 ? "+" : "";
-                $(this).parent().find("span.AVE_UserBalance").text('[ ' + sign + tag.balance + ' ]');
+                $(this).nextAll("span.AVE_UserBalance:first").text('[ ' + sign + tag.balance + ' ]');
             } else {
-                $(this).parent().find("span.AVE_UserBalance").text("");
+                $(this).nextAll("span.AVE_UserBalance:first").text("");
             }
         });
     },

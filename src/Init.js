@@ -10,7 +10,7 @@ AVE.Init = {
         AVE.Utils.Set();
 
         //print(AVE.Storage.Persistence());
-        print(AVE.Utils.currentPageType);
+        //print(AVE.Utils.currentPageType);
         if (AVE.Utils.currentPageType != "none") {
             $(document).ready(function () {
                 $.each(AVE.Modules, function () {

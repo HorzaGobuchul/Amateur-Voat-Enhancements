@@ -195,18 +195,23 @@ AVE.Modules['PreferenceManager'] = {
     ModuleHTML: '',
 
     Categories: ["General", "Subverse", "Thread", "Posts", "Manager", "Fixes", "Misc."],//Available Categories to show //backward compatibility in misc
-    Modules: [],//List of all modules
+    Modules: [],//List of modules
 
     AppendToPage: function () {
         $("<style></style>").appendTo("head").html(this.MngWinStyle);
 
-        var LinkHTML = '<span class="user"><a style="font-weight:bold;" href="javascript:void(0)" id="" title="AVE_Manager">AVE</a></span> <span class="separator">|</span> ';
-        $(LinkHTML).insertBefore("span.user:contains('Manage')");
+        if ($("span.user:contains('Manage')").length > 0) {
+            var LinkHTML = '<span class="user"><a style="font-weight:bold;" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span> <span class="separator">|</span> ';
+            $(LinkHTML).insertBefore("span.user:contains('Manage')");
+        } else { //If the user isn't logged in
+            var LinkHTML = '<span class="user"> - <a style="font-weight:bold;" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span>';
+            $(LinkHTML).insertAfter("span.user");
+        }
     },
 
     Listeners: function () {
         var _this = this;
-        $("a[title='AVE_Manager']").on("click", function () {
+        $("a[title='AVE Preference Manager']").on("click", function () {
             if ($(".MngrWin").length > 0) {
                 $(".MngrWin").show();
             }

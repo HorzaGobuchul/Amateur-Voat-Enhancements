@@ -2,7 +2,7 @@ AVE.Modules['UserInfoFixedPos'] = {
     ID: 'UserInfoFixedPos',
     Name: 'Fix user-block position',
     Desc: 'Set the user info block\'s position as fixed.',
-    Category: 'General',
+    Category: 'Fixes',
 
     Index: 1,
     Enabled: false,

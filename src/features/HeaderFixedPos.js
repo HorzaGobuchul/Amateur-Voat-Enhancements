@@ -2,7 +2,7 @@ AVE.Modules['HeaderFixedPos'] = {
     ID: 'HeaderFixedPos',
     Name: 'Fix header position',
     Desc: 'Set the subverse list header position as fixed.',
-    Category: 'General',
+    Category: 'Fixes',
     Index: 2,
     Enabled: false,
 

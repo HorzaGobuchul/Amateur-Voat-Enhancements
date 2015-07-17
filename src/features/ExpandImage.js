@@ -109,7 +109,7 @@ AVE.Modules['FixExpandImage'] = {
                 exp.animate({
                     width: 150 + "px", //just enough width to let the media info show
                     height: img.height() + 20 + "px",
-                }, 1000);
+                }, 150);
             }
         });
         this.obsInThread.observe()

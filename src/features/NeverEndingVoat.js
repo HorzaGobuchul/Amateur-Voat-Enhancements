@@ -29,6 +29,11 @@ AVE.Modules['NeverEndingVoat'] = {
             Desc: 'Display duplicate submissions (greyed).',
             Value: true,
         },
+        ExpandNewMedia: {
+            Type: 'boolean',
+            Desc: 'Expand media in inserted pages, if you already clicked the \"View Media\" button.',
+            Value: false,
+        },
     },
 
     OriginalOptions: "",
@@ -71,7 +76,7 @@ AVE.Modules['NeverEndingVoat'] = {
         }
     },
 
-    Labels: ["Load more", "Sit tight ...", "Sorry, I couldn't find more content"],
+    Labels: ["Load more", "Sit tight ...", "Sorry, I couldn't find more content", "Something went wrong. Maybe try again?"],
     PostsIDs: [],
     SepStyle: '',
     currentPage: 0,
@@ -99,11 +104,15 @@ AVE.Modules['NeverEndingVoat'] = {
 
     Listeners: function () {
         var _this = this;
-        $(window).scroll(function () {
-            if ($(document).scrollTop() + $(window).height() >= $("body").height()) {
-                _this.LoadMore();
-            }
-        });
+
+        if (_this.Options.AutoLoad.Value) {
+            $(window).scroll(function () {
+                if ($(document).scrollTop() + $(window).height() >= $("body").height()) {
+                    _this.LoadMore();
+                }
+            });
+        }
+
         $("a#AVE_loadmorebutton").on("click", function () { _this.LoadMore(); });
     },
 
@@ -141,7 +150,7 @@ AVE.Modules['NeverEndingVoat'] = {
                     $("div.sitetable").append($(this));
                 } else if (_this.Options.DisplayDuplicates.Value && !$(this).hasClass("stickied")) {
                     $("div.sitetable").append($(this));
-                    $(this).css("opacity", "0.45");
+                    $(this).css("opacity", "0.3");
                 } else { print("AVE: oups error in NeverEndingVoat:LoadMore()"); }
             });
 
@@ -151,17 +160,26 @@ AVE.Modules['NeverEndingVoat'] = {
             location.assign("javascript:UI.ExpandoManager.execute();void(0)");
             // from https://github.com/voat/voat/blob/master/Voat/Voat.UI/Scripts/voat.ui.js#L190
 
+            //Ugly, isn't it?
+            if (_this.Options.ExpandNewMedia.Value) {
+                if (AVE.Modules['ToggleMedia'] && AVE.Modules['ToggleMedia'].Enabled) {
+                    if ($("[id='GM_ExpandAllImages']").hasClass("expanded")) {
+                        setTimeout(function () { AVE.Modules['ToggleMedia'].ToggleMedia(true) }, 750);
+                        
+                    }
+                }
+            }
+
             setTimeout(AVE.Init.UpdateModules, 500);
             window.location.hash = 'p=' + _this.currentPage;
 
-            //Next lines are needed because the front page (voat.co/) is a bit different from the subvese's pages. div.pagination-container isn't normally inside div.sitetable 
+            //Next lines are needed because the front page (^voat.co$) is a bit different from subverses' pages. div.pagination-container isn't normally inside div.sitetable 
             if ($("div.sitetable").find("div.pagination-container").length > 0) {
                 $("div.pagination-container").appendTo($("div.sitetable"))
-                //<a href="/random">or try a random subverse</a>
                 $("div.sitetable > a[href='/random']").appendTo($("div.sitetable"))
             }
         }).fail(function () {
-            $("a#AVE_loadmorebutton").text(_this.Labels[2]);
+            $("a#AVE_loadmorebutton").text(_this.Labels[3]);
         });
     },
 
@@ -170,7 +188,7 @@ AVE.Modules['NeverEndingVoat'] = {
             var _this = AVE.Modules['NeverEndingVoat'];
 
             var htmlStr = "";
-            var opt = ["AutoLoad", "ExpandSubmissionBlock", "DisplayDuplicates"];
+            var opt = ["AutoLoad", "ExpandSubmissionBlock", "DisplayDuplicates", "ExpandNewMedia"];
 
             $.each(opt, function () {
                 htmlStr += '<input id="' + this + '" ' + (_this.Options[this].Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="' + this + '"> ' + _this.Options[this].Desc + '</label><br />';

@@ -6,10 +6,11 @@
 // @license     MIT; https://github.com/HorzaGobuchul/{@repoName}/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.19.2.4
+// @version     2.19.4.4
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
+// @grant       GM_openInTab
 // @run-at      document-end
 // @updateURL   https://github.com/HorzaGobuchul/{@repoName}/raw/master/{@fileName}_meta.user.js
 // @downloadURL https://github.com/HorzaGobuchul/{@repoName}/raw/master/{@fileName}.user.js
