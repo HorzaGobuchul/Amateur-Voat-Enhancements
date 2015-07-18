@@ -5,7 +5,6 @@ AVE.Modules['ShortcutKeys'] = {
     Category: 'Posts',
 
     Enabled: false,
-    Debug: true,
 
     Store: {},
 
@@ -114,7 +113,7 @@ AVE.Modules['ShortcutKeys'] = {
             var sel = AVE.Utils.SelectedPost;
 
             if (event.key == undefined) { //Chrome
-                var key = String.fromCharCode(event.charCode).toUpperCase();
+                var key = String.fromCharCode(event.keyCode).toUpperCase();
             } else {
                 var key = event.key.toUpperCase();
             }
@@ -194,23 +193,29 @@ AVE.Modules['ShortcutKeys'] = {
             } else if (key == OpenC.toUpperCase()) { // Open comment page
                 if (!sel.parent().hasClass("submission")) { return; }
                 if (_this.Options.OpenInNewTab.Value) {
-                    GM_openInTab(sel.find("a.comments").attr("href"));
+                    GM_openInTab("https://" + window.location.hostname + sel.find("a.comments").attr("href"));
                 } else {
-                    window.location = sel.find("a.comments").attr("href");
+                    window.location.href = "https://" + window.location.hostname + sel.find("a.comments").attr("href");
                 }
             } else if (key == OpenL.toUpperCase()) { // Open link page
                 if (!sel.parent().hasClass("submission")) { return; }
+                var url = sel.find("a.title").attr("href");
+
+                if (!/^http/.test(url)) { url = "https://" + window.location.hostname + url; }
+
                 if (_this.Options.OpenInNewTab.Value) {
-                    GM_openInTab(sel.find("a.title").attr("href"));
+                    GM_openInTab(url);
                 } else {
-                    window.location = sel.find("a.title").attr("href");
+                    window.location.href = url;
                 }
             } else if (key == OpenLC.toUpperCase()) { // Open comment and link pages
                 if (!sel.parent().hasClass("submission")) { return; }
                 var url = [];
 
                 url.push(sel.find("a.title").attr("href"));
-                url.push(sel.find("a.comments").attr("href"));
+                url.push("https://" + window.location.hostname + sel.find("a.comments").attr("href"));
+
+                if (!/^http/.test(url[0])) { url[0] = "https://" + window.location.hostname + url[0]; }
 
                 if (url[0] && url[0] == url[1]) {
                     GM_openInTab(url[0]);

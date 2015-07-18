@@ -19,10 +19,11 @@ AVE.Utils = {
 
     Page: function () {
         var RegExpTypes = {
-            frontpage: /voat.co\/?(\?page=[0-9]*)?(\#[^\\\/]*)?$/i,
+            frontpage: /voat.co\/?(new)?(\?page=[0-9]*)?(\#[^\\\/]*)?$/i,
             subverse: /voat.co\/v\/[a-z]*\/?(\?page=[0-9]*)?/i,
             thread: /voat.co\/v\/[a-z]*\/comments\/\d*/i,
             subverses: /voat.co\/subverses/i,
+            search: /voat.co\/search\?q=/i,
             set: /voat.co\/set\/\d*/i,
             mySet: /voat.co\/mysets/i,
             sets: /voat.co\/sets/i,
@@ -39,6 +40,7 @@ AVE.Utils = {
         else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
         else if (RegExpTypes.subverses.test(url)) { return "subverses"; }
         else if (RegExpTypes.set.test(url)) { return "set"; }
+        else if (RegExpTypes.search.test(url)) { return "search"; }
         else if (RegExpTypes.mySet.test(url)) { return "mysets"; }
         else if (RegExpTypes.sets.test(url)) { return "sets"; }
         else if (RegExpTypes.user.test(url)) { return "user"; }

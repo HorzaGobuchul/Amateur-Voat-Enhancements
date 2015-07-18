@@ -84,7 +84,7 @@ AVE.Modules['ToggleMedia'] = {
             if (strSel[strSel.length - 1] == ",")
             { strSel = strSel.slice(0, -1); }
 
-            this.sel = $(strSel);
+            this.sel = $(strSel).filter(function (idx) {return $(this).parents("div.submission[class*='id-']:first").css("opacity") == 1;});
 
             if (!this.Options.ToggleInSidebar.Value)
             { this.sel = $(this.sel).filter(':parents(.titlebox)'); }
@@ -106,7 +106,6 @@ AVE.Modules['ToggleMedia'] = {
         if (this.sel.length == 0) { return; }
 
         if ($("a#GM_ExpandAllImages").length > 0) {
-
             $("a#GM_ExpandAllImages").text($("a#GM_ExpandAllImages").text().replace(/\([0-9]*\)/, "(" + this.sel.length + ")"));
         }
         else {
@@ -138,7 +137,8 @@ AVE.Modules['ToggleMedia'] = {
             if (
                 (state && this.sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
                 state === this.sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
-                ) {
+                )
+            {
                 this.sel[el].click();
             }
         }

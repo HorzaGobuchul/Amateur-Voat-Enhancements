@@ -21,7 +21,7 @@ AVE.Modules['UserTag'] = {
         },
         VoteBalance: {
             Type: 'boolean',
-            Desc: 'Track votes and display vote balance next to usernames.',
+            Desc: 'Track votes and display the vote balance next to usernames.',
             Value: true,
         },
     },
@@ -211,11 +211,13 @@ table#formTable{\
             tag = _this.GetTag(name) || new _this.UserTagObj("",  (AVE.Utils.CSSstyle == "dark" ? "#d1d1d1" : "#e1fcff"), false, 0);
 
             Tag_html = '<span class="AVE_UserTag" id="' + name + '">' + (!tag.tag ? "" : tag.tag) + '</span>';
-            if (tag.balance != 0) {
-                var sign = tag.balance > 0 ? "+" : "";
-                Tag_html += '<span class="AVE_UserBalance" id="' + name + '">[ ' + sign + tag.balance + ' ]</span>';
-            } else {
-                Tag_html += '<span class="AVE_UserBalance" id="' + name + '"></span>';
+            if (_this.Options.VoteBalance.Value) {
+                if (tag.balance != 0) {
+                    var sign = tag.balance > 0 ? "+" : "";
+                    Tag_html += '<span class="AVE_UserBalance" id="' + name + '">[ ' + sign + tag.balance + ' ]</span>';
+                } else {
+                    Tag_html += '<span class="AVE_UserBalance" id="' + name + '"></span>';
+                }
             }
             $(Tag_html).insertAfter($(this));
 
@@ -280,11 +282,13 @@ table#formTable{\
             $("tr#SetTag > td > input.UserTagTextInput").select();
         });
 
-        $("div[class*='midcol']").OnAttrChange(function (e) {//persistent with UpdateAfterLoadingMore?
-            if (!e.oldValue || e.oldValue.split(" ").length != 2) { return true; }
+        if (_this.Options.VoteBalance.Value) {
+            $("div[class*='midcol']").OnAttrChange(function (e) {//persistent with UpdateAfterLoadingMore?
+                if (!e.oldValue || e.oldValue.split(" ").length != 2) { return true; }
 
-            _this.ChangeVoteBalance(e.target, e.oldValue);
-        });
+                _this.ChangeVoteBalance(e.target, e.oldValue);
+            });
+        }
 
         //Close button
         $("div#UserTagHeader > span > a#CloseTagWin").off("click");
@@ -408,12 +412,14 @@ table#formTable{\
                 $(this).removeAttr("style");
             }
 
-            if (tag.balance != 0) {
-                var sign = tag.balance > 0 ? "+" : "";
-                $(this).nextAll("span.AVE_UserBalance:first").text('[ ' + sign + tag.balance + ' ]');
-            } else {
-                $(this).nextAll("span.AVE_UserBalance:first").text("");
-            }
+            if (_this.Options.VoteBalance.Value) {
+                if (tag.balance != 0) {
+                    var sign = tag.balance > 0 ? "+" : "";
+                    $(this).nextAll("span.AVE_UserBalance:first").text('[ ' + sign + tag.balance + ' ]');
+                } else {
+                    $(this).nextAll("span.AVE_UserBalance:first").text("");
+                }
+            };
         });
     },
 
@@ -459,6 +465,7 @@ table#formTable{\
                 htmlStr += "<li>You have voted on submissions made by " + VoteLen + " users.</li>";
                 htmlStr += "<li>You have chosen to ignore " + IgnoreLen + " users.</li></ul>";
 
+                htmlStr += '<br /><input id="VoteBalance" ' + (_this.Options.VoteBalance.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="VoteBalance"> ' + _this.Options.VoteBalance.Desc + '</label><br />';
                 //Add option to remove oldest tags.
                 //  Seeing as this.usertags is ordered oldest first, propose to remove X tags at the beginning of the list.
                 return htmlStr;

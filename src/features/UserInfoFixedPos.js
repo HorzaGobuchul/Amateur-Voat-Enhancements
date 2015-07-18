@@ -4,7 +4,7 @@ AVE.Modules['UserInfoFixedPos'] = {
     Desc: 'Set the user info block\'s position as fixed.',
     Category: 'Fixes',
 
-    Index: 1,
+    Index: 2,
     Enabled: false,
 
     Store: {},
@@ -45,7 +45,7 @@ AVE.Modules['UserInfoFixedPos'] = {
     },
 
     Start: function () {
-        if (AVE.Modules['HeaderFixedPos'] == undefined) { AVE.Utils.ListHeaderHeight = 0; }
+        if (!AVE.Utils.ListHeaderHeight) { AVE.Utils.ListHeaderHeight = 0; }
 
         var headerAccountPos = $('#header-account').offset().top;
         $(window).scroll(function () {

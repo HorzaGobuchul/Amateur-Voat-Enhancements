@@ -1,15 +1,16 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        2015-07-16
+// @date        2015-07-18
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.19.2.4
+// @version     2.19.10.12
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
+// @grant       GM_openInTab
 // @run-at      document-end
 // @updateURL   https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Amateur-Voat-Enhancements_meta.user.js
 // @downloadURL https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Amateur-Voat-Enhancements.user.js
@@ -30,7 +31,7 @@ AVE.Init = {
         AVE.Utils.Set();
 
         //print(AVE.Storage.Persistence());
-        print(AVE.Utils.currentPageType);
+        //print(AVE.Utils.currentPageType);
         if (AVE.Utils.currentPageType != "none") {
             $(document).ready(function () {
                 $.each(AVE.Modules, function () {
@@ -74,10 +75,11 @@ AVE.Utils = {
 
     Page: function () {
         var RegExpTypes = {
-            frontpage: /voat.co\/?(\?page=[0-9]*)?(\#[^\\\/]*)?$/i,
+            frontpage: /voat.co\/?(new)?(\?page=[0-9]*)?(\#[^\\\/]*)?$/i,
             subverse: /voat.co\/v\/[a-z]*\/?(\?page=[0-9]*)?/i,
             thread: /voat.co\/v\/[a-z]*\/comments\/\d*/i,
             subverses: /voat.co\/subverses/i,
+            search: /voat.co\/search\?q=/i,
             set: /voat.co\/set\/\d*/i,
             mySet: /voat.co\/mysets/i,
             sets: /voat.co\/sets/i,
@@ -94,6 +96,7 @@ AVE.Utils = {
         else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
         else if (RegExpTypes.subverses.test(url)) { return "subverses"; }
         else if (RegExpTypes.set.test(url)) { return "set"; }
+        else if (RegExpTypes.search.test(url)) { return "search"; }
         else if (RegExpTypes.mySet.test(url)) { return "mysets"; }
         else if (RegExpTypes.sets.test(url)) { return "sets"; }
         else if (RegExpTypes.user.test(url)) { return "user"; }
@@ -469,18 +472,23 @@ AVE.Modules['PreferenceManager'] = {
     ModuleHTML: '',
 
     Categories: ["General", "Subverse", "Thread", "Posts", "Manager", "Fixes", "Misc."],//Available Categories to show //backward compatibility in misc
-    Modules: [],//List of all modules
+    Modules: [],//List of modules
 
     AppendToPage: function () {
         $("<style></style>").appendTo("head").html(this.MngWinStyle);
 
-        var LinkHTML = '<span class="user"><a style="font-weight:bold;" href="javascript:void(0)" id="" title="AVE_Manager">AVE</a></span> <span class="separator">|</span> ';
-        $(LinkHTML).insertBefore("span.user:contains('Manage')");
+        if ($("span.user:contains('Manage')").length > 0) {
+            var LinkHTML = '<span class="user"><a style="font-weight:bold;" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span> <span class="separator">|</span> ';
+            $(LinkHTML).insertBefore("span.user:contains('Manage')");
+        } else { //If the user isn't logged in
+            var LinkHTML = '<span class="user"> - <a style="font-weight:bold;" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span>';
+            $(LinkHTML).insertAfter("span.user");
+        }
     },
 
     Listeners: function () {
         var _this = this;
-        $("a[title='AVE_Manager']").on("click", function () {
+        $("a[title='AVE Preference Manager']").on("click", function () {
             if ($(".MngrWin").length > 0) {
                 $(".MngrWin").show();
             }
@@ -725,7 +733,34 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.19.2.3:",
+        "V2.19.10.12:",
+        "   Shortkey:",
+        "       Added new shortcuts:",
+        "           Select next or previous comment",
+        "           Open comments page",
+        "           Open link page",
+        "           Open link and comments pages",
+        "           Expand media",
+        "       Hitting the next key, at the bottom of a subverse page or thread, triggers loading more content",
+        "       Added option to open links and comments pages in new tabs. Redirects otherwise",
+        "       Doesn't work anymore when a key modifier is pressed (ctrl, shift)",
+        "   NeverEndingVoat:",
+        "       Added option to expand media in new pages if you already clicked the \"View Media\" button",
+        "           Disabled by default to save bandwidth",
+        "           Duplicate submissions aren't expanded",
+        "       Duplicate submissions' opacity has been lowered to 0.3",
+        "       AutoLoad option",
+        "   UserTag:",
+        "       Added option to disabled the vote balance feature",
+        "       Fixed a bug that made it so, in comment/self-text, only the first reference to a user, in the same line, was detected and tagged",
+        "       The tag preview area is now limited to one line",
+        "   PreferenceManager:",
+        "       The 'AVE' link now appears even when not logged-in",
+        "   UserInfoFixedPos:",
+        "       If the page loads already scrolled down (e.g. refreshed), the account info block now positions itself accordingly",
+        "   Added support for voat.co/search",
+        "   Added support for voat.co/new",
+        "V2.19.2.4:",
         "   New fix: DisableShareALink",
         "   NeverEndingVoat:",
         "       won't show sticky submission duplicates anymore",
@@ -867,150 +902,13 @@ AVE.Modules['VersionNotifier'] = {
 };
 /// END Version notifier ///
 
-/// Update after loading more:  Updates other modules when a thread is continued. ///
-AVE.Modules['UpdateAfterLoadingMore'] = {
-    ID: 'UpdateAfterLoadingMore',
-    Name: 'Update after loading more',
-    Desc: 'Updates other modules when a thread is continued.',
-    Category: 'Thread',//Maybe Subverses/Sets later
-
-    Index: 1,
-    Enabled: false,
-
-    Store: {},
-
-    Options: {
-        Enabled: {
-            Type: 'boolean',
-            Value: true,
-        },
-    },
-
-    SavePref: function (POST) {
-        var _this = AVE.Modules['UpdateAfterLoadingMore'];
-
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
-    },
-
-    SetOptionsFromPref: function () {
-        var _this = this;
-        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
-
-        if (Opt != undefined) {
-            Opt = JSON.parse(Opt);
-            $.each(Opt, function (key, value) {
-                _this.Options[key].Value = value;
-            });
-        }
-        _this.Enabled = _this.Options.Enabled.Value;
-    },
-
-    Load: function () {
-        this.Store = AVE.Storage;
-        this.SetOptionsFromPref();
-
-        if (this.Enabled) {
-            this.Start();
-        }
-    },
-
-    Start: function () {
-        this.Listeners();
-    },
-
-    Listeners: function () {
-        $("a#loadmorebutton").OnNodeChange(function () {
-            if ($(this).text().split(" ")[0] == "load") {
-                setTimeout(AVE.Init.UpdateModules, 500);
-            }
-        });
-    },
-};
-/// END Update after loading more ///
-
-/// Fix user-block position:  Set the user info block\'s position as fixed. ///
-AVE.Modules['UserInfoFixedPos'] = {
-    ID: 'UserInfoFixedPos',
-    Name: 'Fix user-block position',
-    Desc: 'Set the user info block\'s position as fixed.',
-    Category: 'General',
-
-    Index: 1,
-    Enabled: false,
-
-    Store: {},
-
-    Options: {
-        Enabled: {
-            Type: 'boolean',
-            Value: true,
-        },
-    },
-
-    SavePref: function (POST) {
-        var _this = AVE.Modules['UserInfoFixedPos'];
-
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
-    },
-
-    SetOptionsFromPref: function () {
-        var _this = this;
-        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
-
-        if (Opt != undefined) {
-            Opt = JSON.parse(Opt);
-            $.each(Opt, function (key, value) {
-                _this.Options[key].Value = value;
-            });
-        }
-        _this.Enabled = _this.Options.Enabled.Value;
-    },
-
-    Load: function () {
-        this.Store = AVE.Storage;
-        this.SetOptionsFromPref();
-
-        if (this.Enabled) {
-            this.Start();
-        }
-    },
-
-    Start: function () {
-        if (AVE.Modules['HeaderFixedPos'] == undefined) { AVE.Utils.ListHeaderHeight = 0; }
-
-        var headerAccountPos = $('#header-account').offset().top;
-        $(window).scroll(function () {
-            SetAccountHeaderPosAsFixed(headerAccountPos)
-        });
-        SetAccountHeaderPosAsFixed(headerAccountPos)
-
-        function SetAccountHeaderPosAsFixed(headerAccountPos) {
-            if ($(window).scrollTop() + AVE.Utils.ListHeaderHeight > headerAccountPos) {
-                $('#header-account').css('position', 'fixed')
-                                    .css('top', AVE.Utils.ListHeaderHeight+"px")
-                                    .css('right', '0')
-                                    .css("text-align", "center")
-                                    .css("height", "0px");
-                $('.logged-in').css("background", AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)");
-            } else {
-                $('#header-account').css('position', '')
-                                    .css('top', '')
-                                    .css("text-align", "")
-                                    .css("height", "");
-                $('.logged-in').css("background", "");
-            }
-        }
-    },
-};
-/// END Fix user-block position ///
-
 /// Fix header position:  Set the subverse list header position as fixed. ///
 AVE.Modules['HeaderFixedPos'] = {
     ID: 'HeaderFixedPos',
     Name: 'Fix header position',
     Desc: 'Set the subverse list header position as fixed.',
-    Category: 'General',
-    Index: 2,
+    Category: 'Fixes',
+    Index: 1,
     Enabled: false,
 
     Store: {},
@@ -1083,6 +981,143 @@ AVE.Modules['HeaderFixedPos'] = {
 };
 /// END Fix header position ///
 
+/// Update after loading more:  Updates other modules when a thread is continued. ///
+AVE.Modules['UpdateAfterLoadingMore'] = {
+    ID: 'UpdateAfterLoadingMore',
+    Name: 'Update after loading more',
+    Desc: 'Updates other modules when a thread is continued.',
+    Category: 'Thread',//Maybe Subverses/Sets later
+
+    Index: 1,
+    Enabled: false,
+
+    Store: {},
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: true,
+        },
+    },
+
+    SavePref: function (POST) {
+        var _this = AVE.Modules['UpdateAfterLoadingMore'];
+
+        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = this;
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
+
+        if (Opt != undefined) {
+            Opt = JSON.parse(Opt);
+            $.each(Opt, function (key, value) {
+                _this.Options[key].Value = value;
+            });
+        }
+        _this.Enabled = _this.Options.Enabled.Value;
+    },
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.SetOptionsFromPref();
+
+        if (this.Enabled) {
+            this.Start();
+        }
+    },
+
+    Start: function () {
+        this.Listeners();
+    },
+
+    Listeners: function () {
+        $("a#loadmorebutton").OnNodeChange(function () {
+            if ($(this).text().split(" ")[0] == "load") {
+                setTimeout(AVE.Init.UpdateModules, 500);
+            }
+        });
+    },
+};
+/// END Update after loading more ///
+
+/// Fix user-block position:  Set the user info block\'s position as fixed. ///
+AVE.Modules['UserInfoFixedPos'] = {
+    ID: 'UserInfoFixedPos',
+    Name: 'Fix user-block position',
+    Desc: 'Set the user info block\'s position as fixed.',
+    Category: 'Fixes',
+
+    Index: 2,
+    Enabled: false,
+
+    Store: {},
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: true,
+        },
+    },
+
+    SavePref: function (POST) {
+        var _this = AVE.Modules['UserInfoFixedPos'];
+
+        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = this;
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
+
+        if (Opt != undefined) {
+            Opt = JSON.parse(Opt);
+            $.each(Opt, function (key, value) {
+                _this.Options[key].Value = value;
+            });
+        }
+        _this.Enabled = _this.Options.Enabled.Value;
+    },
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.SetOptionsFromPref();
+
+        if (this.Enabled) {
+            this.Start();
+        }
+    },
+
+    Start: function () {
+        if (!AVE.Utils.ListHeaderHeight) { AVE.Utils.ListHeaderHeight = 0; }
+
+        var headerAccountPos = $('#header-account').offset().top;
+        $(window).scroll(function () {
+            SetAccountHeaderPosAsFixed(headerAccountPos)
+        });
+        SetAccountHeaderPosAsFixed(headerAccountPos)
+
+        function SetAccountHeaderPosAsFixed(headerAccountPos) {
+            if ($(window).scrollTop() + AVE.Utils.ListHeaderHeight > headerAccountPos) {
+                $('#header-account').css('position', 'fixed')
+                                    .css('top', AVE.Utils.ListHeaderHeight+"px")
+                                    .css('right', '0')
+                                    .css("text-align", "center")
+                                    .css("height", "0px");
+                $('.logged-in').css("background", AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)");
+            } else {
+                $('#header-account').css('position', '')
+                                    .css('top', '')
+                                    .css("text-align", "")
+                                    .css("height", "");
+                $('.logged-in').css("background", "");
+            }
+        }
+    },
+};
+/// END Fix user-block position ///
+
 /// User tagging:  Tag Voat users with custom labels. ///
 AVE.Modules['UserTag'] = {
     ID: 'UserTag',
@@ -1105,6 +1140,11 @@ AVE.Modules['UserTag'] = {
             Type: 'boolean',
             Value: true,
         },
+        VoteBalance: {
+            Type: 'boolean',
+            Desc: 'Track votes and display the vote balance next to usernames.',
+            Value: true,
+        },
     },
     //Possible issues with the fact that the username in the profil overview is in lower case
     UserTagObj: function (tag, colour, ignored, balance) {
@@ -1115,13 +1155,13 @@ AVE.Modules['UserTag'] = {
     },
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
     SetOptionsFromPref: function () {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         Opt = JSON.parse(Opt);
@@ -1173,6 +1213,7 @@ tr#ShowPreview > td > span#PreviewBox {\
     display: inline-block;\
     max-width: 130px;\
     overflow: hidden;\
+    white-space: nowrap;\
     text-overflow: ellipsis;\
     padding: 0px 4px;\
     border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "484848") + ';\
@@ -1281,7 +1322,7 @@ table#formTable{\
 
         $("a[href*='/user/']").each(function () {
             if (!$(this).attr('href').match(sel)) { return true; } //useful?
-            if ($(this).parent().find("span.AVE_UserTag").length > 0) { return true; } //don't add if it already exists
+            if ($(this).next("span.AVE_UserTag").length > 0) { return true; } //don't add if it already exists
             if ($(this).parents("div#header-account").length > 0) { return true; } //don't add if it the userpage link in the account header
 
             name = $(this).html().replace("@", "").replace("/u/", "").toLowerCase(); //Accepts: Username, @Username, /u/Username
@@ -1291,11 +1332,13 @@ table#formTable{\
             tag = _this.GetTag(name) || new _this.UserTagObj("",  (AVE.Utils.CSSstyle == "dark" ? "#d1d1d1" : "#e1fcff"), false, 0);
 
             Tag_html = '<span class="AVE_UserTag" id="' + name + '">' + (!tag.tag ? "" : tag.tag) + '</span>';
-            if (tag.balance != 0) {
-                var sign = tag.balance > 0 ? "+" : "";
-                Tag_html += '<span class="AVE_UserBalance" id="' + name + '">[ ' + sign + tag.balance + ' ]</span>';
-            } else {
-                Tag_html += '<span class="AVE_UserBalance" id="' + name + '"></span>';
+            if (_this.Options.VoteBalance.Value) {
+                if (tag.balance != 0) {
+                    var sign = tag.balance > 0 ? "+" : "";
+                    Tag_html += '<span class="AVE_UserBalance" id="' + name + '">[ ' + sign + tag.balance + ' ]</span>';
+                } else {
+                    Tag_html += '<span class="AVE_UserBalance" id="' + name + '"></span>';
+                }
             }
             $(Tag_html).insertAfter($(this));
 
@@ -1308,8 +1351,8 @@ table#formTable{\
                 g = parseInt(newColour.substring(3, 5), 16);
                 b = parseInt(newColour.substring(5, 7), 16);
 
-                $(this).parent().find(".AVE_UserTag").css("background-color", tag.colour);
-                $(this).parent().find(".AVE_UserTag").css("color", AVE.Utils.GetBestFontColour(r, g, b));
+                $(this).next(".AVE_UserTag").css("background-color", tag.colour);
+                $(this).next(".AVE_UserTag").css("color", AVE.Utils.GetBestFontColour(r, g, b));
             }
 
             if (AVE.Modules['IgnoreUsers'] && tag.ignored) {
@@ -1360,11 +1403,13 @@ table#formTable{\
             $("tr#SetTag > td > input.UserTagTextInput").select();
         });
 
-        $("div[class*='midcol']").OnAttrChange(function (e) {//persistent with UpdateAfterLoadingMore?
-            if (!e.oldValue || e.oldValue.split(" ").length != 2) { return true; }
+        if (_this.Options.VoteBalance.Value) {
+            $("div[class*='midcol']").OnAttrChange(function (e) {//persistent with UpdateAfterLoadingMore?
+                if (!e.oldValue || e.oldValue.split(" ").length != 2) { return true; }
 
-            _this.ChangeVoteBalance(e.target, e.oldValue);
-        });
+                _this.ChangeVoteBalance(e.target, e.oldValue);
+            });
+        }
 
         //Close button
         $("div#UserTagHeader > span > a#CloseTagWin").off("click");
@@ -1432,13 +1477,13 @@ table#formTable{\
     //      we use a second function that keypresses in ShortKeys.js can invoke directly.
     // Ten mimutes later it works perfectly well. Maybe, voat's current instability was to blame. I'm not changing it back, anyway...
     ChangeVoteBalance: function (target, oldValue) {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
 
         //print("target: "+target);
         //print("oldvalue: "+oldValue);
         //print("newvalue: "+$(target).attr('class'));
 
-        var username = $(target).parent().find(".AVE_UserTag").attr("id").toLowerCase();
+        var username = $(target).parent().find(".AVE_UserTag:first").attr("id").toLowerCase();
         if (username == undefined) { return true; }
 
         var tag = _this.GetTag(username);
@@ -1488,12 +1533,14 @@ table#formTable{\
                 $(this).removeAttr("style");
             }
 
-            if (tag.balance != 0) {
-                var sign = tag.balance > 0 ? "+" : "";
-                $(this).parent().find("span.AVE_UserBalance").text('[ ' + sign + tag.balance + ' ]');
-            } else {
-                $(this).parent().find("span.AVE_UserBalance").text("");
-            }
+            if (_this.Options.VoteBalance.Value) {
+                if (tag.balance != 0) {
+                    var sign = tag.balance > 0 ? "+" : "";
+                    $(this).nextAll("span.AVE_UserBalance:first").text('[ ' + sign + tag.balance + ' ]');
+                } else {
+                    $(this).nextAll("span.AVE_UserBalance:first").text("");
+                }
+            };
         });
     },
 
@@ -1539,6 +1586,7 @@ table#formTable{\
                 htmlStr += "<li>You have voted on submissions made by " + VoteLen + " users.</li>";
                 htmlStr += "<li>You have chosen to ignore " + IgnoreLen + " users.</li></ul>";
 
+                htmlStr += '<br /><input id="VoteBalance" ' + (_this.Options.VoteBalance.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="VoteBalance"> ' + _this.Options.VoteBalance.Desc + '</label><br />';
                 //Add option to remove oldest tags.
                 //  Seeing as this.usertags is ordered oldest first, propose to remove X tags at the beginning of the list.
                 return htmlStr;
@@ -1637,7 +1685,7 @@ AVE.Modules['ToggleMedia'] = {
             if (strSel[strSel.length - 1] == ",")
             { strSel = strSel.slice(0, -1); }
 
-            this.sel = $(strSel);
+            this.sel = $(strSel).filter(function (idx) {return $(this).parents("div.submission[class*='id-']:first").css("opacity") == 1;});
 
             if (!this.Options.ToggleInSidebar.Value)
             { this.sel = $(this.sel).filter(':parents(.titlebox)'); }
@@ -1659,7 +1707,6 @@ AVE.Modules['ToggleMedia'] = {
         if (this.sel.length == 0) { return; }
 
         if ($("a#GM_ExpandAllImages").length > 0) {
-
             $("a#GM_ExpandAllImages").text($("a#GM_ExpandAllImages").text().replace(/\([0-9]*\)/, "(" + this.sel.length + ")"));
         }
         else {
@@ -1669,29 +1716,33 @@ AVE.Modules['ToggleMedia'] = {
     },
 
     Listeners: function () {
-        sel = this.sel;
+        var _this = this;
         var isExpanded = false;
         $("[id='GM_ExpandAllImages']").off("click");
         $("[id='GM_ExpandAllImages']").on("click", function () {
             if ($(this).hasClass("expanded")) {
-                $(this).text('View Media (' + sel.length + ')');
+                $(this).text('View Media (' + _this.sel.length + ')');
                 $(this).removeClass("expanded")
                 isExpanded = false;
             } else {
-                $(this).text('Hide Media (' + sel.length + ')');
+                $(this).text('Hide Media (' + _this.sel.length + ')');
                 $(this).addClass("expanded")
                 isExpanded = true;
             }
-
-            for (var el in sel) {
-                if (
-                    (isExpanded && sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
-                    isExpanded === sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
-                    ) {
-                    sel[el].click();
-                }
-            }
+            _this.ToggleMedia(isExpanded);
         });
+    },
+
+    ToggleMedia: function (state) {
+        for (var el in this.sel.get()) {
+            if (
+                (state && this.sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
+                state === this.sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
+                )
+            {
+                this.sel[el].click();
+            }
+        }
     },
 
     AppendToPreferenceManager: {
@@ -2032,7 +2083,7 @@ AVE.Modules['FixExpandImage'] = {
                 exp.animate({
                     width: 150 + "px", //just enough width to let the media info show
                     height: img.height() + 20 + "px",
-                }, 1000);
+                }, 150);
             }
         });
         this.obsInThread.observe()
@@ -2040,10 +2091,10 @@ AVE.Modules['FixExpandImage'] = {
 };
 /// END Fix expanding images ///
 
-/// Set Voat container\'s width.:  By default, Voat shows a margin at both sides of the container. You can modify this by setting the new width as a percentage of the available horizontal space. ///
+/// Set Voat container\'s width:  By default, Voat shows a margin at both sides of the container. You can modify this by setting the new width as a percentage of the available horizontal space. ///
 AVE.Modules['FixContainerWidth'] = {
     ID: 'FixContainerWidth',
-    Name: 'Set Voat container\'s width.',
+    Name: 'Set Voat container\'s width',
     Desc: 'By default, Voat shows a margin at both sides of the container. You can modify this by setting the new width as a percentage of the available horizontal space.',
     Category: 'Fixes',
 
@@ -2123,7 +2174,7 @@ AVE.Modules['FixContainerWidth'] = {
         },
     },
 };
-/// END Set Voat container\'s width. ///
+/// END Set Voat container\'s width ///
 
 /// Ignore users:  Lets you tag users as Ignored. Replacing all their comments\' content with [Ignored User]. ///
 AVE.Modules['IgnoreUsers'] = {
@@ -2284,6 +2335,11 @@ AVE.Modules['NeverEndingVoat'] = {
             Desc: 'Display duplicate submissions (greyed).',
             Value: true,
         },
+        ExpandNewMedia: {
+            Type: 'boolean',
+            Desc: 'Expand media in inserted pages, if you already clicked the \"View Media\" button.',
+            Value: false,
+        },
     },
 
     OriginalOptions: "",
@@ -2326,7 +2382,7 @@ AVE.Modules['NeverEndingVoat'] = {
         }
     },
 
-    Labels: ["Load more", "Sit tight ...", "Sorry, I couldn't find more content"],
+    Labels: ["Load more", "Sit tight ...", "Sorry, I couldn't find more content", "Something went wrong. Maybe try again?"],
     PostsIDs: [],
     SepStyle: '',
     currentPage: 0,
@@ -2354,11 +2410,15 @@ AVE.Modules['NeverEndingVoat'] = {
 
     Listeners: function () {
         var _this = this;
-        $(window).scroll(function () {
-            if ($(document).scrollTop() + $(window).height() >= $("body").height()) {
-                _this.LoadMore();
-            }
-        });
+
+        if (_this.Options.AutoLoad.Value) {
+            $(window).scroll(function () {
+                if ($(document).scrollTop() + $(window).height() >= $("body").height()) {
+                    _this.LoadMore();
+                }
+            });
+        }
+
         $("a#AVE_loadmorebutton").on("click", function () { _this.LoadMore(); });
     },
 
@@ -2396,7 +2456,7 @@ AVE.Modules['NeverEndingVoat'] = {
                     $("div.sitetable").append($(this));
                 } else if (_this.Options.DisplayDuplicates.Value && !$(this).hasClass("stickied")) {
                     $("div.sitetable").append($(this));
-                    $(this).css("opacity", "0.45");
+                    $(this).css("opacity", "0.3");
                 } else { print("AVE: oups error in NeverEndingVoat:LoadMore()"); }
             });
 
@@ -2406,17 +2466,26 @@ AVE.Modules['NeverEndingVoat'] = {
             location.assign("javascript:UI.ExpandoManager.execute();void(0)");
             // from https://github.com/voat/voat/blob/master/Voat/Voat.UI/Scripts/voat.ui.js#L190
 
+            //Ugly, isn't it?
+            if (_this.Options.ExpandNewMedia.Value) {
+                if (AVE.Modules['ToggleMedia'] && AVE.Modules['ToggleMedia'].Enabled) {
+                    if ($("[id='GM_ExpandAllImages']").hasClass("expanded")) {
+                        setTimeout(function () { AVE.Modules['ToggleMedia'].ToggleMedia(true) }, 750);
+                        
+                    }
+                }
+            }
+
             setTimeout(AVE.Init.UpdateModules, 500);
             window.location.hash = 'p=' + _this.currentPage;
 
-            //Next lines are needed because the front page (voat.co/) is a bit different from the subvese's pages. div.pagination-container isn't normally inside div.sitetable 
+            //Next lines are needed because the front page (^voat.co$) is a bit different from subverses' pages. div.pagination-container isn't normally inside div.sitetable 
             if ($("div.sitetable").find("div.pagination-container").length > 0) {
                 $("div.pagination-container").appendTo($("div.sitetable"))
-                //<a href="/random">or try a random subverse</a>
                 $("div.sitetable > a[href='/random']").appendTo($("div.sitetable"))
             }
         }).fail(function () {
-            $("a#AVE_loadmorebutton").text(_this.Labels[2]);
+            $("a#AVE_loadmorebutton").text(_this.Labels[3]);
         });
     },
 
@@ -2425,7 +2494,7 @@ AVE.Modules['NeverEndingVoat'] = {
             var _this = AVE.Modules['NeverEndingVoat'];
 
             var htmlStr = "";
-            var opt = ["AutoLoad", "ExpandSubmissionBlock", "DisplayDuplicates"];
+            var opt = ["AutoLoad", "ExpandSubmissionBlock", "DisplayDuplicates", "ExpandNewMedia"];
 
             $.each(opt, function () {
                 htmlStr += '<input id="' + this + '" ' + (_this.Options[this].Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="' + this + '"> ' + _this.Options[this].Desc + '</label><br />';
@@ -2996,11 +3065,11 @@ AVE.Modules['Shortcuts'] = {
 };
 /// END Subverse and Set shortcuts ///
 
-/// Shortcut keys:  Use your keyboard to vote (default is A to upvote, Z to downvote). ///
+/// Shortcut keys:  Use your keyboard to navigate Voat. ///
 AVE.Modules['ShortcutKeys'] = {
     ID: 'ShortcutKeys',
     Name: 'Shortcut keys',
-    Desc: 'Use your keyboard to vote (default is A to upvote, Z to downvote).',
+    Desc: 'Use your keyboard to navigate Voat.',
     Category: 'Posts',
 
     Enabled: false,
@@ -3012,6 +3081,11 @@ AVE.Modules['ShortcutKeys'] = {
             Type: 'boolean',
             Value: true,
         },
+        OpenInNewTab: {
+            Type: 'boolean',
+            Desc: 'Open comments and link pages in new tabs.',
+            Value: true,
+        },
         UpvoteKey: {
             Type: 'char',
             Value: 'a',
@@ -3019,6 +3093,30 @@ AVE.Modules['ShortcutKeys'] = {
         DownvoteKey: {
             Type: 'char',
             Value: 'z',
+        },
+        NextKey: {
+            Type: 'char',
+            Value: 'j',
+        },
+        PrevKey: {
+            Type: 'char',
+            Value: 'k',
+        },
+        OpenCommentsKey: {
+            Type: 'char',
+            Value: 'c',
+        },
+        OpenLinkKey: {
+            Type: 'char',
+            Value: 'l',
+        },
+        OpenLCKey: {
+            Type: 'char',
+            Value: 'b',
+        },
+        ExpandKey: {
+            Type: 'char',
+            Value: 'x',
         },
     },
 
@@ -3053,40 +3151,196 @@ AVE.Modules['ShortcutKeys'] = {
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
 
+        if (!AVE.Modules['SelectPost'] || !AVE.Modules['SelectPost'].Enabled) { this.Enabled = false; }
+
         if (this.Enabled) {
             this.Start();
         }
     },
 
     Start: function () {
+        var _this = this;
+
         var up = this.Options.UpvoteKey.Value;
         var down = this.Options.DownvoteKey.Value;
+        var next = this.Options.NextKey.Value;
+        var previous = this.Options.PrevKey.Value;
+        var OpenC = this.Options.OpenCommentsKey.Value;
+        var OpenL = this.Options.OpenLinkKey.Value;
+        var OpenLC = this.Options.OpenLCKey.Value;
+        var Expand = this.Options.ExpandKey.Value;
 
-        $(document).keypress(function (event) {
+        $(document).keydown(function (event) {
+            //Exit if there is no post currently selected
+            if (!AVE.Utils.SelectedPost) { return; }
+            //Exit if the focus is given to a text input
             if ($(":input").is(":focus")) { return; }
+            //Exit if a key modifier is pressed (ctrl, shift)
+            if (event.ctrlKey || event.shiftKey) { return; }
 
-            if (AVE.Utils.SelectedPost != undefined) {
-                if (event.key == undefined) { //Chrome
-                    var key = String.fromCharCode(event.charCode).toUpperCase();
+            var sel = AVE.Utils.SelectedPost;
+
+            if (event.key == undefined) { //Chrome
+                var key = String.fromCharCode(event.keyCode).toUpperCase();
+            } else {
+                var key = event.key.toUpperCase();
+            }
+
+            if (key == up.toUpperCase()) { // upvote
+                sel.parent().find(".midcol").find("div[aria-label='upvote']").first().click();
+            } else if (key == down.toUpperCase()) { // downvote
+                sel.parent().find(".midcol").find("div[aria-label='downvote']").first().click();
+            } else if (key == next.toUpperCase()) { // next post
+                if (sel.parent().hasClass("submission")) {
+                    //Submissions
+                    var _next = sel.parent().nextAll("div.submission[class*='id-']:first");
+                    if (_next.length > 0) {
+                        AVE.Modules['SelectPost'].ToggleSelectedState(_next.find("div.entry"));
+                        _this.ScrollToSelectedSubmission();
+                    } else if (AVE.Modules['NeverEndingVoat'] && AVE.Modules['NeverEndingVoat'].Enabled) {
+                        //If the NeverEnding modules exists and is enabled, we load the next page.
+                        AVE.Modules['NeverEndingVoat'].LoadMore();
+                    }
                 } else {
-                    var key = event.key.toUpperCase();
+                    //Comment
+                    var id = sel.parent().prop("class").split(" ")[1];
+                    // :visible because comments could be hidden, with the ToggleChildComment module
+                    var a = sel.parent().find("div[class*='id-']:visible").get(0) || //Child
+                            $("div." + id + " ~ div[class*='id-']:visible").get(0); //Sibling
+
+                    if (!a) { //Not a direct parent
+                        var tempSel = sel.parent();
+                        var tempID = id;
+                        var count = 0;
+                        while (!a) {
+                            tempSel = $(tempSel.parent("div[class*='id-']").get(0) ||
+                                      $("div." + tempID + " ~ div[class*='id-']:visible").get(0));
+                            if (tempSel.length == 0) { break; }
+
+                            if (tempSel.nextAll("div[class*='id-']:visible:last").length > 0) {
+                                tempID = tempSel.nextAll("div[class*='id-']:visible:last").attr("class").split(" ")[1];
+                            }
+                            if (tempID != id) {
+                                a = $("div." + tempSel.nextAll("div[class*='id-']:visible:first").attr("class").split(" ")[1]);
+                                break;
+                            }
+                            count++;
+                            if (count > 30) { print("AVE: breaking endless loop > looking for next comment"); break; }
+                        }
+                    }
+
+                    if (a) {
+                        AVE.Modules['SelectPost'].ToggleSelectedState($(a).find("div.entry:first"));
+                        _this.ScrollToSelectedComment();
+                    } else { $("a#loadmorebutton").click(); }
                 }
-                if (key == up.toUpperCase()) { // upvote
-                    AVE.Utils.SelectedPost.parent().find(".midcol").find("div[aria-label='upvote']").first().click();
+
+            } else if (key == previous.toUpperCase()) { // previous post
+                if (sel.parent().hasClass("submission")) { // select by page type not class
+                    //Submissions
+                    var prev = sel.parent().prev("div.submission[class*='id-']");
+                    if (prev.length > 0) {
+                        AVE.Modules['SelectPost'].ToggleSelectedState(prev.find("div.entry"));
+                        _this.ScrollToSelectedSubmission();
+                    }
+                } else {
+                    //Comment
+                    var id = sel.parent().prop("class").split(" ")[1];
+
+                    var a = sel.parent().prevAll("div[class*='id-']:visible:first").find("div[class*='id-']:visible:last").get(0) || //Parent's child
+                            sel.parent().prevAll("div[class*='id-']:visible:first").get(0) || //Sibling
+                            sel.parent().parent("div[class*='id-']:visible").get(0); //Parent
+
+                    if (a) {
+                        AVE.Modules['SelectPost'].ToggleSelectedState($(a).find("div.entry:first"));
+                        _this.ScrollToSelectedComment();
+                    }
+                    //if (!a) No previous comment
                 }
-                else if (key == down.toUpperCase()) { // downvote
-                    AVE.Utils.SelectedPost.parent().find(".midcol").find("div[aria-label='downvote']").first().click();
+
+            } else if (key == OpenC.toUpperCase()) { // Open comment page
+                if (!sel.parent().hasClass("submission")) { return; }
+                if (_this.Options.OpenInNewTab.Value) {
+                    GM_openInTab("https://" + window.location.hostname + sel.find("a.comments").attr("href"));
+                } else {
+                    window.location.href = "https://" + window.location.hostname + sel.find("a.comments").attr("href");
                 }
+            } else if (key == OpenL.toUpperCase()) { // Open link page
+                if (!sel.parent().hasClass("submission")) { return; }
+                var url = sel.find("a.title").attr("href");
+
+                if (!/^http/.test(url)) { url = "https://" + window.location.hostname + url; }
+
+                if (_this.Options.OpenInNewTab.Value) {
+                    GM_openInTab(url);
+                } else {
+                    window.location.href = url;
+                }
+            } else if (key == OpenLC.toUpperCase()) { // Open comment and link pages
+                if (!sel.parent().hasClass("submission")) { return; }
+                var url = [];
+
+                url.push(sel.find("a.title").attr("href"));
+                url.push("https://" + window.location.hostname + sel.find("a.comments").attr("href"));
+
+                if (!/^http/.test(url[0])) { url[0] = "https://" + window.location.hostname + url[0]; }
+
+                if (url[0] && url[0] == url[1]) {
+                    GM_openInTab(url[0]);
+                } else {
+                    GM_openInTab(url[0]);
+                    GM_openInTab(url[1]);
+                }
+            } else if (key == Expand.toUpperCase()) { // Expand media/self-text
+                if (!sel.parent().hasClass("submission")) { return; }
+                sel.find("div.expando-button").click();
             }
         });
+    },
+
+    ScrollToSelectedSubmission: function () {
+        $('html, body').finish();
+        //Scroll to selected item if out of screen
+        if ($(window).scrollTop() > AVE.Utils.SelectedPost.parent().offset().top - AVE.Utils.SelectedPost.parent().height()) {
+            $('html, body').animate({ scrollTop: AVE.Utils.SelectedPost.parent().offset().top - 50 }, 150);
+        } else if ($(window).scrollTop() + $(window).height() < AVE.Utils.SelectedPost.parent().offset().top + AVE.Utils.SelectedPost.parent().height() + 50) {
+            $('html, body').animate({ scrollTop: AVE.Utils.SelectedPost.parent().offset().top - $(window).height() + AVE.Utils.SelectedPost.parent().height() + 50 }, 150);
+        }
+    },
+
+    ScrollToSelectedComment: function () {
+        $('html, body').finish();
+        //Scroll to selected item if out of screen
+        if ($(window).scrollTop() > AVE.Utils.SelectedPost.parent().offset().top - AVE.Utils.SelectedPost.height()) {
+            $('html, body').animate({ scrollTop: AVE.Utils.SelectedPost.parent().offset().top - 50 }, 150);
+        } else if ($(window).scrollTop() + $(window).height() < AVE.Utils.SelectedPost.parent().offset().top + AVE.Utils.SelectedPost.height() + 50) {
+            $('html, body').animate({ scrollTop: AVE.Utils.SelectedPost.parent().offset().top - $(window).height() + AVE.Utils.SelectedPost.height() + 50 }, 150);
+        }
     },
 
     AppendToPreferenceManager: {
         html: function () {
             var _this = AVE.Modules['ShortcutKeys'];
             var htmlStr = "";
-            htmlStr += 'Upvote key: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="UpvoteKey" value="' + _this.Options.UpvoteKey.Value + '"></input>';
-            htmlStr += ' &nbsp; Downvote key: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="DownvoteKey" value="' + _this.Options.DownvoteKey.Value + '"></input>';
+            //Up and Down vote
+            htmlStr += '<table id="AVE_ShortcutKeys" style="text-align: right;">';
+            htmlStr += '<tr>';
+            htmlStr += '<td>Upvote: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="UpvoteKey" value="' + _this.Options.UpvoteKey.Value + '"></input></td>';
+            htmlStr += '<td>&nbsp; Downvote: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="DownvoteKey" value="' + _this.Options.DownvoteKey.Value + '"></input></td>';
+            //Next and previous post
+            htmlStr += '<td>&nbsp; Next post: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="NextKey" value="' + _this.Options.NextKey.Value + '"></input></td>';
+            htmlStr += '<td>&nbsp; Previous post: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="PrevKey" value="' + _this.Options.PrevKey.Value + '"></input></td>';
+            htmlStr += '</tr>';
+            //Open Link, Comments, Comments & Link
+            htmlStr += '<tr>';
+            htmlStr += '<td>Open Link: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="OpenLinkKey" value="' + _this.Options.OpenLinkKey.Value + '"></input></td>';
+            htmlStr += '<td>&nbsp; Open comments: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="OpenCommentsKey" value="' + _this.Options.OpenCommentsKey.Value + '"></input>';
+            htmlStr += '<td>&nbsp; Open L&C: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="OpenLCKey" value="' + _this.Options.OpenLCKey.Value + '"></input></td>';
+            //Toggle expand media
+            htmlStr += '<td>&nbsp; Toggle expand: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="ExpandKey" value="' + _this.Options.ExpandKey.Value + '"></input>';
+            htmlStr += '</tr>';
+            htmlStr += '</table>';
+            htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br />';
             return htmlStr;
         },
     },
