@@ -165,3 +165,35 @@ var OnNodeChange = (function () {
 
     return cls;
 })();
+var OnAttrChange = (function () {
+    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+
+    cls = function (t, c) {
+        this.options = {
+            attributes: true,
+            attributeOldValue: true,
+        };
+        this.targets = t;
+
+        this.observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (e) {
+                if (e.attributeName != null) {
+                    c.call(e.target, e);
+                }
+            });
+        });
+
+        this.observe = function () {
+            _this = this;
+            return this.targets.each(function () {
+                _this.observer.observe(this, _this.options);
+            });
+        };
+
+        this.disconnect = function () {
+            this.observer.disconnect();
+        };
+    };
+
+    return cls;
+})();

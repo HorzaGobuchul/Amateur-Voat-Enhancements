@@ -170,7 +170,7 @@ AVE.Modules['ShortcutKeys'] = {
             } else if (key == previous.toUpperCase()) { // previous post
                 if (sel.parent().hasClass("submission")) { // select by page type not class
                     //Submissions
-                    var prev = sel.parent().prev("div.submission[class*='id-']");
+                    var prev = sel.parent().prevAll("div.submission[class*='id-']:first");
                     if (prev.length > 0) {
                         AVE.Modules['SelectPost'].ToggleSelectedState(prev.find("div.entry"));
                         _this.ScrollToSelectedSubmission();

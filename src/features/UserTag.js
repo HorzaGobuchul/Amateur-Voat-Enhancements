@@ -248,6 +248,8 @@ table#formTable{\
         }
     },
 
+    obsVoteChange: null,
+
     Listeners: function () {
         var _this = AVE.Modules['UserTag'];
 
@@ -281,13 +283,15 @@ table#formTable{\
             $("tr#SetTag > td > input.UserTagTextInput").focus();
             $("tr#SetTag > td > input.UserTagTextInput").select();
         });
+        
 
         if (_this.Options.VoteBalance.Value) {
-            $("div[class*='midcol']").OnAttrChange(function (e) {//persistent with UpdateAfterLoadingMore?
+            if (_this.obsVoteChange) { _this.obsVoteChange.disconnect(); }
+            _this.obsVoteChange = new OnAttrChange($("div[class*='midcol']"), function (e) {
                 if (!e.oldValue || e.oldValue.split(" ").length != 2) { return true; }
-
                 _this.ChangeVoteBalance(e.target, e.oldValue);
             });
+            this.obsVoteChange.observe();
         }
 
         //Close button
@@ -385,7 +389,7 @@ table#formTable{\
                 else if ($(target).hasClass('unvoted')) { opt.balance += 1; }
             }
         }
-
+        
         _this.SetTag(opt);
         _this.UpdateUserTag(opt);
     },

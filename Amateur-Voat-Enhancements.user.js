@@ -6,10 +6,11 @@
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.19.10.12
+// @version     2.19.10.16
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
+// @grant       GM_listValues
 // @grant       GM_openInTab
 // @run-at      document-end
 // @updateURL   https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Amateur-Voat-Enhancements_meta.user.js
@@ -202,6 +203,38 @@ var OnNodeChange = (function () {
         this.observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (e) {
                 if (e.addedNodes != null) {
+                    c.call(e.target, e);
+                }
+            });
+        });
+
+        this.observe = function () {
+            _this = this;
+            return this.targets.each(function () {
+                _this.observer.observe(this, _this.options);
+            });
+        };
+
+        this.disconnect = function () {
+            this.observer.disconnect();
+        };
+    };
+
+    return cls;
+})();
+var OnAttrChange = (function () {
+    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+
+    cls = function (t, c) {
+        this.options = {
+            attributes: true,
+            attributeOldValue: true,
+        };
+        this.targets = t;
+
+        this.observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (e) {
+                if (e.attributeName != null) {
                     c.call(e.target, e);
                 }
             });
@@ -437,6 +470,12 @@ AVE.Modules['PreferenceManager'] = {
             }\
             span.ModuleDesc{\
                 font-size:11px;\
+            }\
+            div.AVE_ModuleCustomInput{\
+                border-left:2px solid #' + (AVE.Utils.CSSstyle == "dark" ? "3F3F3F" : "DDD") + ';\
+                margin-top: 5px;\
+                margin-left: 10px;\
+                padding-left: 4px;\
             }';
 
         this.MngWinHTML = '\
@@ -642,8 +681,8 @@ AVE.Modules['PreferenceManager'] = {
         //Get special form element from the modules themselves.
         if (typeof module.AppendToPreferenceManager === "object") {
             if (typeof module.AppendToPreferenceManager.html === "function") {
-                $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']").append('<div style="margin-top:5px;" class=ModuleCustomInput></div>');
-                $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']").find("div.ModuleCustomInput").append(module.AppendToPreferenceManager.html());
+                $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']").append('<div class=AVE_ModuleCustomInput></div>');
+                $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']").find("div.AVE_ModuleCustomInput").append(module.AppendToPreferenceManager.html());
             }
             if (typeof module.AppendToPreferenceManager.callback === "function") {
                 module.AppendToPreferenceManager.callback();
@@ -693,7 +732,15 @@ AVE.Modules['PreferenceManager'] = {
 
     RemoveAllData: function () {
         //In Manager options, not in plain view. Too error-prone
-
+        if (confirm("Are you really sure you want to delete all data stored by AVE?")) {
+            //$.each(GM_listValues(), function (k, v) { print(v); });
+            //print(GM_listValues().length);
+            //for (var val in GM_listValues()) {GM_deleteValue(val);}
+            //print(GM_listValues().length);
+            if (GM_listValues().length > 0) {
+                alert("AVE: Reset data > an error occured, not all data were removed.")
+            }
+        }
     },
 };
 /// END Preference manager ///
@@ -733,10 +780,19 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.19.10.16:",
+        "   NeverEndingVoat:",
+        "       Corrected a bug that prevented going back to the previous submissions if the \"page #\" was just before it",
+        "   UserTag:",
+        "       Fixed bug: voteBalance listener was added instead of replaced. Result: after more content is loaded several time, one vote can count as several for the voteBalance feature",
+        "   UserInfoFixedPos:",
+        "       Added option to divide in two parts the user account header (disabled by default)",
+        "   PreferenceManager:",
+        "       Changed CSS of custom input so that it is more independent from the rest of the layout",
         "V2.19.10.12:",
         "   Shortkey:",
         "       Added new shortcuts:",
-        "           Select next or previous comment",
+        "           Select next or previous post",
         "           Open comments page",
         "           Open link page",
         "           Open link and comments pages",
@@ -1059,6 +1115,10 @@ AVE.Modules['UserInfoFixedPos'] = {
             Type: 'boolean',
             Value: true,
         },
+        DivideBlock: {
+            Type: 'boolean',
+            Value: false,
+        },
     },
 
     SavePref: function (POST) {
@@ -1100,20 +1160,39 @@ AVE.Modules['UserInfoFixedPos'] = {
 
         function SetAccountHeaderPosAsFixed(headerAccountPos) {
             if ($(window).scrollTop() + AVE.Utils.ListHeaderHeight > headerAccountPos) {
-                $('#header-account').css('position', 'fixed')
-                                    .css('top', AVE.Utils.ListHeaderHeight+"px")
+                $('div#header-account').css('position', 'fixed')
+                                    .css('top', AVE.Utils.ListHeaderHeight + "px")
                                     .css('right', '0')
                                     .css("text-align", "center")
                                     .css("height", "0px");
-                $('.logged-in').css("background", AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)");
+                $('div#header-account > div.logged-in').css("background", AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)");
             } else {
-                $('#header-account').css('position', '')
+                $('div#header-account').css('position', '')
                                     .css('top', '')
                                     .css("text-align", "")
                                     .css("height", "");
-                $('.logged-in').css("background", "");
+                $('div#header-account > div.logged-in').css("background", "");
             }
         }
+
+        if (this.Options.DivideBlock.Value && $("div#header-account > div.logged-in").length > 0) {
+            //Align header-account's content
+            $("div#header-account > div.logged-in").css("text-align", "center");
+            //Add a line return before the icons
+            $("<br />").insertAfter("div#header-account > div.logged-in > span.separator:first");
+            //Remove the, now useless, separator
+            $("div#header-account > div.logged-in > span.separator:first").remove();
+            //Reset header-account's so that it is not a few pixels too high.
+            $('div#header-account').css('position', '');
+        }
+    },
+
+    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+        html: function () {
+            var htmlStr = "";
+            htmlStr += '<input ' + (AVE.Modules['UserInfoFixedPos'].Options.DivideBlock.Value ? 'checked="true"' : "") + ' id="DivideBlock" type="checkbox"/><label style="display:inline;" for="DivideBlock"> Do you want the header account separated- username and numbers at the top and icons below?</label>'
+            return htmlStr;
+        },
     },
 };
 /// END Fix user-block position ///
@@ -1369,6 +1448,8 @@ table#formTable{\
         }
     },
 
+    obsVoteChange: null,
+
     Listeners: function () {
         var _this = AVE.Modules['UserTag'];
 
@@ -1402,13 +1483,15 @@ table#formTable{\
             $("tr#SetTag > td > input.UserTagTextInput").focus();
             $("tr#SetTag > td > input.UserTagTextInput").select();
         });
+        
 
         if (_this.Options.VoteBalance.Value) {
-            $("div[class*='midcol']").OnAttrChange(function (e) {//persistent with UpdateAfterLoadingMore?
+            if (_this.obsVoteChange) { _this.obsVoteChange.disconnect(); }
+            _this.obsVoteChange = new OnAttrChange($("div[class*='midcol']"), function (e) {
                 if (!e.oldValue || e.oldValue.split(" ").length != 2) { return true; }
-
                 _this.ChangeVoteBalance(e.target, e.oldValue);
             });
+            this.obsVoteChange.observe();
         }
 
         //Close button
@@ -1506,7 +1589,7 @@ table#formTable{\
                 else if ($(target).hasClass('unvoted')) { opt.balance += 1; }
             }
         }
-
+        
         _this.SetTag(opt);
         _this.UpdateUserTag(opt);
     },
@@ -1750,7 +1833,7 @@ AVE.Modules['ToggleMedia'] = {
             var _this = AVE.Modules['ToggleMedia']
             var mediaTypes = ["Images", "Videos", "self-texts"];
             var value = _this.Options.MediaTypes.Value;
-            var htmlString = '<div style="margin-left:30px;padding:5px 0 0 5px;border-left:2px solid #' + (AVE.Utils.CSSstyle == "dark" ? "222" : "DDD") + ';">';
+            var htmlString = '<div>';
             for (var i in mediaTypes) {
                 htmlString += '<span style="margin-right:20px;" >' +
                               '<input ' + (value[i] == 1 ? 'checked="checked"' : '') + ' id="' + mediaTypes[i] + '" name="' + mediaTypes[i] + '" type="checkbox"></input>' +
@@ -2296,8 +2379,6 @@ AVE.Modules['IgnoreUsers'] = {
             }
             //show a warning if usertag is disabled
             return htmlStr;
-        },
-        callback: function () {
         },
     },
 };
@@ -3238,7 +3319,7 @@ AVE.Modules['ShortcutKeys'] = {
             } else if (key == previous.toUpperCase()) { // previous post
                 if (sel.parent().hasClass("submission")) { // select by page type not class
                     //Submissions
-                    var prev = sel.parent().prev("div.submission[class*='id-']");
+                    var prev = sel.parent().prevAll("div.submission[class*='id-']:first");
                     if (prev.length > 0) {
                         AVE.Modules['SelectPost'].ToggleSelectedState(prev.find("div.entry"));
                         _this.ScrollToSelectedSubmission();

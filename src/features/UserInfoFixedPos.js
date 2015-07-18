@@ -14,6 +14,10 @@ AVE.Modules['UserInfoFixedPos'] = {
             Type: 'boolean',
             Value: true,
         },
+        DivideBlock: {
+            Type: 'boolean',
+            Value: false,
+        },
     },
 
     SavePref: function (POST) {
@@ -55,19 +59,38 @@ AVE.Modules['UserInfoFixedPos'] = {
 
         function SetAccountHeaderPosAsFixed(headerAccountPos) {
             if ($(window).scrollTop() + AVE.Utils.ListHeaderHeight > headerAccountPos) {
-                $('#header-account').css('position', 'fixed')
-                                    .css('top', AVE.Utils.ListHeaderHeight+"px")
+                $('div#header-account').css('position', 'fixed')
+                                    .css('top', AVE.Utils.ListHeaderHeight + "px")
                                     .css('right', '0')
                                     .css("text-align", "center")
                                     .css("height", "0px");
-                $('.logged-in').css("background", AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)");
+                $('div#header-account > div.logged-in').css("background", AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)");
             } else {
-                $('#header-account').css('position', '')
+                $('div#header-account').css('position', '')
                                     .css('top', '')
                                     .css("text-align", "")
                                     .css("height", "");
-                $('.logged-in').css("background", "");
+                $('div#header-account > div.logged-in').css("background", "");
             }
         }
+
+        if (this.Options.DivideBlock.Value && $("div#header-account > div.logged-in").length > 0) {
+            //Align header-account's content
+            $("div#header-account > div.logged-in").css("text-align", "center");
+            //Add a line return before the icons
+            $("<br />").insertAfter("div#header-account > div.logged-in > span.separator:first");
+            //Remove the, now useless, separator
+            $("div#header-account > div.logged-in > span.separator:first").remove();
+            //Reset header-account's so that it is not a few pixels too high.
+            $('div#header-account').css('position', '');
+        }
+    },
+
+    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+        html: function () {
+            var htmlStr = "";
+            htmlStr += '<input ' + (AVE.Modules['UserInfoFixedPos'].Options.DivideBlock.Value ? 'checked="true"' : "") + ' id="DivideBlock" type="checkbox"/><label style="display:inline;" for="DivideBlock"> Do you want the header account separated- username and numbers at the top and icons below?</label>'
+            return htmlStr;
+        },
     },
 };

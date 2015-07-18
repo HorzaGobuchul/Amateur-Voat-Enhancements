@@ -149,7 +149,7 @@ AVE.Modules['ToggleMedia'] = {
             var _this = AVE.Modules['ToggleMedia']
             var mediaTypes = ["Images", "Videos", "self-texts"];
             var value = _this.Options.MediaTypes.Value;
-            var htmlString = '<div style="margin-left:30px;padding:5px 0 0 5px;border-left:2px solid #' + (AVE.Utils.CSSstyle == "dark" ? "222" : "DDD") + ';">';
+            var htmlString = '<div>';
             for (var i in mediaTypes) {
                 htmlString += '<span style="margin-right:20px;" >' +
                               '<input ' + (value[i] == 1 ? 'checked="checked"' : '') + ' id="' + mediaTypes[i] + '" name="' + mediaTypes[i] + '" type="checkbox"></input>' +

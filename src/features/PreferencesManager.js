@@ -160,6 +160,12 @@ AVE.Modules['PreferenceManager'] = {
             }\
             span.ModuleDesc{\
                 font-size:11px;\
+            }\
+            div.AVE_ModuleCustomInput{\
+                border-left:2px solid #' + (AVE.Utils.CSSstyle == "dark" ? "3F3F3F" : "DDD") + ';\
+                margin-top: 5px;\
+                margin-left: 10px;\
+                padding-left: 4px;\
             }';
 
         this.MngWinHTML = '\
@@ -365,8 +371,8 @@ AVE.Modules['PreferenceManager'] = {
         //Get special form element from the modules themselves.
         if (typeof module.AppendToPreferenceManager === "object") {
             if (typeof module.AppendToPreferenceManager.html === "function") {
-                $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']").append('<div style="margin-top:5px;" class=ModuleCustomInput></div>');
-                $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']").find("div.ModuleCustomInput").append(module.AppendToPreferenceManager.html());
+                $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']").append('<div class=AVE_ModuleCustomInput></div>');
+                $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']").find("div.AVE_ModuleCustomInput").append(module.AppendToPreferenceManager.html());
             }
             if (typeof module.AppendToPreferenceManager.callback === "function") {
                 module.AppendToPreferenceManager.callback();
@@ -416,6 +422,14 @@ AVE.Modules['PreferenceManager'] = {
 
     RemoveAllData: function () {
         //In Manager options, not in plain view. Too error-prone
-
+        if (confirm("Are you really sure you want to delete all data stored by AVE?")) {
+            //$.each(GM_listValues(), function (k, v) { print(v); });
+            //print(GM_listValues().length);
+            //for (var val in GM_listValues()) {GM_deleteValue(val);}
+            //print(GM_listValues().length);
+            if (GM_listValues().length > 0) {
+                alert("AVE: Reset data > an error occured, not all data were removed.")
+            }
+        }
     },
 };

@@ -118,7 +118,5 @@ AVE.Modules['IgnoreUsers'] = {
             //show a warning if usertag is disabled
             return htmlStr;
         },
-        callback: function () {
-        },
     },
 };
