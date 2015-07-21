@@ -44,15 +44,43 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
         }
     },
 
+    obsReplies: null,
+    obsComm: null,
+    CommentLen: 0,
+
     Start: function () {
+        var _this = this;
+
+        this.CommentLen = $("div[class*='id-']").length;
+        //More Comments
+        if (this.obsComm) { this.obsComm.disconnect(); }
+        this.obsComm = new OnNodeChange($("div.sitetable#siteTable"), function (e) {
+            if (e.addedNodes.length > 0 && e.removedNodes.length == 0) {
+                if ($("div[class*='id-']").length > _this.CommentLen) {
+                    _this.CommentLen = $("div[class*='id-']").length;
+
+                    setTimeout(AVE.Init.UpdateModules, 500);
+                }
+            }
+        });
+        this.obsComm.observe();
         this.Listeners();
     },
 
     Listeners: function () {
-        $("a#loadmorebutton").OnNodeChange(function () {
-            if ($(this).text().split(" ")[0] == "load") {
-                setTimeout(AVE.Init.UpdateModules, 500);
+        //More Replies
+        if (this.obsReplies) { this.obsReplies.disconnect(); }
+        this.obsReplies = new OnNodeChange($("a[id*='loadmore-']").parents("div[class*='id-']:visible"), function (e) {
+            if (e.removedNodes.length == 1) {
+                if (e.removedNodes[0].tagName == "DIV" && e.removedNodes[0].id == "") {
+                    setTimeout(AVE.Init.UpdateModules, 500);
+                }
             }
         });
+        this.obsReplies.observe();
+    },
+
+    Update: function () {
+        this.Listeners();
     },
 };

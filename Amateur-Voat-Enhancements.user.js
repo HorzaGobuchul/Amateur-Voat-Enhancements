@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        2015-07-18
+// @date        2015-07-21
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.19.10.16
+// @version     2.19.10.20
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -17,6 +17,7 @@
 // @downloadURL https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Amateur-Voat-Enhancements.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
 // @require     https://github.com/domchristie/to-markdown/raw/master/dist/to-markdown.js
+// @require     https://raw.githubusercontent.com/eligrey/FileSaver.js/master/FileSaver.min.js
 // ==/UserScript==
 
 /// Init ///
@@ -307,11 +308,11 @@ AVE.Storage = {
 };
 /// END Storage ///
 
-/// Preference manager:  AVE\'s preference manager. Will contain a button to reset all data stored soon. ///
+/// Preference manager:  AVE\'s preference manager. ///
 AVE.Modules['PreferenceManager'] = {
     ID: 'PreferenceManager',
     Name: 'Preference manager',
-    Desc: 'AVE\'s preference manager. Will contain a button to reset all data stored soon.',
+    Desc: 'AVE\'s preference manager.',
     Category: 'Manager',
 
     Index: 0,
@@ -510,7 +511,7 @@ AVE.Modules['PreferenceManager'] = {
     MngWinHTML: '',
     ModuleHTML: '',
 
-    Categories: ["General", "Subverse", "Thread", "Posts", "Manager", "Fixes", "Misc."],//Available Categories to show //backward compatibility in misc
+    Categories: ["General", "Subverse", "Thread", "Posts", "Manager", "Fixes"],//Available Categories to show
     Modules: [],//List of modules
 
     AppendToPage: function () {
@@ -630,17 +631,6 @@ AVE.Modules['PreferenceManager'] = {
         });
     },
 
-    AppendToPreferenceManager: {
-        html: function () {
-            //return 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="submit" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
-        },
-        callback: function () {
-            //$("input#ResetAllData").on("click", function (param) {
-            //    alert(typeof param);
-            //});
-        },
-    },
-
     AddModule: function (module, cat, pos) {
         var _this = AVE.Modules['PreferenceManager'];
 
@@ -730,17 +720,43 @@ AVE.Modules['PreferenceManager'] = {
         AVE.Modules[Mod_ID].SavePref(POST);
     },
 
+    AppendToPreferenceManager: {
+        html: function () {
+            var htmlStr = "";
+            htmlStr += '<br />Export all stored data as a JSON file: <input style="font-weight:bold;" value="Export" id="AVE_ExportToJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON"></input><br /><br />';
+            htmlStr += 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="AVE_ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
+            return htmlStr;
+        },
+        callback: function () {
+            var _this = AVE.Modules['PreferenceManager'];
+            $("input#AVE_ExportToJSON").on("click", function () {
+                _this.ExportToJSON();
+            });
+            $("input#AVE_ResetAllData").on("click", function () {
+                _this.RemoveAllData();
+            });
+        },
+    },
+
     RemoveAllData: function () {
-        //In Manager options, not in plain view. Too error-prone
         if (confirm("Are you really sure you want to delete all data stored by AVE?")) {
-            //$.each(GM_listValues(), function (k, v) { print(v); });
-            //print(GM_listValues().length);
-            //for (var val in GM_listValues()) {GM_deleteValue(val);}
-            //print(GM_listValues().length);
+            $.each(GM_listValues(), function () { GM_deleteValue(this.toString()); });
             if (GM_listValues().length > 0) {
                 alert("AVE: Reset data > an error occured, not all data were removed.")
             }
         }
+    },
+
+    ExportToJSON: function () {
+        try { var isFileSaverSupported = !!new Blob;
+        } catch (e) { alert("AVE: Saving settings and data to JSON is not supported by your browser."); return;}
+
+        var data = {}
+        $.each(GM_listValues(), function () {
+            data[this] = GM_getValue(this.toString());
+        });
+        var blob = new Blob([JSON.stringify(data)], { type: "application/json;charset=utf-8" });
+        saveAs(blob, "AVE_Data.json");
     },
 };
 /// END Preference manager ///
@@ -780,6 +796,15 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.19.10.20:",
+        "   NeverEndingVoat:",
+        "       Fixed a bug",
+        "   PreferenceManager:",
+        "       Added Export and Reset features",
+        "   UpdateAfterLoadingMore:",
+        "       Updates when loading more replies",
+        "   ToggleMedia:",
+        "       Removed option to expand images in the sidebar",
         "V2.19.10.16:",
         "   NeverEndingVoat:",
         "       Corrected a bug that prevented going back to the previous submissions if the \"page #\" was just before it",
@@ -1084,16 +1109,44 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
         }
     },
 
+    obsReplies: null,
+    obsComm: null,
+    CommentLen: 0,
+
     Start: function () {
+        var _this = this;
+
+        this.CommentLen = $("div[class*='id-']").length;
+        //More Comments
+        if (this.obsComm) { this.obsComm.disconnect(); }
+        this.obsComm = new OnNodeChange($("div.sitetable#siteTable"), function (e) {
+            if (e.addedNodes.length > 0 && e.removedNodes.length == 0) {
+                if ($("div[class*='id-']").length > _this.CommentLen) {
+                    _this.CommentLen = $("div[class*='id-']").length;
+
+                    setTimeout(AVE.Init.UpdateModules, 500);
+                }
+            }
+        });
+        this.obsComm.observe();
         this.Listeners();
     },
 
     Listeners: function () {
-        $("a#loadmorebutton").OnNodeChange(function () {
-            if ($(this).text().split(" ")[0] == "load") {
-                setTimeout(AVE.Init.UpdateModules, 500);
+        //More Replies
+        if (this.obsReplies) { this.obsReplies.disconnect(); }
+        this.obsReplies = new OnNodeChange($("a[id*='loadmore-']").parents("div[class*='id-']:visible"), function (e) {
+            if (e.removedNodes.length == 1) {
+                if (e.removedNodes[0].tagName == "DIV" && e.removedNodes[0].id == "") {
+                    setTimeout(AVE.Init.UpdateModules, 500);
+                }
             }
         });
+        this.obsReplies.observe();
+    },
+
+    Update: function () {
+        this.Listeners();
     },
 };
 /// END Update after loading more ///
@@ -1702,11 +1755,6 @@ AVE.Modules['ToggleMedia'] = {
             Type: 'string',
             Value: "110", // Images, Videos, self-Texts
         },
-        ToggleInSidebar: {
-            Desc: 'Also toggle Media present in the sidebar of the subverse.',
-            Type: 'boolean',
-            Value: false,
-        },
     },
 
     OriginalOptions: "",
@@ -1717,9 +1765,7 @@ AVE.Modules['ToggleMedia'] = {
         var opt = {};
         opt.Enabled = POST.Enabled;
         opt.MediaTypes = (POST.Images ? "1" : "0") + (POST.Videos ? "1" : "0") + (POST["self-texts"] ? "1" : "0")
-        opt.ToggleInSidebar = POST.ToggleInSidebar;
 
-        //Add ToggleInSidebar
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(opt));
     },
 
@@ -1735,7 +1781,9 @@ AVE.Modules['ToggleMedia'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                _this.Options[key].Value = value;
+                if (_this.Options[key]) {
+                    _this.Options[key].Value = value;
+                }
             });
         }
         _this.Enabled = _this.Options.Enabled.Value;
@@ -1758,7 +1806,7 @@ AVE.Modules['ToggleMedia'] = {
     // voat.co/v/test/comments/37149
 
     Start: function () {
-        AcceptedTypes = this.Options.MediaTypes.Value;
+        var AcceptedTypes = this.Options.MediaTypes.Value;
         if (AcceptedTypes != "000" && $.inArray(AVE.Utils.currentPageType, ["subverses", "sets", "mysets", "user", "user-manage"]) == -1) {
 
             var strSel = (AcceptedTypes[0] == true ? this.ImgMedia + "," : "") +
@@ -1768,10 +1816,7 @@ AVE.Modules['ToggleMedia'] = {
             if (strSel[strSel.length - 1] == ",")
             { strSel = strSel.slice(0, -1); }
 
-            this.sel = $(strSel).filter(function (idx) {return $(this).parents("div.submission[class*='id-']:first").css("opacity") == 1;});
-
-            if (!this.Options.ToggleInSidebar.Value)
-            { this.sel = $(this.sel).filter(':parents(.titlebox)'); }
+            this.sel = $(strSel).filter(function (idx) { return $(this).parents("div.submission[class*='id-']:first").css("opacity") == 1; });
 
             //print(this.sel.length);
 
@@ -1821,8 +1866,7 @@ AVE.Modules['ToggleMedia'] = {
             if (
                 (state && this.sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
                 state === this.sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
-                )
-            {
+                ) {
                 this.sel[el].click();
             }
         }
@@ -1840,11 +1884,8 @@ AVE.Modules['ToggleMedia'] = {
                                '<label for="' + mediaTypes[i] + '">' + mediaTypes[i] + '</label>' +
                                '</span>';
             }
-            //ToggleInSidebar
-            htmlString += '<br /><input ' + (_this.Options.ToggleInSidebar.Value ? 'checked="checked"' : '') + ' id="ToggleInSidebar" name="ToggleInSidebar" type="checkbox"></input>' +
-            '<label for="ToggleInSidebar">' + _this.Options.ToggleInSidebar.Desc + '</label>';
 
-            return htmlString+'</div>';
+            return htmlString + '</div>';
         },
     },
 };
@@ -2054,6 +2095,91 @@ AVE.Modules['DisableShareALink'] = {
 };
 /// END Disable Share-a-Link ///
 
+/// Set Voat container\'s width:  By default, Voat shows a margin at both sides of the container. You can modify this by setting the new width as a percentage of the available horizontal space. ///
+AVE.Modules['FixContainerWidth'] = {
+    ID: 'FixContainerWidth',
+    Name: 'Set Voat container\'s width',
+    Desc: 'By default, Voat shows a margin at both sides of the container. You can modify this by setting the new width as a percentage of the available horizontal space.',
+    Category: 'Fixes',
+
+    Index: 100,
+    Enabled: false,
+
+    Store: {},
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: true,
+        },
+        Width: {
+            Type: 'int',
+            Range: [1,100],
+            Value: 100,
+        },
+    },
+
+    OriginalOptions: "",
+
+    SavePref: function (POST) {
+        var _this = AVE.Modules['FixContainerWidth'];
+        POST = POST[_this.ID];
+
+        POST.Width = parseInt(POST.Width);
+        if (typeof POST.Width != "number" || isNaN(POST.Width)) {
+            POST.Width = _this.Options.Width.Value;
+        }
+
+        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST));
+    },
+
+    ResetPref: function () {
+        var _this = AVE.Modules['FixContainerWidth'];
+        _this.Options = JSON.parse(_this.OriginalOptions);
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = AVE.Modules['FixContainerWidth'];
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
+
+        $.each(JSON.parse(Opt), function (key, value) {
+            _this.Options[key].Value = value;
+        });
+        _this.Enabled = _this.Options.Enabled.Value;
+    },
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.OriginalOptions = JSON.stringify(this.Options); //If ResetPref is used
+        this.SetOptionsFromPref();
+
+        if (this.Enabled) {
+            this.Start();
+        }
+    },
+
+    Start: function () {
+        $("div#container").css("max-width", this.Options.Width.Value + "%");
+    },
+
+    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+        html: function () {
+            var _this = AVE.Modules['FixContainerWidth'];
+            var htmlStr = '<input style="width:50%;display:inline;" id="Width" value="'+_this.Options.Width.Value+'" type="range" min="' + _this.Options.Width.Range[0] + ' max="' + _this.Options.Width.Range[1] + '"/> <span id="FixContainerWidth_Value"></span>%';
+            return htmlStr;
+        },
+        callback: function () {
+            var _this = AVE.Modules['FixContainerWidth'];
+            $("input#Width[type='range']").on("change", function () {
+                $("span#FixContainerWidth_Value").text($(this).val());
+                $("div#container").css("max-width", $(this).val() + "%");
+            });
+            $("input#Width[type='range']").change();
+        },
+    },
+};
+/// END Set Voat container\'s width ///
+
 /// Fix expanding images:  Let images expand over the sidebar and disallow the selection/highlight of the image. ///
 AVE.Modules['FixExpandImage'] = {
     ID: 'FixExpandImage',
@@ -2173,91 +2299,6 @@ AVE.Modules['FixExpandImage'] = {
     },
 };
 /// END Fix expanding images ///
-
-/// Set Voat container\'s width:  By default, Voat shows a margin at both sides of the container. You can modify this by setting the new width as a percentage of the available horizontal space. ///
-AVE.Modules['FixContainerWidth'] = {
-    ID: 'FixContainerWidth',
-    Name: 'Set Voat container\'s width',
-    Desc: 'By default, Voat shows a margin at both sides of the container. You can modify this by setting the new width as a percentage of the available horizontal space.',
-    Category: 'Fixes',
-
-    Index: 100,
-    Enabled: false,
-
-    Store: {},
-
-    Options: {
-        Enabled: {
-            Type: 'boolean',
-            Value: true,
-        },
-        Width: {
-            Type: 'int',
-            Range: [1,100],
-            Value: 100,
-        },
-    },
-
-    OriginalOptions: "",
-
-    SavePref: function (POST) {
-        var _this = AVE.Modules['FixContainerWidth'];
-        POST = POST[_this.ID];
-
-        POST.Width = parseInt(POST.Width);
-        if (typeof POST.Width != "number" || isNaN(POST.Width)) {
-            POST.Width = _this.Options.Width.Value;
-        }
-
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST));
-    },
-
-    ResetPref: function () {
-        var _this = AVE.Modules['FixContainerWidth'];
-        _this.Options = JSON.parse(_this.OriginalOptions);
-    },
-
-    SetOptionsFromPref: function () {
-        var _this = AVE.Modules['FixContainerWidth'];
-        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
-
-        $.each(JSON.parse(Opt), function (key, value) {
-            _this.Options[key].Value = value;
-        });
-        _this.Enabled = _this.Options.Enabled.Value;
-    },
-
-    Load: function () {
-        this.Store = AVE.Storage;
-        this.OriginalOptions = JSON.stringify(this.Options); //If ResetPref is used
-        this.SetOptionsFromPref();
-
-        if (this.Enabled) {
-            this.Start();
-        }
-    },
-
-    Start: function () {
-        $("div#container").css("max-width", this.Options.Width.Value + "%");
-    },
-
-    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
-        html: function () {
-            var _this = AVE.Modules['FixContainerWidth'];
-            var htmlStr = '<input style="width:50%;display:inline;" id="Width" value="'+_this.Options.Width.Value+'" type="range" min="' + _this.Options.Width.Range[0] + ' max="' + _this.Options.Width.Range[1] + '"/> <span id="FixContainerWidth_Value"></span>%';
-            return htmlStr;
-        },
-        callback: function () {
-            var _this = AVE.Modules['FixContainerWidth'];
-            $("input#Width[type='range']").on("change", function () {
-                $("span#FixContainerWidth_Value").text($(this).val());
-                $("div#container").css("max-width", $(this).val() + "%");
-            });
-            $("input#Width[type='range']").change();
-        },
-    },
-};
-/// END Set Voat container\'s width ///
 
 /// Ignore users:  Lets you tag users as Ignored. Replacing all their comments\' content with [Ignored User]. ///
 AVE.Modules['IgnoreUsers'] = {
@@ -2521,11 +2562,14 @@ AVE.Modules['NeverEndingVoat'] = {
             url: nextPageURL,
             cache: false,
         }).done(function (html) {
+            var error = false;
             if ($(html).find("div.submission[class*='id-']").length == 0) { $("a#AVE_loadmorebutton").text(_this.Labels[2]); return false; } //catchall for error pages
             _this.currentPage++;
+            print($(html).find("div.submission[class*='id-']").length);
 
             if (_this.Options.ExpandSubmissionBlock.Value && $("div.content[role='main']").css("margin-right") != "0") {
                 $("div.content[role='main']").css("margin", "0px 10px");
+                $("div.side").css("z-index", "100");
             }
 
             $("div.sitetable").append('<div style="' + _this.SepStyle + '" class="AVE_postSeparator">Page ' + (_this.currentPage) + '</div>');
@@ -2538,10 +2582,17 @@ AVE.Modules['NeverEndingVoat'] = {
                 } else if (_this.Options.DisplayDuplicates.Value && !$(this).hasClass("stickied")) {
                     $("div.sitetable").append($(this));
                     $(this).css("opacity", "0.3");
-                } else { print("AVE: oups error in NeverEndingVoat:LoadMore()"); }
+                } else {
+                    error = true;
+                }
             });
 
-            $("a#AVE_loadmorebutton").text(_this.Labels[0]);
+            if (!error) {
+                $("a#AVE_loadmorebutton").text(_this.Labels[0]);
+            } else {
+                $("a#AVE_loadmorebutton").text("An error occured. No point in trying again I'm afraid.");
+                print("AVE: oups error in NeverEndingVoat:LoadMore()");
+            }
 
             // Add expando links to the new submissions
             location.assign("javascript:UI.ExpandoManager.execute();void(0)");
@@ -2552,7 +2603,7 @@ AVE.Modules['NeverEndingVoat'] = {
                 if (AVE.Modules['ToggleMedia'] && AVE.Modules['ToggleMedia'].Enabled) {
                     if ($("[id='GM_ExpandAllImages']").hasClass("expanded")) {
                         setTimeout(function () { AVE.Modules['ToggleMedia'].ToggleMedia(true) }, 750);
-                        
+
                     }
                 }
             }
@@ -2650,35 +2701,39 @@ AVE.Modules['ReplyWithQuote'] = {
     Quote: '',
 
     Listeners: function () {
-        var SelectedNodes = this.getSelectedNodes;
-        var SelectedText = this.getSelectedText;
-        var Quote = this.Quote;
+        var _this = this;
+
+        $("li > a:contains(reply)").on("click", function () {
+            //Needed because when the reply text input appears, the text is deselected.
+            //  Thus, we get the selected text before that.
+            _this.Quote = _this.getQuote();
+        });
 
         $("div[class*='entry']").OnNodeChange(function () {
-            if (Quote == "") { return; }
+            if (_this.Quote == "") { return; }
+
             var ReplyBox = $(this).find("textarea[class='commenttextarea'][id='CommentContent']");
             if (ReplyBox.length > 0) {
-                ReplyBox.val(Quote + "\n\n");
+                ReplyBox.val(_this.Quote + "\n\n");
             }
-        });
-
-        $(".usertext").off("mouseup");
-        $(".usertext").on("mouseup", function () {
-            var nodes = SelectedNodes();
-
-            if (!nodes) {
-                Quote = "";
-                return;
-            }
-            if ($(nodes[0]).parents(".usertext").attr("id") == undefined ||
-                $(nodes[0]).parents(".usertext").attr("id") != $(nodes[1]).parents(".usertext").attr("id")) {
-                Quote = "";
-                return;
-            }
-
-            Quote = AVE.Utils.ParseQuotedText(SelectedText().toString());
         });
     },
+
+    getQuote: function () {
+        var nodes = this.getSelectedNodes();
+
+        if (!nodes) {
+            return "";
+        }
+
+        if ($(nodes[0]).parents(".usertext-body:first").attr("id") == undefined ||
+            $(nodes[0]).parents(".usertext-body:first").attr("id") != $(nodes[1]).parents(".usertext-body:first").attr("id")) {
+            return "";
+        }
+
+        return AVE.Utils.ParseQuotedText(this.getSelectedText().toString());
+    },
+
     getSelectedNodes: function () {
         // Thanks to InvisibleBacon @ https://stackoverflow.com/questions/1335252/how-can-i-get-the-dom-element-which-contains-the-current-selection
         var selection = window.getSelection();
@@ -3147,8 +3202,8 @@ AVE.Modules['Shortcuts'] = {
 /// END Subverse and Set shortcuts ///
 
 /// Shortcut keys:  Use your keyboard to navigate Voat. ///
-AVE.Modules['ShortcutKeys'] = {
-    ID: 'ShortcutKeys',
+AVE.Modules['ShortKeys'] = {
+    ID: 'ShortKeys',
     Name: 'Shortcut keys',
     Desc: 'Use your keyboard to navigate Voat.',
     Category: 'Posts',
@@ -3204,13 +3259,13 @@ AVE.Modules['ShortcutKeys'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['ShortcutKeys'];
+        var _this = AVE.Modules['ShortKeys'];
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
     ResetPref: function () {
-        var _this = AVE.Modules['ShortcutKeys'];
+        var _this = AVE.Modules['ShortKeys'];
         _this.Options = JSON.parse(_this.OriginalOptions);
     },
 
@@ -3401,7 +3456,7 @@ AVE.Modules['ShortcutKeys'] = {
 
     AppendToPreferenceManager: {
         html: function () {
-            var _this = AVE.Modules['ShortcutKeys'];
+            var _this = AVE.Modules['ShortKeys'];
             var htmlStr = "";
             //Up and Down vote
             htmlStr += '<table id="AVE_ShortcutKeys" style="text-align: right;">';

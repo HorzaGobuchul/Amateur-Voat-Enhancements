@@ -61,35 +61,39 @@ AVE.Modules['ReplyWithQuote'] = {
     Quote: '',
 
     Listeners: function () {
-        var SelectedNodes = this.getSelectedNodes;
-        var SelectedText = this.getSelectedText;
-        var Quote = this.Quote;
+        var _this = this;
+
+        $("li > a:contains(reply)").on("click", function () {
+            //Needed because when the reply text input appears, the text is deselected.
+            //  Thus, we get the selected text before that.
+            _this.Quote = _this.getQuote();
+        });
 
         $("div[class*='entry']").OnNodeChange(function () {
-            if (Quote == "") { return; }
+            if (_this.Quote == "") { return; }
+
             var ReplyBox = $(this).find("textarea[class='commenttextarea'][id='CommentContent']");
             if (ReplyBox.length > 0) {
-                ReplyBox.val(Quote + "\n\n");
+                ReplyBox.val(_this.Quote + "\n\n");
             }
-        });
-
-        $(".usertext").off("mouseup");
-        $(".usertext").on("mouseup", function () {
-            var nodes = SelectedNodes();
-
-            if (!nodes) {
-                Quote = "";
-                return;
-            }
-            if ($(nodes[0]).parents(".usertext").attr("id") == undefined ||
-                $(nodes[0]).parents(".usertext").attr("id") != $(nodes[1]).parents(".usertext").attr("id")) {
-                Quote = "";
-                return;
-            }
-
-            Quote = AVE.Utils.ParseQuotedText(SelectedText().toString());
         });
     },
+
+    getQuote: function () {
+        var nodes = this.getSelectedNodes();
+
+        if (!nodes) {
+            return "";
+        }
+
+        if ($(nodes[0]).parents(".usertext-body:first").attr("id") == undefined ||
+            $(nodes[0]).parents(".usertext-body:first").attr("id") != $(nodes[1]).parents(".usertext-body:first").attr("id")) {
+            return "";
+        }
+
+        return AVE.Utils.ParseQuotedText(this.getSelectedText().toString());
+    },
+
     getSelectedNodes: function () {
         // Thanks to InvisibleBacon @ https://stackoverflow.com/questions/1335252/how-can-i-get-the-dom-element-which-contains-the-current-selection
         var selection = window.getSelection();

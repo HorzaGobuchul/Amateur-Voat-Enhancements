@@ -18,11 +18,6 @@ AVE.Modules['ToggleMedia'] = {
             Type: 'string',
             Value: "110", // Images, Videos, self-Texts
         },
-        ToggleInSidebar: {
-            Desc: 'Also toggle Media present in the sidebar of the subverse.',
-            Type: 'boolean',
-            Value: false,
-        },
     },
 
     OriginalOptions: "",
@@ -33,9 +28,7 @@ AVE.Modules['ToggleMedia'] = {
         var opt = {};
         opt.Enabled = POST.Enabled;
         opt.MediaTypes = (POST.Images ? "1" : "0") + (POST.Videos ? "1" : "0") + (POST["self-texts"] ? "1" : "0")
-        opt.ToggleInSidebar = POST.ToggleInSidebar;
 
-        //Add ToggleInSidebar
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(opt));
     },
 
@@ -51,7 +44,9 @@ AVE.Modules['ToggleMedia'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                _this.Options[key].Value = value;
+                if (_this.Options[key]) {
+                    _this.Options[key].Value = value;
+                }
             });
         }
         _this.Enabled = _this.Options.Enabled.Value;
@@ -74,7 +69,7 @@ AVE.Modules['ToggleMedia'] = {
     // voat.co/v/test/comments/37149
 
     Start: function () {
-        AcceptedTypes = this.Options.MediaTypes.Value;
+        var AcceptedTypes = this.Options.MediaTypes.Value;
         if (AcceptedTypes != "000" && $.inArray(AVE.Utils.currentPageType, ["subverses", "sets", "mysets", "user", "user-manage"]) == -1) {
 
             var strSel = (AcceptedTypes[0] == true ? this.ImgMedia + "," : "") +
@@ -84,10 +79,7 @@ AVE.Modules['ToggleMedia'] = {
             if (strSel[strSel.length - 1] == ",")
             { strSel = strSel.slice(0, -1); }
 
-            this.sel = $(strSel).filter(function (idx) {return $(this).parents("div.submission[class*='id-']:first").css("opacity") == 1;});
-
-            if (!this.Options.ToggleInSidebar.Value)
-            { this.sel = $(this.sel).filter(':parents(.titlebox)'); }
+            this.sel = $(strSel).filter(function (idx) { return $(this).parents("div.submission[class*='id-']:first").css("opacity") == 1; });
 
             //print(this.sel.length);
 
@@ -137,8 +129,7 @@ AVE.Modules['ToggleMedia'] = {
             if (
                 (state && this.sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
                 state === this.sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
-                )
-            {
+                ) {
                 this.sel[el].click();
             }
         }
@@ -156,11 +147,8 @@ AVE.Modules['ToggleMedia'] = {
                                '<label for="' + mediaTypes[i] + '">' + mediaTypes[i] + '</label>' +
                                '</span>';
             }
-            //ToggleInSidebar
-            htmlString += '<br /><input ' + (_this.Options.ToggleInSidebar.Value ? 'checked="checked"' : '') + ' id="ToggleInSidebar" name="ToggleInSidebar" type="checkbox"></input>' +
-            '<label for="ToggleInSidebar">' + _this.Options.ToggleInSidebar.Desc + '</label>';
 
-            return htmlString+'</div>';
+            return htmlString + '</div>';
         },
     },
 };

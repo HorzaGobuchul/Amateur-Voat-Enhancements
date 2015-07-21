@@ -32,6 +32,15 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.19.10.20:",
+        "   NeverEndingVoat:",
+        "       Fixed a bug",
+        "   PreferenceManager:",
+        "       Added Export and Reset features",
+        "   UpdateAfterLoadingMore:",
+        "       Updates when loading more replies",
+        "   ToggleMedia:",
+        "       Removed option to expand images in the sidebar",
         "V2.19.10.16:",
         "   NeverEndingVoat:",
         "       Corrected a bug that prevented going back to the previous submissions if the \"page #\" was just before it",

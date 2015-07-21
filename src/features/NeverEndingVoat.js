@@ -134,11 +134,14 @@ AVE.Modules['NeverEndingVoat'] = {
             url: nextPageURL,
             cache: false,
         }).done(function (html) {
+            var error = false;
             if ($(html).find("div.submission[class*='id-']").length == 0) { $("a#AVE_loadmorebutton").text(_this.Labels[2]); return false; } //catchall for error pages
             _this.currentPage++;
+            print($(html).find("div.submission[class*='id-']").length);
 
             if (_this.Options.ExpandSubmissionBlock.Value && $("div.content[role='main']").css("margin-right") != "0") {
                 $("div.content[role='main']").css("margin", "0px 10px");
+                $("div.side").css("z-index", "100");
             }
 
             $("div.sitetable").append('<div style="' + _this.SepStyle + '" class="AVE_postSeparator">Page ' + (_this.currentPage) + '</div>');
@@ -151,10 +154,17 @@ AVE.Modules['NeverEndingVoat'] = {
                 } else if (_this.Options.DisplayDuplicates.Value && !$(this).hasClass("stickied")) {
                     $("div.sitetable").append($(this));
                     $(this).css("opacity", "0.3");
-                } else { print("AVE: oups error in NeverEndingVoat:LoadMore()"); }
+                } else {
+                    error = true;
+                }
             });
 
-            $("a#AVE_loadmorebutton").text(_this.Labels[0]);
+            if (!error) {
+                $("a#AVE_loadmorebutton").text(_this.Labels[0]);
+            } else {
+                $("a#AVE_loadmorebutton").text("An error occured. No point in trying again I'm afraid.");
+                print("AVE: oups error in NeverEndingVoat:LoadMore()");
+            }
 
             // Add expando links to the new submissions
             location.assign("javascript:UI.ExpandoManager.execute();void(0)");
@@ -165,7 +175,7 @@ AVE.Modules['NeverEndingVoat'] = {
                 if (AVE.Modules['ToggleMedia'] && AVE.Modules['ToggleMedia'].Enabled) {
                     if ($("[id='GM_ExpandAllImages']").hasClass("expanded")) {
                         setTimeout(function () { AVE.Modules['ToggleMedia'].ToggleMedia(true) }, 750);
-                        
+
                     }
                 }
             }

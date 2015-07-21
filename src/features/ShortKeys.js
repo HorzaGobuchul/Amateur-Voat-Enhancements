@@ -1,5 +1,5 @@
-AVE.Modules['ShortcutKeys'] = {
-    ID: 'ShortcutKeys',
+AVE.Modules['ShortKeys'] = {
+    ID: 'ShortKeys',
     Name: 'Shortcut keys',
     Desc: 'Use your keyboard to navigate Voat.',
     Category: 'Posts',
@@ -55,13 +55,13 @@ AVE.Modules['ShortcutKeys'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['ShortcutKeys'];
+        var _this = AVE.Modules['ShortKeys'];
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
     ResetPref: function () {
-        var _this = AVE.Modules['ShortcutKeys'];
+        var _this = AVE.Modules['ShortKeys'];
         _this.Options = JSON.parse(_this.OriginalOptions);
     },
 
@@ -252,7 +252,7 @@ AVE.Modules['ShortcutKeys'] = {
 
     AppendToPreferenceManager: {
         html: function () {
-            var _this = AVE.Modules['ShortcutKeys'];
+            var _this = AVE.Modules['ShortKeys'];
             var htmlStr = "";
             //Up and Down vote
             htmlStr += '<table id="AVE_ShortcutKeys" style="text-align: right;">';
