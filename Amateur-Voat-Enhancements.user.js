@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        2015-07-22
+// @date        2015-07-23
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.18.10.21
+// @version     2.18.10.22
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -54,7 +54,7 @@ AVE.Init = {
 /// END Init ///
 
 /// Utils ///
-ï»¿/* global self */
+/* global self */
 
 AVE.Utils = {
     regExpSet: /([^:]*):([0-9]*)/i,
@@ -272,22 +272,7 @@ var OnAttrChange = (function () {
 AVE.Storage = {
     Prefix: "AVE_",
 
-    Test: function () {
-        try {
-            return localStorage.setItem(StoragePrefix + 'localStorageTest', 'test') == undefined;
-        } catch (e) { return false; }
-    },
-
     Data: null,
-
-    Persistence: function () {
-        //print("Storage: " + this.Storage);
-        var val = { S: null };
-        //val.LS = this.SetValue("LS_Persistence", "true")
-
-        val.S = this.GetValue("LS_Persistence", "null")
-        return val;
-    },
 
     GetValue: function (key, def) {
         if (!this.Data) { return null; }
@@ -313,19 +298,6 @@ AVE.Storage = {
         AVE.Utils.SendMessage({ request: "Storage", type: "DeleteValue", key: key });
 
         delete this.Data[key];
-    },
-
-    ExportToJSON: function () {
-        //'data:application/json;charset=utf-8, {a: "patate"}'
-        //https://stackoverflow.com/questions/2897619/using-html5-javascript-to-generate-and-save-a-file
-        //data:application/json;charset=utf-8,'+ JSON
-        //Get options from all modules
-        return 'Not Implemented Yet';
-    },
-
-    ImportFromJSON: function () {
-        //Set options for all modules
-        return 'Not Implemented Yet';
     },
 };
 /// END Storage ///
@@ -3666,5 +3638,23 @@ AVE.Modules['ToggleChildComment'] = {
     },
 };
 /// END Toggle display child comments ///
-AVE.Utils.SendMessage = function (Obj) {return false;};
+
+/// Build Dependent ///
+AVE.Utils.SendMessage = function (Obj) {
+    switch (Obj.type) {
+        case "SetValue":
+            GM_setValue(Obj.key, Obj.value);
+            break;
+        case "DeleteValue":
+            GM_deleteValue(Obj.key);
+            break;
+    }
+
+};
+AVE.Utils.MetaData = { version: GM_info.script.version, name: GM_info.script.name };
+AVE.Storage.Data = {};
+$.each(GM_listValues(), function () {
+    AVE.Storage.Data[this] = GM_getValue(this.toString());
+});
 AVE.Init.Start();
+/// END Build Dependent ///

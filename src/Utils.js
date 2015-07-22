@@ -1,4 +1,4 @@
-﻿/* global self */
+/* global self */
 
 AVE.Utils = {
     regExpSet: /([^:]*):([0-9]*)/i,
