@@ -1,3 +1,5 @@
+/* global self */
+
 AVE.Modules['VersionNotifier'] = {
     ID: 'VersionNotifier',
     Name: 'Version notifier',
@@ -15,7 +17,7 @@ AVE.Modules['VersionNotifier'] = {
     Load: function () {
         this.Store = AVE.Storage;
         //this.Store.DeleteValue(this.Store.Prefix + this.ID + "_Version")
-        this.Enabled = this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") != GM_info.script.version;
+        this.Enabled = this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") != AVE.Utils.MetaData.version;
 
         if (this.Enabled) {
             this.Start();
@@ -32,15 +34,16 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.19.10.20:",
-        "   NeverEndingVoat:",
-        "       Fixed a bug",
-        "   PreferenceManager:",
-        "       Added Export and Reset features",
-        "   UpdateAfterLoadingMore:",
-        "       Updates when loading more replies",
-        "   ToggleMedia:",
-        "       Removed option to expand images in the sidebar",
+        "V2.18.10.20:",
+        "   Removed backcompatibility module for V1 to V2 (explains why the version Minor was decremented)",
+        "   Released Firefox and Chrome extensions",
+        "   Added support for more voat pages:",
+        "       Api (excluded)",
+        "       Saved",
+        "       Domain",
+        "       Submit",
+        "       Account-login",
+        "       Account-register",
         "V2.19.10.16:",
         "   NeverEndingVoat:",
         "       Corrected a bug that prevented going back to the previous submissions if the \"page #\" was just before it",
@@ -179,8 +182,8 @@ AVE.Modules['VersionNotifier'] = {
                        'padding-bottom:10px;' +
                        '}';
         var notifierHTML = '<div class="VersionBox">' +
-                                '<p class="VersionBoxTitle">' + GM_info.script.name + '</p>' +
-                                '<p class="VersionBoxInfo">' + (this.Trigger == "new" ? this.LabelNew : this.LabelShow) + ' <strong style="font-size:14px">' + GM_info.script.version + '</strong></p>' +
+                                '<p class="VersionBoxTitle">' + AVE.Utils.MetaData.name + '</p>' +
+                                '<p class="VersionBoxInfo">' + (this.Trigger == "new" ? this.LabelNew : this.LabelShow) + ' <strong style="font-size:14px">' + AVE.Utils.MetaData.version + '</strong></p>' +
                                 '<p class="VersionBoxToggle"><a href="javascript:void(0)" id="ShowChangelog">See Changelog?</a><p>' +
                                 '<div class="VersionBoxClose">Close</div>' +
                             '</div>';
@@ -213,7 +216,7 @@ AVE.Modules['VersionNotifier'] = {
         });
         $("div.VersionBoxClose").on("click", function () {
             VersionBox.hide("slow");
-            _this.Store.SetValue(_this.Store.Prefix + _this.ID + "_Version", GM_info.script.version);
+            _this.Store.SetValue(_this.Store.Prefix + _this.ID + "_Version", AVE.Utils.MetaData.version);
         });
     },
 };

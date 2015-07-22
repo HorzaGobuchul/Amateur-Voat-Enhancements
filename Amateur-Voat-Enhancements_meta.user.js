@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        2015-07-21
+// @date        2015-07-22
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.19.10.20
+// @version     2.18.10.21
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue

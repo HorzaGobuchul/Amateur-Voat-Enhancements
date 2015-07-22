@@ -1,3 +1,5 @@
+﻿/* global self */
+
 AVE.Utils = {
     regExpSet: /([^:]*):([0-9]*)/i,
     regExpTag: /([^:]*):([^:]*)/i,
@@ -17,26 +19,36 @@ AVE.Utils = {
         return $("body").attr("class");
     },
 
+    MetaData: null,
+
     Page: function () {
         var RegExpTypes = {
             frontpage: /voat.co\/?(new)?(\?page=[0-9]*)?(\#[^\\\/]*)?$/i,
+            submissions: /voat.co\/user\/[\w\d]*\/submissions/i,
             subverse: /voat.co\/v\/[a-z]*\/?(\?page=[0-9]*)?/i,
+            comments: /voat.co\/user\/[\w\d]*\/comments/i,
             thread: /voat.co\/v\/[a-z]*\/comments\/\d*/i,
+            register: /voat.co\/account\/register/i,
+            user: /voat.co\/user\/[\w\d]*\/?$/i,
+            manage: /voat.co\/account\/manage/i,
+            saved: /voat.co\/user\/.*\/saved/i,
+            login: /voat.co\/account\/Login/i,
             subverses: /voat.co\/subverses/i,
+            messaging: /voat.co\/messaging/i,
             search: /voat.co\/search\?q=/i,
+            domain: /voat.co\/domains\//i,
+            submit: /voat.co\/submit/i,
             set: /voat.co\/set\/\d*/i,
             mySet: /voat.co\/mysets/i,
             sets: /voat.co\/sets/i,
-            user: /voat.co\/user\/[\w\d]*\/?$/i,
-            comments: /voat.co\/user\/[\w\d]*\/comments/i,
-            submissions: /voat.co\/user\/[\w\d]*\/submissions/i,
-            messaging: /voat.co\/messaging/i,
-            manage: /voat.co\/account\/manage/i,
+            api: /voat.co\/api/i,
         };
         var url = window.location.href;
 
         if (RegExpTypes.frontpage.test(url)) { return "frontpage"; }
+        else if (RegExpTypes.api.test(url)) { return "api"; }
         else if (RegExpTypes.thread.test(url)) { return "thread"; }
+        else if (RegExpTypes.submit.test(url)) { return "submit"; }
         else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
         else if (RegExpTypes.subverses.test(url)) { return "subverses"; }
         else if (RegExpTypes.set.test(url)) { return "set"; }
@@ -48,6 +60,9 @@ AVE.Utils = {
         else if (RegExpTypes.submissions.test(url)) { return "user-submissions"; }
         else if (RegExpTypes.messaging.test(url)) { return "user-messages"; }
         else if (RegExpTypes.manage.test(url)) { return "user-manage"; }
+        else if (RegExpTypes.saved.test(url)) { return "saved"; }
+        else if (RegExpTypes.register.test(url)) { return "account-register"; }
+        else if (RegExpTypes.login.test(url)) { return "account-login"; }
 
         return "none";
     },
@@ -136,7 +151,7 @@ jQuery.expr[':'].parents = function (a, i, m) { return jQuery(a).parents(m[3]).l
 var OnNodeChange = (function () {
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
 
-    cls = function (t, c) {
+    var cls = function (t, c) {
         this.options = {
             subtree: true,
             childList: true,
@@ -152,7 +167,7 @@ var OnNodeChange = (function () {
         });
 
         this.observe = function () {
-            _this = this;
+            var _this = this;
             return this.targets.each(function () {
                 _this.observer.observe(this, _this.options);
             });
@@ -168,7 +183,7 @@ var OnNodeChange = (function () {
 var OnAttrChange = (function () {
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
 
-    cls = function (t, c) {
+    var cls = function (t, c) {
         this.options = {
             attributes: true,
             attributeOldValue: true,
@@ -184,7 +199,7 @@ var OnAttrChange = (function () {
         });
 
         this.observe = function () {
-            _this = this;
+            var _this = this;
             return this.targets.each(function () {
                 _this.observer.observe(this, _this.options);
             });

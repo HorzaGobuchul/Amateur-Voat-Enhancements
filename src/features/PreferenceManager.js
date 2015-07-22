@@ -1,7 +1,7 @@
 AVE.Modules['PreferenceManager'] = {
     ID: 'PreferenceManager',
     Name: 'Preference manager',
-    Desc: 'AVE\'s preference manager.',
+    Desc: 'AVE\'s preference manager. Will contain a button to reset all data stored soon.',
     Category: 'Manager',
 
     Index: 0,
@@ -175,7 +175,7 @@ AVE.Modules['PreferenceManager'] = {
                         <span class="MngrWinTitle"><a target="_blank" href="https://voat.co/v/AVE">AVE</a></span> <span style="cursor:pointer;font-size:10px;" id="AVE_Version">Version @{version}</span>\
                         <div class="TopButtons">\
                             <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub" id="SaveData">Save Changes</a>\
-                            <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default" id="CloseWinMngr">×</a>\
+                            <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default" id="CloseWinMngr">Ã—</a>\
                         </div>\
                     </div>\
                     <section class="ModulePref" Module="null">\
@@ -211,7 +211,7 @@ AVE.Modules['PreferenceManager'] = {
             $(LinkHTML).insertBefore("span.user:contains('Manage')");
         } else { //If the user isn't logged in
             var LinkHTML = '<span class="user"> - <a style="font-weight:bold;" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span>';
-            $(LinkHTML).insertAfter("span.user");
+            $(LinkHTML).insertAfter("span.user:first");
         }
     },
 
@@ -228,7 +228,7 @@ AVE.Modules['PreferenceManager'] = {
 
     BuildManager: function () {
         var _this = AVE.Modules['PreferenceManager'];
-        var MngWinHTML = _this.MngWinHTML.replace('@{version}', GM_info.script.version);
+        var MngWinHTML = _this.MngWinHTML.replace('@{version}', AVE.Utils.MetaData.version);
         $(MngWinHTML).appendTo("body");
         $(".MngrWin").show();
 
@@ -318,6 +318,17 @@ AVE.Modules['PreferenceManager'] = {
                 $("#CloseWinMngr").click();
             }
         });
+    },
+
+    AppendToPreferenceManager: {
+        html: function () {
+            //return 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="submit" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
+        },
+        callback: function () {
+            //$("input#ResetAllData").on("click", function (param) {
+            //    alert(typeof param);
+            //});
+        },
     },
 
     AddModule: function (module, cat, pos) {
@@ -412,8 +423,13 @@ AVE.Modules['PreferenceManager'] = {
     AppendToPreferenceManager: {
         html: function () {
             var htmlStr = "";
-            htmlStr += '<br />Export all stored data as a JSON file: <input style="font-weight:bold;" value="Export" id="AVE_ExportToJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON"></input><br /><br />';
+            htmlStr += '<br />Export all stored data as a JSON file: <input style="font-weight:bold;" value="Export" id="AVE_ExportToJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON"></input>';
+            htmlStr += '<br />Import settings/data from a JSON file: <input style="font-weight:bold;" value="Import" id="AVE_ImportFromJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON"></input> \
+                        <input style="display:none;"value="file_Import" id="AVE_file_ImportFromJSON" type="file"></input><br /><br /><br />';
             htmlStr += 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="AVE_ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
+            htmlStr += '<br/><span style="font-weight:bold;" id="AVE_Mng_Info"></span>';
+
+            //Reset / Export
             return htmlStr;
         },
         callback: function () {
@@ -421,30 +437,83 @@ AVE.Modules['PreferenceManager'] = {
             $("input#AVE_ExportToJSON").on("click", function () {
                 _this.ExportToJSON();
             });
+            $("input#AVE_ImportFromJSON").on("click", function () {
+                _this.ImportFromJSON();
+            });
             $("input#AVE_ResetAllData").on("click", function () {
                 _this.RemoveAllData();
+            });
+
+            $("input#AVE_file_ImportFromJSON").on("change", function (e) {
+                //var DataReader = new FileReader();
+                var Data = "";
+                var f = e.target.files[0];
+
+                if (!f) {
+                    return true;
+                } else if (f.name.substr(f.name.length - 4, 4) != "json") {//Only plain text/JSON
+                    _this.ShowInfo("The selected file\'s format isn\'t JSON", "failed");
+                    print(f.type);
+                    return true;
+                }
+                var reader = new FileReader();
+                reader.addEventListener("load", function (event) {
+                    var textFile = event.target;
+                    Data = JSON.parse(textFile.result);
+                    //trigger copy to Storage
+                    var c = 0;
+                    $.each(Data, function (k, v) {
+                        c++;
+                        if (k.substr(0, 3) != "AVE") {
+                            print("Failed: " + k);
+                            return true;
+                        }
+                        _this.Store.SetValue(k, v)
+                    });
+                    _this.ShowInfo(c + " values copied!", "success");
+                });
+                reader.readAsText(f);
             });
         },
     },
 
     RemoveAllData: function () {
         if (confirm("Are you really sure you want to delete all data stored by AVE?")) {
-            $.each(GM_listValues(), function () { GM_deleteValue(this.toString()); });
-            if (GM_listValues().length > 0) {
+            for (var val in this.Store.Data) { this.Store.DeleteValue(val); }
+            if (this.Store.Data.length > 0) {
                 alert("AVE: Reset data > an error occured, not all data were removed.")
+            } else {
+                this.ShowInfo("Done!", "success");
             }
         }
     },
 
-    ExportToJSON: function () {
-        try { var isFileSaverSupported = !!new Blob;
-        } catch (e) { alert("AVE: Saving settings and data to JSON is not supported by your browser."); return;}
+    ShowInfo: function (text, status) {
+        $("span#AVE_Mng_Info").finish();
+        $("span#AVE_Mng_Info").show();
+        $("span#AVE_Mng_Info").text(text);
+        $("span#AVE_Mng_Info").css("color", status == "success" ? "#68C16B" : "#DD5454");
+        $("span#AVE_Mng_Info").delay(5000).fadeOut(300);
+    },
 
-        var data = {}
-        $.each(GM_listValues(), function () {
-            data[this] = GM_getValue(this.toString());
-        });
+    ImportFromJSON: function () {
+        if (!window.File && !window.FileReader && !window.FileList && !window.Blob) {
+            alert("AVE: Importing settings and data is not supported by your browser.");
+            return;
+        }
+
+        $("input#AVE_file_ImportFromJSON").click();
+    },
+
+    ExportToJSON: function () {
+        try {
+            var isFileSaverSupported = !!new Blob;
+        } catch (e) { alert("AVE: Saving settings and data to JSON is not supported by your browser."); return; }
+
+        var data = {};
+        $.each(_this.Store.Data, function (k, v) { data[k] = v; });
         var blob = new Blob([JSON.stringify(data)], { type: "application/json;charset=utf-8" });
-        saveAs(blob, "AVE_Data.json");
+        print(self);
+        saveAs(blob, "AVE_Data_" + (new Date().toLocaleDateString().replace(/\//g, "_")) + ".json");
     },
 };

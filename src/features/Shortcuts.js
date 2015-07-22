@@ -71,13 +71,13 @@ AVE.Modules['Shortcuts'] = {
             tempSetId = $(this).find(".h4").attr("href").substr(5);
             inShortcut = this.isSubInShortcuts(tempSetName + ":" + tempSetId);
 
-            var btnHTML = '<br /><buttonstyle="margin-top:5px;" id="GM_Sets_Shortcut" setName="' + tempSetName + '" setId="' + tempSetId + '" type="button" class="btn-whoaverse-paging btn-xs btn-default' + (inShortcut ? "" : "btn-sub") + '">'
+            var btnHTML = '<br /><buttonstyle="margin-top:5px;" id="AVE_Sets_Shortcut" setName="' + tempSetName + '" setId="' + tempSetId + '" type="button" class="btn-whoaverse-paging btn-xs btn-default' + (inShortcut ? "" : "btn-sub") + '">'
                                     + (inShortcut ? "-" : "+") + ' shortcut\
                             </button>';
             $(btnHTML).appendTo($(this).find(".midcol").first());
         });
 
-        $(document).on("click", "#GM_Sets_Shortcut", function () {
+        $(document).on("click", "#AVE_Sets_Shortcut", function () {
             var setName = $(this).attr("setName");
             var setId = $(this).attr("setId");
 
@@ -103,7 +103,7 @@ AVE.Modules['Shortcuts'] = {
 
     // Special to voat.co/subverses: adds a "shortcut" button for each subverse////
     AddShortcutsButtonInSubversesPage: function () {
-        _this = AVE.Modules['Shortcuts'];
+        var _this = AVE.Modules['Shortcuts'];
         var inShortcut = false;
         var tempSubName = "";
 
@@ -111,11 +111,11 @@ AVE.Modules['Shortcuts'] = {
             tempSubName = $(this).find(".h4").attr("href").substr(3);
             inShortcut = _this.isSubInShortcuts(tempSubName);
 
-            var btnHTML = '<br /><button style="margin-top:5px;" id="GM_Subverses_Shortcut" subverse="'+ tempSubName + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'+ (inShortcut ? "-" : "+") + ' shortcut </button>';
+            var btnHTML = '<br /><button style="margin-top:5px;" id="AVE_Subverses_Shortcut" subverse="'+ tempSubName + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'+ (inShortcut ? "-" : "+") + ' shortcut </button>';
             $(btnHTML).appendTo($(this).find(".midcol").first());
         });
 
-        $(document).on("click", "#GM_Subverses_Shortcut", function () {
+        $(document).on("click", "#AVE_Subverses_Shortcut", function () {
             var subName = $(this).attr("subverse");
             if (_this.isSubInShortcuts(subName)) {
                 _this.RemoveFromShortcuts(subName);
@@ -155,10 +155,10 @@ AVE.Modules['Shortcuts'] = {
         _this = AVE.Modules['Shortcuts'];
 
         if (!this.isPageInShortcuts()) {
-            var btnHTML = '<button id="GM_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default btn-sub">+ shortcut</button>';
+            var btnHTML = '<button id="AVE_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default btn-sub">+ shortcut</button>';
         }
         else {
-            var btnHTML = '<button id="GM_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default">- shortcut</button>';
+            var btnHTML = '<button id="AVE_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default">- shortcut</button>';
         }
 
         if ($(".btn-whoaverse-paging.btn-xs.btn-default.btn-unsub").length) {
@@ -168,14 +168,14 @@ AVE.Modules['Shortcuts'] = {
             $(btnHTML).insertAfter(".btn-whoaverse-paging.btn-xs.btn-default.btn-sub");
         }
 
-        $(document).on("click", "#GM_Shortcut", function () {
+        $(document).on("click", "#AVE_Shortcut", function () {
             if (_this.isPageInShortcuts()) {
                 _this.RemoveFromShortcuts(AVE.Utils.subverseName);
-                _this.ToggleShortcutButton(true, "#GM_Shortcut");
+                _this.ToggleShortcutButton(true, "#AVE_Shortcut");
             }
             else {
                 _this.AddToShortcuts(AVE.Utils.subverseName);
-                _this.ToggleShortcutButton(false, "#GM_Shortcut");
+                _this.ToggleShortcutButton(false, "#AVE_Shortcut");
             }
 
             _this.DisplayCustomSubversesList();

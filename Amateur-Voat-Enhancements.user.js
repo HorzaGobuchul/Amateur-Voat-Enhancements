@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        2015-07-21
+// @date        2015-07-22
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.19.10.20
+// @version     2.18.10.21
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -21,7 +21,7 @@
 // ==/UserScript==
 
 /// Init ///
-AVE = {};
+var AVE = {};
 AVE.Modules = {};
 
 AVE.Init = {
@@ -31,10 +31,8 @@ AVE.Init = {
 
     LoadModules: function () {
         AVE.Utils.Set();
-
-        //print(AVE.Storage.Persistence());
-        //print(AVE.Utils.currentPageType);
-        if (AVE.Utils.currentPageType != "none") {
+        print("AVE: Current page > "+AVE.Utils.currentPageType);
+        if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) == -1) {
             $(document).ready(function () {
                 $.each(AVE.Modules, function () {
                     //print("Loading: "+this.Name + " - " + Object.keys(AVE.Modules).length+ " modules.");
@@ -56,6 +54,8 @@ AVE.Init = {
 /// END Init ///
 
 /// Utils ///
+ï»¿/* global self */
+
 AVE.Utils = {
     regExpSet: /([^:]*):([0-9]*)/i,
     regExpTag: /([^:]*):([^:]*)/i,
@@ -75,26 +75,36 @@ AVE.Utils = {
         return $("body").attr("class");
     },
 
+    MetaData: null,
+
     Page: function () {
         var RegExpTypes = {
             frontpage: /voat.co\/?(new)?(\?page=[0-9]*)?(\#[^\\\/]*)?$/i,
+            submissions: /voat.co\/user\/[\w\d]*\/submissions/i,
             subverse: /voat.co\/v\/[a-z]*\/?(\?page=[0-9]*)?/i,
+            comments: /voat.co\/user\/[\w\d]*\/comments/i,
             thread: /voat.co\/v\/[a-z]*\/comments\/\d*/i,
+            register: /voat.co\/account\/register/i,
+            user: /voat.co\/user\/[\w\d]*\/?$/i,
+            manage: /voat.co\/account\/manage/i,
+            saved: /voat.co\/user\/.*\/saved/i,
+            login: /voat.co\/account\/Login/i,
             subverses: /voat.co\/subverses/i,
+            messaging: /voat.co\/messaging/i,
             search: /voat.co\/search\?q=/i,
+            domain: /voat.co\/domains\//i,
+            submit: /voat.co\/submit/i,
             set: /voat.co\/set\/\d*/i,
             mySet: /voat.co\/mysets/i,
             sets: /voat.co\/sets/i,
-            user: /voat.co\/user\/[\w\d]*\/?$/i,
-            comments: /voat.co\/user\/[\w\d]*\/comments/i,
-            submissions: /voat.co\/user\/[\w\d]*\/submissions/i,
-            messaging: /voat.co\/messaging/i,
-            manage: /voat.co\/account\/manage/i,
+            api: /voat.co\/api/i,
         };
         var url = window.location.href;
 
         if (RegExpTypes.frontpage.test(url)) { return "frontpage"; }
+        else if (RegExpTypes.api.test(url)) { return "api"; }
         else if (RegExpTypes.thread.test(url)) { return "thread"; }
+        else if (RegExpTypes.submit.test(url)) { return "submit"; }
         else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
         else if (RegExpTypes.subverses.test(url)) { return "subverses"; }
         else if (RegExpTypes.set.test(url)) { return "set"; }
@@ -106,6 +116,9 @@ AVE.Utils = {
         else if (RegExpTypes.submissions.test(url)) { return "user-submissions"; }
         else if (RegExpTypes.messaging.test(url)) { return "user-messages"; }
         else if (RegExpTypes.manage.test(url)) { return "user-manage"; }
+        else if (RegExpTypes.saved.test(url)) { return "saved"; }
+        else if (RegExpTypes.register.test(url)) { return "account-register"; }
+        else if (RegExpTypes.login.test(url)) { return "account-login"; }
 
         return "none";
     },
@@ -194,7 +207,7 @@ jQuery.expr[':'].parents = function (a, i, m) { return jQuery(a).parents(m[3]).l
 var OnNodeChange = (function () {
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
 
-    cls = function (t, c) {
+    var cls = function (t, c) {
         this.options = {
             subtree: true,
             childList: true,
@@ -210,7 +223,7 @@ var OnNodeChange = (function () {
         });
 
         this.observe = function () {
-            _this = this;
+            var _this = this;
             return this.targets.each(function () {
                 _this.observer.observe(this, _this.options);
             });
@@ -226,7 +239,7 @@ var OnNodeChange = (function () {
 var OnAttrChange = (function () {
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
 
-    cls = function (t, c) {
+    var cls = function (t, c) {
         this.options = {
             attributes: true,
             attributeOldValue: true,
@@ -242,7 +255,7 @@ var OnAttrChange = (function () {
         });
 
         this.observe = function () {
-            _this = this;
+            var _this = this;
             return this.targets.each(function () {
                 _this.observer.observe(this, _this.options);
             });
@@ -260,59 +273,68 @@ AVE.Storage = {
     Prefix: "AVE_",
 
     Test: function () {
-        try { return localStorage.setItem(StoragePrefix+'localStorageTest', 'test') == undefined;
-        } catch (e) { return false;}
+        try {
+            return localStorage.setItem(StoragePrefix + 'localStorageTest', 'test') == undefined;
+        } catch (e) { return false; }
     },
 
-    //localStorage: window.localStorage,
+    Data: null,
 
-    Persistence: function(){
-        var val = { GM: "", LS: "" };
-        //val.GM = GM_setValue("GM_Persistence", "true")
+    Persistence: function () {
+        //print("Storage: " + this.Storage);
+        var val = { S: null };
         //val.LS = this.SetValue("LS_Persistence", "true")
 
-        val.GM = GM_getValue("GM_Persistence", "null")
-        val.LS = this.GetValue("LS_Persistence", "null")
+        val.S = this.GetValue("LS_Persistence", "null")
         return val;
     },
 
     GetValue: function (key, def) {
-        //var val = localStorage.getItem(key);
-        var val = GM_getValue(key);
+        if (!this.Data) { return null; }
+        //AVE.Utils.SendMessage({ request: "Storage", type: "GetValue", key: key});
+
+        var val = this.Data[key];
         if (val == undefined) {
             if (def == undefined) {
                 return null;
-            } else{ return def}
+            } else { return def }
         } return val;
     },
 
     SetValue: function (key, val) {
-        var val = GM_setValue(key, val);
-        //localStorage.setItem(key, val);
+        if (!this.Data) { return null; }
+        AVE.Utils.SendMessage({ request: "Storage", type: "SetValue", key: key, value: val });
+
+        this.Data[key] = val;
     },
 
     DeleteValue: function (key) {
-        var val = GM_deleteValue(key);
-        //localStorage.removeItem(key);
+        if (!this.Data) { return null; }
+        AVE.Utils.SendMessage({ request: "Storage", type: "DeleteValue", key: key });
+
+        delete this.Data[key];
     },
 
     ExportToJSON: function () {
+        //'data:application/json;charset=utf-8, {a: "patate"}'
+        //https://stackoverflow.com/questions/2897619/using-html5-javascript-to-generate-and-save-a-file
+        //data:application/json;charset=utf-8,'+ JSON
         //Get options from all modules
         return 'Not Implemented Yet';
     },
 
-    ImportToJSON: function () {
+    ImportFromJSON: function () {
         //Set options for all modules
         return 'Not Implemented Yet';
     },
 };
 /// END Storage ///
 
-/// Preference manager:  AVE\'s preference manager. ///
+/// Preference manager:  AVE\'s preference manager. Will contain a button to reset all data stored soon. ///
 AVE.Modules['PreferenceManager'] = {
     ID: 'PreferenceManager',
     Name: 'Preference manager',
-    Desc: 'AVE\'s preference manager.',
+    Desc: 'AVE\'s preference manager. Will contain a button to reset all data stored soon.',
     Category: 'Manager',
 
     Index: 0,
@@ -486,7 +508,7 @@ AVE.Modules['PreferenceManager'] = {
                         <span class="MngrWinTitle"><a target="_blank" href="https://voat.co/v/AVE">AVE</a></span> <span style="cursor:pointer;font-size:10px;" id="AVE_Version">Version @{version}</span>\
                         <div class="TopButtons">\
                             <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub" id="SaveData">Save Changes</a>\
-                            <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default" id="CloseWinMngr">×</a>\
+                            <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default" id="CloseWinMngr">Ã—</a>\
                         </div>\
                     </div>\
                     <section class="ModulePref" Module="null">\
@@ -522,7 +544,7 @@ AVE.Modules['PreferenceManager'] = {
             $(LinkHTML).insertBefore("span.user:contains('Manage')");
         } else { //If the user isn't logged in
             var LinkHTML = '<span class="user"> - <a style="font-weight:bold;" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span>';
-            $(LinkHTML).insertAfter("span.user");
+            $(LinkHTML).insertAfter("span.user:first");
         }
     },
 
@@ -539,7 +561,7 @@ AVE.Modules['PreferenceManager'] = {
 
     BuildManager: function () {
         var _this = AVE.Modules['PreferenceManager'];
-        var MngWinHTML = _this.MngWinHTML.replace('@{version}', GM_info.script.version);
+        var MngWinHTML = _this.MngWinHTML.replace('@{version}', AVE.Utils.MetaData.version);
         $(MngWinHTML).appendTo("body");
         $(".MngrWin").show();
 
@@ -629,6 +651,17 @@ AVE.Modules['PreferenceManager'] = {
                 $("#CloseWinMngr").click();
             }
         });
+    },
+
+    AppendToPreferenceManager: {
+        html: function () {
+            //return 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="submit" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
+        },
+        callback: function () {
+            //$("input#ResetAllData").on("click", function (param) {
+            //    alert(typeof param);
+            //});
+        },
     },
 
     AddModule: function (module, cat, pos) {
@@ -723,8 +756,13 @@ AVE.Modules['PreferenceManager'] = {
     AppendToPreferenceManager: {
         html: function () {
             var htmlStr = "";
-            htmlStr += '<br />Export all stored data as a JSON file: <input style="font-weight:bold;" value="Export" id="AVE_ExportToJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON"></input><br /><br />';
+            htmlStr += '<br />Export all stored data as a JSON file: <input style="font-weight:bold;" value="Export" id="AVE_ExportToJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON"></input>';
+            htmlStr += '<br />Import settings/data from a JSON file: <input style="font-weight:bold;" value="Import" id="AVE_ImportFromJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON"></input> \
+                        <input style="display:none;"value="file_Import" id="AVE_file_ImportFromJSON" type="file"></input><br /><br /><br />';
             htmlStr += 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="AVE_ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
+            htmlStr += '<br/><span style="font-weight:bold;" id="AVE_Mng_Info"></span>';
+
+            //Reset / Export
             return htmlStr;
         },
         callback: function () {
@@ -732,36 +770,91 @@ AVE.Modules['PreferenceManager'] = {
             $("input#AVE_ExportToJSON").on("click", function () {
                 _this.ExportToJSON();
             });
+            $("input#AVE_ImportFromJSON").on("click", function () {
+                _this.ImportFromJSON();
+            });
             $("input#AVE_ResetAllData").on("click", function () {
                 _this.RemoveAllData();
+            });
+
+            $("input#AVE_file_ImportFromJSON").on("change", function (e) {
+                //var DataReader = new FileReader();
+                var Data = "";
+                var f = e.target.files[0];
+
+                if (!f) {
+                    return true;
+                } else if (f.name.substr(f.name.length - 4, 4) != "json") {//Only plain text/JSON
+                    _this.ShowInfo("The selected file\'s format isn\'t JSON", "failed");
+                    print(f.type);
+                    return true;
+                }
+                var reader = new FileReader();
+                reader.addEventListener("load", function (event) {
+                    var textFile = event.target;
+                    Data = JSON.parse(textFile.result);
+                    //trigger copy to Storage
+                    var c = 0;
+                    $.each(Data, function (k, v) {
+                        c++;
+                        if (k.substr(0, 3) != "AVE") {
+                            print("Failed: " + k);
+                            return true;
+                        }
+                        _this.Store.SetValue(k, v)
+                    });
+                    _this.ShowInfo(c + " values copied!", "success");
+                });
+                reader.readAsText(f);
             });
         },
     },
 
     RemoveAllData: function () {
         if (confirm("Are you really sure you want to delete all data stored by AVE?")) {
-            $.each(GM_listValues(), function () { GM_deleteValue(this.toString()); });
-            if (GM_listValues().length > 0) {
+            for (var val in this.Store.Data) { this.Store.DeleteValue(val); }
+            if (this.Store.Data.length > 0) {
                 alert("AVE: Reset data > an error occured, not all data were removed.")
+            } else {
+                this.ShowInfo("Done!", "success");
             }
         }
     },
 
-    ExportToJSON: function () {
-        try { var isFileSaverSupported = !!new Blob;
-        } catch (e) { alert("AVE: Saving settings and data to JSON is not supported by your browser."); return;}
+    ShowInfo: function (text, status) {
+        $("span#AVE_Mng_Info").finish();
+        $("span#AVE_Mng_Info").show();
+        $("span#AVE_Mng_Info").text(text);
+        $("span#AVE_Mng_Info").css("color", status == "success" ? "#68C16B" : "#DD5454");
+        $("span#AVE_Mng_Info").delay(5000).fadeOut(300);
+    },
 
-        var data = {}
-        $.each(GM_listValues(), function () {
-            data[this] = GM_getValue(this.toString());
-        });
+    ImportFromJSON: function () {
+        if (!window.File && !window.FileReader && !window.FileList && !window.Blob) {
+            alert("AVE: Importing settings and data is not supported by your browser.");
+            return;
+        }
+
+        $("input#AVE_file_ImportFromJSON").click();
+    },
+
+    ExportToJSON: function () {
+        try {
+            var isFileSaverSupported = !!new Blob;
+        } catch (e) { alert("AVE: Saving settings and data to JSON is not supported by your browser."); return; }
+
+        var data = {};
+        $.each(_this.Store.Data, function (k, v) { data[k] = v; });
         var blob = new Blob([JSON.stringify(data)], { type: "application/json;charset=utf-8" });
-        saveAs(blob, "AVE_Data.json");
+        print(self);
+        saveAs(blob, "AVE_Data_" + (new Date().toLocaleDateString().replace(/\//g, "_")) + ".json");
     },
 };
 /// END Preference manager ///
 
 /// Version notifier:  Show a short notification the first time a new version of AVE is used. ///
+/* global self */
+
 AVE.Modules['VersionNotifier'] = {
     ID: 'VersionNotifier',
     Name: 'Version notifier',
@@ -779,7 +872,7 @@ AVE.Modules['VersionNotifier'] = {
     Load: function () {
         this.Store = AVE.Storage;
         //this.Store.DeleteValue(this.Store.Prefix + this.ID + "_Version")
-        this.Enabled = this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") != GM_info.script.version;
+        this.Enabled = this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") != AVE.Utils.MetaData.version;
 
         if (this.Enabled) {
             this.Start();
@@ -796,15 +889,16 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.19.10.20:",
-        "   NeverEndingVoat:",
-        "       Fixed a bug",
-        "   PreferenceManager:",
-        "       Added Export and Reset features",
-        "   UpdateAfterLoadingMore:",
-        "       Updates when loading more replies",
-        "   ToggleMedia:",
-        "       Removed option to expand images in the sidebar",
+        "V2.18.10.20:",
+        "   Removed backcompatibility module for V1 to V2 (explains why the version Minor was decremented)",
+        "   Released Firefox and Chrome extensions",
+        "   Added support for more voat pages:",
+        "       Api (excluded)",
+        "       Saved",
+        "       Domain",
+        "       Submit",
+        "       Account-login",
+        "       Account-register",
         "V2.19.10.16:",
         "   NeverEndingVoat:",
         "       Corrected a bug that prevented going back to the previous submissions if the \"page #\" was just before it",
@@ -943,8 +1037,8 @@ AVE.Modules['VersionNotifier'] = {
                        'padding-bottom:10px;' +
                        '}';
         var notifierHTML = '<div class="VersionBox">' +
-                                '<p class="VersionBoxTitle">' + GM_info.script.name + '</p>' +
-                                '<p class="VersionBoxInfo">' + (this.Trigger == "new" ? this.LabelNew : this.LabelShow) + ' <strong style="font-size:14px">' + GM_info.script.version + '</strong></p>' +
+                                '<p class="VersionBoxTitle">' + AVE.Utils.MetaData.name + '</p>' +
+                                '<p class="VersionBoxInfo">' + (this.Trigger == "new" ? this.LabelNew : this.LabelShow) + ' <strong style="font-size:14px">' + AVE.Utils.MetaData.version + '</strong></p>' +
                                 '<p class="VersionBoxToggle"><a href="javascript:void(0)" id="ShowChangelog">See Changelog?</a><p>' +
                                 '<div class="VersionBoxClose">Close</div>' +
                             '</div>';
@@ -977,7 +1071,7 @@ AVE.Modules['VersionNotifier'] = {
         });
         $("div.VersionBoxClose").on("click", function () {
             VersionBox.hide("slow");
-            _this.Store.SetValue(_this.Store.Prefix + _this.ID + "_Version", GM_info.script.version);
+            _this.Store.SetValue(_this.Store.Prefix + _this.ID + "_Version", AVE.Utils.MetaData.version);
         });
     },
 };
@@ -2265,7 +2359,7 @@ AVE.Modules['FixExpandImage'] = {
                 container.animate({
                     width: parentWidth + "px",
                     height: img.height() + 20 + "px",
-                }, 1000);
+                }, 1500);
             }
         });
         this.obsInSub.observe();
@@ -3009,13 +3103,13 @@ AVE.Modules['Shortcuts'] = {
             tempSetId = $(this).find(".h4").attr("href").substr(5);
             inShortcut = this.isSubInShortcuts(tempSetName + ":" + tempSetId);
 
-            var btnHTML = '<br /><buttonstyle="margin-top:5px;" id="GM_Sets_Shortcut" setName="' + tempSetName + '" setId="' + tempSetId + '" type="button" class="btn-whoaverse-paging btn-xs btn-default' + (inShortcut ? "" : "btn-sub") + '">'
+            var btnHTML = '<br /><buttonstyle="margin-top:5px;" id="AVE_Sets_Shortcut" setName="' + tempSetName + '" setId="' + tempSetId + '" type="button" class="btn-whoaverse-paging btn-xs btn-default' + (inShortcut ? "" : "btn-sub") + '">'
                                     + (inShortcut ? "-" : "+") + ' shortcut\
                             </button>';
             $(btnHTML).appendTo($(this).find(".midcol").first());
         });
 
-        $(document).on("click", "#GM_Sets_Shortcut", function () {
+        $(document).on("click", "#AVE_Sets_Shortcut", function () {
             var setName = $(this).attr("setName");
             var setId = $(this).attr("setId");
 
@@ -3041,7 +3135,7 @@ AVE.Modules['Shortcuts'] = {
 
     // Special to voat.co/subverses: adds a "shortcut" button for each subverse////
     AddShortcutsButtonInSubversesPage: function () {
-        _this = AVE.Modules['Shortcuts'];
+        var _this = AVE.Modules['Shortcuts'];
         var inShortcut = false;
         var tempSubName = "";
 
@@ -3049,11 +3143,11 @@ AVE.Modules['Shortcuts'] = {
             tempSubName = $(this).find(".h4").attr("href").substr(3);
             inShortcut = _this.isSubInShortcuts(tempSubName);
 
-            var btnHTML = '<br /><button style="margin-top:5px;" id="GM_Subverses_Shortcut" subverse="'+ tempSubName + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'+ (inShortcut ? "-" : "+") + ' shortcut </button>';
+            var btnHTML = '<br /><button style="margin-top:5px;" id="AVE_Subverses_Shortcut" subverse="'+ tempSubName + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'+ (inShortcut ? "-" : "+") + ' shortcut </button>';
             $(btnHTML).appendTo($(this).find(".midcol").first());
         });
 
-        $(document).on("click", "#GM_Subverses_Shortcut", function () {
+        $(document).on("click", "#AVE_Subverses_Shortcut", function () {
             var subName = $(this).attr("subverse");
             if (_this.isSubInShortcuts(subName)) {
                 _this.RemoveFromShortcuts(subName);
@@ -3093,10 +3187,10 @@ AVE.Modules['Shortcuts'] = {
         _this = AVE.Modules['Shortcuts'];
 
         if (!this.isPageInShortcuts()) {
-            var btnHTML = '<button id="GM_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default btn-sub">+ shortcut</button>';
+            var btnHTML = '<button id="AVE_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default btn-sub">+ shortcut</button>';
         }
         else {
-            var btnHTML = '<button id="GM_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default">- shortcut</button>';
+            var btnHTML = '<button id="AVE_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default">- shortcut</button>';
         }
 
         if ($(".btn-whoaverse-paging.btn-xs.btn-default.btn-unsub").length) {
@@ -3106,14 +3200,14 @@ AVE.Modules['Shortcuts'] = {
             $(btnHTML).insertAfter(".btn-whoaverse-paging.btn-xs.btn-default.btn-sub");
         }
 
-        $(document).on("click", "#GM_Shortcut", function () {
+        $(document).on("click", "#AVE_Shortcut", function () {
             if (_this.isPageInShortcuts()) {
                 _this.RemoveFromShortcuts(AVE.Utils.subverseName);
-                _this.ToggleShortcutButton(true, "#GM_Shortcut");
+                _this.ToggleShortcutButton(true, "#AVE_Shortcut");
             }
             else {
                 _this.AddToShortcuts(AVE.Utils.subverseName);
-                _this.ToggleShortcutButton(false, "#GM_Shortcut");
+                _this.ToggleShortcutButton(false, "#AVE_Shortcut");
             }
 
             _this.DisplayCustomSubversesList();
@@ -3202,6 +3296,7 @@ AVE.Modules['Shortcuts'] = {
 /// END Subverse and Set shortcuts ///
 
 /// Shortcut keys:  Use your keyboard to navigate Voat. ///
+/* global self */
 AVE.Modules['ShortKeys'] = {
     ID: 'ShortKeys',
     Name: 'Shortcut keys',
@@ -3397,7 +3492,7 @@ AVE.Modules['ShortKeys'] = {
             } else if (key == OpenC.toUpperCase()) { // Open comment page
                 if (!sel.parent().hasClass("submission")) { return; }
                 if (_this.Options.OpenInNewTab.Value) {
-                    GM_openInTab("https://" + window.location.hostname + sel.find("a.comments").attr("href"));
+                    self.postMessage({ request: "OpenInTab", url: "https://" + window.location.hostname + sel.find("a.comments").attr("href") });
                 } else {
                     window.location.href = "https://" + window.location.hostname + sel.find("a.comments").attr("href");
                 }
@@ -3408,7 +3503,7 @@ AVE.Modules['ShortKeys'] = {
                 if (!/^http/.test(url)) { url = "https://" + window.location.hostname + url; }
 
                 if (_this.Options.OpenInNewTab.Value) {
-                    GM_openInTab(url);
+                    self.postMessage({ request: "OpenInTab", url: url });
                 } else {
                     window.location.href = url;
                 }
@@ -3422,10 +3517,10 @@ AVE.Modules['ShortKeys'] = {
                 if (!/^http/.test(url[0])) { url[0] = "https://" + window.location.hostname + url[0]; }
 
                 if (url[0] && url[0] == url[1]) {
-                    GM_openInTab(url[0]);
+                    self.postMessage({ request: "OpenInTab", url: url[0] });
                 } else {
-                    GM_openInTab(url[0]);
-                    GM_openInTab(url[1]);
+                    self.postMessage({ request: "OpenInTab", url: url[0] });
+                    self.postMessage({ request: "OpenInTab", url: url[1] });
                 }
             } else if (key == Expand.toUpperCase()) { // Expand media/self-text
                 if (!sel.parent().hasClass("submission")) { return; }
@@ -3571,94 +3666,5 @@ AVE.Modules['ToggleChildComment'] = {
     },
 };
 /// END Toggle display child comments ///
-
-/// BackCompatibility Module:  Migrate data from V1 to V2. ///
-AVE.Modules['BackCompatibility'] = {
-    ID: 'BackCompatibility',
-    Name: 'BackCompatibility Module',
-    Desc: 'Migrate data from V1 to V2.',
-    Category: 'Misc.',
-
-    Index: 200,
-    Enabled: false,
-
-    Options: {
-    },
-
-    Load: function () {
-        this.GetV1DataStat();
-    },
-
-    Migrate: function (type) {
-        if (type == "shortcuts") {
-            if (GM_getValue("Voat_Subverses") == undefined) { return;}
-            _this.Store.SetValue(AVE.Modules['Shortcuts'].StorageName, GM_getValue("Voat_Subverses"));
-        } else if (type == "usertags") {
-            if (GM_getValue("Voat_Tags") == undefined) { return; }
-            var tags = GM_getValue("Voat_Tags").split(",");
-            var opt, user, tag;
-            for (var i in tags) {
-                user = tags[i].split(":")[0];
-                tag = tags[i].split(":")[1];
-                if (tag == undefined) { continue;}
-
-                opt = { username: user, tag: tag, colour: (AVE.Utils.CSSstyle == "dark" ? "#d1d1d1" : "#e1fcff"), ignore: false, balance: 0 };
-                AVE.Modules['UserTag'].SetTag(opt);
-            }
-        }
-    },
-
-    DeleteOldData: function () {
-        var prefNames = ["Voat_Subverses", "Voat_Tags", "Images", "Videos", "_this-texts", "MediaTypes", "ShowVersionChangeNotification"];
-        $.each(prefNames, function (value) {
-            if (GM_getValue(prefNames[value]) != undefined) {
-                GM_deleteValue(prefNames[value]);
-            } else {
-                print(prefNames[value] + " doesn't exist.");
-            }
-        });
-    },
-
-    GetV1DataStat: function () {
-        var ret = [0, 0, 0];
-        if (GM_getValue("Voat_Subverses") != null) {
-            ret[0] = GM_getValue("Voat_Subverses").split(",").length;
-        }
-        if (GM_getValue("Voat_Tags") != null) {
-            ret[1] = GM_getValue("Voat_Tags").split(",").length - 1;
-        }
-
-        var prefNames = ["Images", "Videos", "_this-texts", "MediaTypes", "ShowVersionChangeNotification"];
-        $.each(prefNames, function (value) {
-            if (GM_getValue(prefNames[value]) != undefined) {
-                ret[2]++;
-            }
-        });
-
-        return ret;
-    },
-
-    AppendToPreferenceManager: {
-        html: function () {
-            var _this = AVE.Modules['BackCompatibility'];
-            var s = _this.GetV1DataStat();
-            var htmlStr = "";
-            htmlStr += '<p>You have, stored from V1:<br />&nbsp;&nbsp;<b>' + s[0] + '</b> subverses/sets as your custom shortcuts.<br />&nbsp;&nbsp;<b>' + s[1] + '</b> tagged users.<br />&nbsp;&nbsp;<b>' + s[2] + '</b> module preferences.</p>';
-
-            htmlStr += '<input module="shortcuts" style="font-weight:bold;margin-top:20px;" value="Migrate old shortcuts data" id="MigrateV1Data" class="btn-whoaverse-paging btn-xs btn-default" type="submit"></input><input style="margin-left:25px;font-weight:bold;" value="Clear old data" id="ClearAllV1Data" class="btn-whoaverse-paging btn-xs btn-default" type="submit"></input>';
-            htmlStr += '<br /><input module="usertags" style="font-weight:bold;margin-top:5px;" value="Migrate old usertags data" id="MigrateV1Data" class="btn-whoaverse-paging btn-xs btn-default" type="submit"></input>';
-            return htmlStr;
-        },
-        callback: function () {
-            var _this = AVE.Modules['BackCompatibility'];
-            $("input#MigrateV1Data").on("click", function () {
-                _this.Migrate($(this).attr("module"));
-            });
-            $("input#ClearAllV1Data").on("click", function () {
-                _this.DeleteOldData();
-            });
-        },
-    },
-};
-/// END BackCompatibility Module ///
+AVE.Utils.SendMessage = function (Obj) {return false;};
 AVE.Init.Start();

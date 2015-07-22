@@ -1,4 +1,4 @@
-AVE = {};
+var AVE = {};
 AVE.Modules = {};
 
 AVE.Init = {
@@ -8,10 +8,8 @@ AVE.Init = {
 
     LoadModules: function () {
         AVE.Utils.Set();
-
-        //print(AVE.Storage.Persistence());
-        //print(AVE.Utils.currentPageType);
-        if (AVE.Utils.currentPageType != "none") {
+        print("AVE: Current page > "+AVE.Utils.currentPageType);
+        if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) == -1) {
             $(document).ready(function () {
                 $.each(AVE.Modules, function () {
                     //print("Loading: "+this.Name + " - " + Object.keys(AVE.Modules).length+ " modules.");

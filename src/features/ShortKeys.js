@@ -1,3 +1,4 @@
+/* global self */
 AVE.Modules['ShortKeys'] = {
     ID: 'ShortKeys',
     Name: 'Shortcut keys',
@@ -193,7 +194,7 @@ AVE.Modules['ShortKeys'] = {
             } else if (key == OpenC.toUpperCase()) { // Open comment page
                 if (!sel.parent().hasClass("submission")) { return; }
                 if (_this.Options.OpenInNewTab.Value) {
-                    GM_openInTab("https://" + window.location.hostname + sel.find("a.comments").attr("href"));
+                    self.postMessage({ request: "OpenInTab", url: "https://" + window.location.hostname + sel.find("a.comments").attr("href") });
                 } else {
                     window.location.href = "https://" + window.location.hostname + sel.find("a.comments").attr("href");
                 }
@@ -204,7 +205,7 @@ AVE.Modules['ShortKeys'] = {
                 if (!/^http/.test(url)) { url = "https://" + window.location.hostname + url; }
 
                 if (_this.Options.OpenInNewTab.Value) {
-                    GM_openInTab(url);
+                    self.postMessage({ request: "OpenInTab", url: url });
                 } else {
                     window.location.href = url;
                 }
@@ -218,10 +219,10 @@ AVE.Modules['ShortKeys'] = {
                 if (!/^http/.test(url[0])) { url[0] = "https://" + window.location.hostname + url[0]; }
 
                 if (url[0] && url[0] == url[1]) {
-                    GM_openInTab(url[0]);
+                    self.postMessage({ request: "OpenInTab", url: url[0] });
                 } else {
-                    GM_openInTab(url[0]);
-                    GM_openInTab(url[1]);
+                    self.postMessage({ request: "OpenInTab", url: url[0] });
+                    self.postMessage({ request: "OpenInTab", url: url[1] });
                 }
             } else if (key == Expand.toUpperCase()) { // Expand media/self-text
                 if (!sel.parent().hasClass("submission")) { return; }

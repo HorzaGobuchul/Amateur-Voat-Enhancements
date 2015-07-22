@@ -82,7 +82,7 @@ AVE.Modules['FixExpandImage'] = {
                 container.animate({
                     width: parentWidth + "px",
                     height: img.height() + 20 + "px",
-                }, 1000);
+                }, 1500);
             }
         });
         this.obsInSub.observe();

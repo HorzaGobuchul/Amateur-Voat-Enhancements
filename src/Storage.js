@@ -2,48 +2,57 @@ AVE.Storage = {
     Prefix: "AVE_",
 
     Test: function () {
-        try { return localStorage.setItem(StoragePrefix+'localStorageTest', 'test') == undefined;
-        } catch (e) { return false;}
+        try {
+            return localStorage.setItem(StoragePrefix + 'localStorageTest', 'test') == undefined;
+        } catch (e) { return false; }
     },
 
-    //localStorage: window.localStorage,
+    Data: null,
 
-    Persistence: function(){
-        var val = { GM: "", LS: "" };
-        //val.GM = GM_setValue("GM_Persistence", "true")
+    Persistence: function () {
+        //print("Storage: " + this.Storage);
+        var val = { S: null };
         //val.LS = this.SetValue("LS_Persistence", "true")
 
-        val.GM = GM_getValue("GM_Persistence", "null")
-        val.LS = this.GetValue("LS_Persistence", "null")
+        val.S = this.GetValue("LS_Persistence", "null")
         return val;
     },
 
     GetValue: function (key, def) {
-        //var val = localStorage.getItem(key);
-        var val = GM_getValue(key);
+        if (!this.Data) { return null; }
+        //AVE.Utils.SendMessage({ request: "Storage", type: "GetValue", key: key});
+
+        var val = this.Data[key];
         if (val == undefined) {
             if (def == undefined) {
                 return null;
-            } else{ return def}
+            } else { return def }
         } return val;
     },
 
     SetValue: function (key, val) {
-        var val = GM_setValue(key, val);
-        //localStorage.setItem(key, val);
+        if (!this.Data) { return null; }
+        AVE.Utils.SendMessage({ request: "Storage", type: "SetValue", key: key, value: val });
+
+        this.Data[key] = val;
     },
 
     DeleteValue: function (key) {
-        var val = GM_deleteValue(key);
-        //localStorage.removeItem(key);
+        if (!this.Data) { return null; }
+        AVE.Utils.SendMessage({ request: "Storage", type: "DeleteValue", key: key });
+
+        delete this.Data[key];
     },
 
     ExportToJSON: function () {
+        //'data:application/json;charset=utf-8, {a: "patate"}'
+        //https://stackoverflow.com/questions/2897619/using-html5-javascript-to-generate-and-save-a-file
+        //data:application/json;charset=utf-8,'+ JSON
         //Get options from all modules
         return 'Not Implemented Yet';
     },
 
-    ImportToJSON: function () {
+    ImportFromJSON: function () {
         //Set options for all modules
         return 'Not Implemented Yet';
     },
