@@ -1,0 +1,14 @@
+{
+  "title": "Amateur Voat Enhancements",
+  "name": "AVE",
+  "description": "AVE is a light Enhancement suite for Voat",
+  "main": "main.js",
+  "author": "Horza",
+  "engines": {
+    "firefox": ">=38.0a1"
+  },
+  "homepage": "https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements",
+  "license": "MIT", 
+  "permissions": {
+    "private-browsing": true
+  },

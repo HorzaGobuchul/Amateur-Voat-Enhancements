@@ -1,0 +1,60 @@
+{
+	"manifest_version": 2,
+	"name": "Amateur Voat Enhancements",
+	"short_name": "AVE",
+	"description": "AVE is a light Enhancement suite for Voat.co",
+	"author": "Horza",
+	"icons": { "48": "icon.png" },
+	"background": {
+		"persistent": false,
+		"scripts": ["main.js"]
+	},
+	"homepage_url": "https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements",
+	"content_scripts": [
+		{
+			"run_at": "document_end",
+			"matches": [
+				"http://voat.co/*",
+				"https://voat.co/*",
+				"http://*.voat.co/*",
+				"https://*.voat.co/*"
+			],
+			"js": [
+				"./Ext/jquery.min.js",
+				"./Ext/to-markdown.js",
+				"./Ext/FileSaver.min.js",
+				"./Core/Init.js",
+				"./Core/Storage.js",
+				"./Core/Utils.js",
+				"./Modules/PreferenceManager.js",
+				"./Modules/VersionNotifier.js",
+				"./Modules/HeaderFixedPos.js",
+				"./Modules/UpdateAfterLoadingMore.js",
+				"./Modules/UserInfoFixedPos.js",
+				"./Modules/UserTag.js",
+				"./Modules/ToggleMedia.js",
+				"./Modules/AppendQuote.js",
+				"./Modules/DisableShareALink.js",
+				"./Modules/FixExpandImage.js",
+				"./Modules/FixContainerWidth.js",
+				"./Modules/IgnoreUsers.js",
+				"./Modules/NeverEndingVoat.js",
+				"./Modules/ReplyWithQuote.js",
+				"./Modules/SelectPost.js",
+				"./Modules/Shortcuts.js",
+				"./Modules/ShortKeys.js",
+				"./Modules/ToggleChildComment.js",
+				"./BuildDep.js"
+				],
+			"css": [
+			]
+		}
+	],
+	"permissions": [
+		"storage",
+		"tabs",
+		"http://voat.co/*",
+		"https://voat.co/*",
+		"http://*.voat.co/*",
+		"https://*.voat.co/*"
+	],
