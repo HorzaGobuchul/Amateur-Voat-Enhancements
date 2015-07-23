@@ -1,10 +1,17 @@
 AVE.Utils.SendMessage = function (Obj) {
-    switch (Obj.type) {
-        case "SetValue":
-            GM_setValue(Obj.key, Obj.value);
+    switch (Obj.request) {
+        case "Storage":
+            switch (Obj.type) {
+                case "SetValue":
+                    GM_setValue(Obj.key, Obj.value);
+                    break;
+                case "DeleteValue":
+                    GM_deleteValue(Obj.key);
+                    break;
+            }
             break;
-        case "DeleteValue":
-            GM_deleteValue(Obj.key);
+        case 'OpenInTab':
+            GM_openInTab(Obj.url);
             break;
     }
 };
