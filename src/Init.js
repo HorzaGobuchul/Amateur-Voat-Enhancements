@@ -8,7 +8,7 @@ AVE.Init = {
 
     LoadModules: function () {
         AVE.Utils.Set();
-        print("AVE: Current page > "+AVE.Utils.currentPageType);
+        print("AVE: Current page > " + AVE.Utils.currentPageType);
         if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) == -1) {
             $(document).ready(function () {
                 $.each(AVE.Modules, function () {

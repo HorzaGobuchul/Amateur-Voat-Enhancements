@@ -51,6 +51,7 @@ AVE.Utils = {
         else if (RegExpTypes.submit.test(url)) { return "submit"; }
         else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
         else if (RegExpTypes.subverses.test(url)) { return "subverses"; }
+        else if (RegExpTypes.domain.test(url)) { return "domain"; }
         else if (RegExpTypes.set.test(url)) { return "set"; }
         else if (RegExpTypes.search.test(url)) { return "search"; }
         else if (RegExpTypes.mySet.test(url)) { return "mysets"; }

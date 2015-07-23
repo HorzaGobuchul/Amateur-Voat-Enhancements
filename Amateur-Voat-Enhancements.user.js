@@ -6,7 +6,7 @@
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.18.10.22
+// @version     2.18.10.24
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -31,7 +31,7 @@ AVE.Init = {
 
     LoadModules: function () {
         AVE.Utils.Set();
-        print("AVE: Current page > "+AVE.Utils.currentPageType);
+        print("AVE: Current page > " + AVE.Utils.currentPageType);
         if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) == -1) {
             $(document).ready(function () {
                 $.each(AVE.Modules, function () {
@@ -107,6 +107,7 @@ AVE.Utils = {
         else if (RegExpTypes.submit.test(url)) { return "submit"; }
         else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
         else if (RegExpTypes.subverses.test(url)) { return "subverses"; }
+        else if (RegExpTypes.domain.test(url)) { return "domain"; }
         else if (RegExpTypes.set.test(url)) { return "set"; }
         else if (RegExpTypes.search.test(url)) { return "search"; }
         else if (RegExpTypes.mySet.test(url)) { return "mysets"; }
@@ -3464,7 +3465,7 @@ AVE.Modules['ShortKeys'] = {
             } else if (key == OpenC.toUpperCase()) { // Open comment page
                 if (!sel.parent().hasClass("submission")) { return; }
                 if (_this.Options.OpenInNewTab.Value) {
-                    self.postMessage({ request: "OpenInTab", url: "https://" + window.location.hostname + sel.find("a.comments").attr("href") });
+                    AVE.Utils.SendMessage({ request: "OpenInTab", url: "https://" + window.location.hostname + sel.find("a.comments").attr("href") });
                 } else {
                     window.location.href = "https://" + window.location.hostname + sel.find("a.comments").attr("href");
                 }
@@ -3475,7 +3476,7 @@ AVE.Modules['ShortKeys'] = {
                 if (!/^http/.test(url)) { url = "https://" + window.location.hostname + url; }
 
                 if (_this.Options.OpenInNewTab.Value) {
-                    self.postMessage({ request: "OpenInTab", url: url });
+                    AVE.Utils.SendMessage({ request: "OpenInTab", url: url });
                 } else {
                     window.location.href = url;
                 }
@@ -3489,10 +3490,10 @@ AVE.Modules['ShortKeys'] = {
                 if (!/^http/.test(url[0])) { url[0] = "https://" + window.location.hostname + url[0]; }
 
                 if (url[0] && url[0] == url[1]) {
-                    self.postMessage({ request: "OpenInTab", url: url[0] });
+                    AVE.Utils.SendMessage({ request: "OpenInTab", url: url[0] });
                 } else {
-                    self.postMessage({ request: "OpenInTab", url: url[0] });
-                    self.postMessage({ request: "OpenInTab", url: url[1] });
+                    AVE.Utils.SendMessage({ request: "OpenInTab", url: url[0] });
+                    AVE.Utils.SendMessage({ request: "OpenInTab", url: url[1] });
                 }
             } else if (key == Expand.toUpperCase()) { // Expand media/self-text
                 if (!sel.parent().hasClass("submission")) { return; }
@@ -3641,15 +3642,21 @@ AVE.Modules['ToggleChildComment'] = {
 
 /// Build Dependent ///
 AVE.Utils.SendMessage = function (Obj) {
-    switch (Obj.type) {
-        case "SetValue":
-            GM_setValue(Obj.key, Obj.value);
+    switch (Obj.request) {
+        case "Storage":
+            switch (Obj.type) {
+                case "SetValue":
+                    GM_setValue(Obj.key, Obj.value);
+                    break;
+                case "DeleteValue":
+                    GM_deleteValue(Obj.key);
+                    break;
+            }
             break;
-        case "DeleteValue":
-            GM_deleteValue(Obj.key);
+        case 'OpenInTab':
+            GM_openInTab(Obj.url);
             break;
     }
-
 };
 AVE.Utils.MetaData = { version: GM_info.script.version, name: GM_info.script.name };
 AVE.Storage.Data = {};
