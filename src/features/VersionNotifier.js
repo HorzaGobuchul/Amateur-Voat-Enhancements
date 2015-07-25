@@ -34,8 +34,12 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.19.1.2:",
+        "   New feature: SubmissionFilter",
+        "   Extend what a submission page is (to \"search\" and \"domains\" pages)",
+        "   Replaced unicode character used for the close button in the PreferenceManager that wasn't displayed right in all extensions",
         "V2.18.10.20:",
-        "   Removed backcompatibility module for V1 to V2 (explains why the version Minor was decremented)",
+        "   Removed backcompatibility module for V1 to V2 (explains why the version's Minor was decremented)",
         "   Released Firefox and Chrome extensions",
         "   Added support for more voat pages:",
         "       Api (excluded)",

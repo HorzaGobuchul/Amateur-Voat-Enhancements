@@ -79,7 +79,7 @@ AVE.Modules['IgnoreUsers'] = {
                         .css("font-weight", "bold");
                 }
             });
-        } else if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse"]) !== -1) { // submissions
+        } else if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "search", "domain"]) !== -1) { // submissions
             $("p.tagline > a.author").each(function () {
                 var name = $(this).attr("data-username");
                 if (!name || $.inArray(name.toLowerCase(), _this.IgnoreList) === -1) { return true; }
