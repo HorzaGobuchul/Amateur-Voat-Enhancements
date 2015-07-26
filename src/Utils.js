@@ -29,6 +29,7 @@ AVE.Utils = {
             comments: /voat.co\/user\/[\w\d]*\/comments/i,
             thread: /voat.co\/v\/[a-z]*\/comments\/\d*/i,
             register: /voat.co\/account\/register/i,
+            userShort: /voat.co\/u\/[\w\d]*\/?$/i,
             user: /voat.co\/user\/[\w\d]*\/?$/i,
             manage: /voat.co\/account\/manage/i,
             saved: /voat.co\/user\/.*\/saved/i,
@@ -57,6 +58,7 @@ AVE.Utils = {
         else if (RegExpTypes.mySet.test(url)) { return "mysets"; }
         else if (RegExpTypes.sets.test(url)) { return "sets"; }
         else if (RegExpTypes.user.test(url)) { return "user"; }
+        else if (RegExpTypes.userShort.test(url)) { return "user"; }
         else if (RegExpTypes.comments.test(url)) { return "user-comments"; }
         else if (RegExpTypes.submissions.test(url)) { return "user-submissions"; }
         else if (RegExpTypes.messaging.test(url)) { return "user-messages"; }

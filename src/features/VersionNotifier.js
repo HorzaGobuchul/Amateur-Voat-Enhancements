@@ -34,7 +34,7 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.19.1.2:",
+        "V2.19.11.22:",
         "   New feature: SubmissionFilter",
         "   Extend what a submission page is (to \"search\" and \"domains\" pages)",
         "   Replaced unicode character used for the close button in the PreferenceManager that wasn't displayed right in all extensions",

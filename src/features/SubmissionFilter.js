@@ -19,36 +19,55 @@ AVE.Modules['SubmissionFilter'] = {
             Desc: "Example of filter",
             Value: [], //not JSONified
         },
-        RemoveFiltered: {
-            Type: 'boolean',
-            Desc: "Remove altogether the comment and all child comments.",
-            Value: false,
-        },
     },
 
-    Filter: function (id, sub, keyword) {
+    Filter: function (id, keyword, sub) {
         this.Id = id || 0;
-        this.ApplyToSub = sub || []; //List of subs
         this.Keywords = keyword || []; //List of keywords
+        this.ApplyToSub = sub || []; //List of subs
     },
-
-    /*
-    What is a filter?
-    A filter then is an asso array like:
-        {sub: null|string, word: "string of words separated by spaces"}
-        //If sub is null, it applies everywhere
-    */
 
     OriginalOptions: "",
 
     SavePref: function (POST) {
         var _this = this;
-        POST = POST[_this.ID];
+        POST = POST[this.ID];
 
-        //toLowerCase
-        //parse new keyword: [a-z0-9]
+        var id, kw, sub, tV;
 
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST));
+        this.Options.Filters.Value = [];
+
+        $.each(POST, function (k, v) {
+            tV = k.split("-");
+            if (tV.length == 2) {
+                id = parseInt(tV[0], 10);
+            } else { return true; } //if this isn't a filter value: continue
+
+            if (tV[1] == "kw") {
+                if (v.length == 0) { return true; } //If no kw were specified: continue
+                else {
+                    _this.Options.Filters.Value.push(new _this.Filter(id, v.toLowerCase().split(" "), []))
+                }
+            } else if (tV[1] == "sub") {
+                var inArr = $.grep(_this.Options.Filters.Value, function (e) { return e.Id == id; });
+                if (inArr.length == 0) {
+                    //if there is no filter with this ID: continue
+                    return true;
+                } else if (v.length != 0) {
+                    var idx = $.inArray(inArr[0], _this.Options.Filters.Value);
+                    _this.Options.Filters.Value[idx].ApplyToSub = v.toLowerCase().split(" ");
+                }
+            }
+        });
+
+        this.Store.SetValue(this.Store.Prefix + this.ID,
+            JSON.stringify(
+                {
+                    Enabled: POST.Enabled,
+                    Filters: this.Options.Filters.Value,
+                }
+            )
+        );
     },
 
     ResetPref: function () {
@@ -63,6 +82,7 @@ AVE.Modules['SubmissionFilter'] = {
         $.each(JSON.parse(Opt), function (key, value) {
             _this.Options[key].Value = value;
         });
+
         _this.Enabled = _this.Options.Enabled.Value;
     },
 
@@ -82,27 +102,28 @@ AVE.Modules['SubmissionFilter'] = {
 
     Start: function () {
         var _this = this;
-        //When a submission is filtered it is removed, so no need to check anyting special when update is triggered.
+        //When a submission is filtered it is removed, so no need to check anyting special when the update method is triggered.
 
-        this.Options.Filters.Value.push(new this.Filter(0, ["ave"], ["beta"]));
-
-        //AVE.Utils.subverseName
-        var re;
+        var re, found;
         $("div.entry > p.title > a.title").each(function () {
             var titleStr = $(this).text().toLowerCase();
             var titleRef = $(this);
             $.each(_this.Options.Filters.Value, function () {
-                if (this.ApplyToSub.length == 0 ||
-                    $.inArray(AVE.Utils.subverseName, this.ApplyToSub) != -1) {
+                found = false;
+                if (this.ApplyToSub.length == 0 || $.inArray(AVE.Utils.subverseName, this.ApplyToSub) != -1) {
                     $.each(this.Keywords, function () {
                         re = new RegExp(this);
                         if (re.test(titleStr)) {
                             print("AVE: removed submission with title \"" + titleStr + "\" (tag: \"" + this + "\")");
                             titleRef.parents("div.submission:first").remove();
+                            found = true; //no point in continuing since the submission no longer exists
+                            return false; //break
                         }
                     });
                 }
+                if (found) { return false; } //break
             });
+            if (found) { return true; } //continue
         });
     },
 
@@ -122,15 +143,13 @@ AVE.Modules['SubmissionFilter'] = {
 
             this.htmlNewFilter = '<span class="AVE_Submission_Filter" id="{@id}">\
                                 Keyword(s) \
-                                    <input style="width:40%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@keywords}"></input>\
+                                    <input id="{@id}-kw" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@keywords}"></input>\
                                     Subverse(s) \
-                                    <input style="width:30%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@subverses}"></input>\
+                                    <input id="{@id}-sub" style="width:30%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@subverses}"></input>\
                                 </span>\
                                 <a href="javascript:void(0)" title="Remove filter" style="font-size: 16px;font-weight: bold;" class="RemoveFilter" id="{@id}">-</a>';
 
-            //Add short info about filters before inserting them
-            // Use only approved symbols (get those used by voat cs)
-            // Show examples: like "ex" matches "rex", "example", "bexter", ...
+            htmlStr += '<span style="font-weight:bold;"> Example: "ex" matches "rex", "example" and "bexter".</span><br />';
 
             $.each(_this.Options.Filters.Value, function () {
                 var filter = Pref_this.htmlNewFilter + "<br />"
@@ -158,7 +177,7 @@ AVE.Modules['SubmissionFilter'] = {
 
                 $("div#SubmissionFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click");
                 $("div#SubmissionFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").on("click", function () {
-                    //print("Remove link: "+ $(this).attr("id"));
+                    //print("Remove link: " + $(this).attr("id"));
                     //print("Remove span: " + $(this).prev("span.AVE_Submission_Filter").attr("id"));
                     $(this).next("br").remove();
                     $(this).prev("span.AVE_Submission_Filter").remove();

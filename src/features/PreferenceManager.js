@@ -295,7 +295,8 @@ AVE.Modules['PreferenceManager'] = {
                     POST[ModKey] = {};
 
                     $(this).find("input").each(function () {
-                        var key = $(this).prop("id")
+                        var key = $(this).prop("id");
+                        if (key == "") { return true;}
                         if ($(this).attr("type").toLowerCase() == "checkbox") {
                             POST[ModKey][key] = $(this).is(":checked");
                         } else {

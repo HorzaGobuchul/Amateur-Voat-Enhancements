@@ -44,6 +44,7 @@
 				"./Modules/Shortcuts.js",
 				"./Modules/ShortKeys.js",
 				"./Modules/ToggleChildComment.js",
+				"./Modules/SubmissionFilter.js",
 				"./BuildDep.js"
 				],
 			"css": [
@@ -58,3 +59,5 @@
 		"http://*.voat.co/*",
 		"https://*.voat.co/*"
 	],
+  "version": "2.19.11.22"
+}
