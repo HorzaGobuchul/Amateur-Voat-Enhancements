@@ -454,7 +454,6 @@ AVE.Modules['PreferenceManager'] = {
                     return true;
                 } else if (f.name.substr(f.name.length - 4, 4) != "json") {//Only plain text/JSON
                     _this.ShowInfo("The selected file\'s format isn\'t JSON", "failed");
-                    print(f.type);
                     return true;
                 }
                 var reader = new FileReader();
@@ -514,7 +513,6 @@ AVE.Modules['PreferenceManager'] = {
         var data = {};
         $.each(_this.Store.Data, function (k, v) { data[k] = v; });
         var blob = new Blob([JSON.stringify(data)], { type: "application/json;charset=utf-8" });
-        print(self);
         saveAs(blob, "AVE_Data_" + (new Date().toLocaleDateString().replace(/\//g, "_")) + ".json");
     },
 };

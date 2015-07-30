@@ -5,7 +5,7 @@ AVE.Modules['ID'] = {
     Category: 'Cat',
 
     Index: 100,
-    Debug: true,
+    Debug: true, //Means this is a beta feature. It Won't be added to the release build if left.
     Enabled: false,
 
     Store: {},
@@ -20,25 +20,25 @@ AVE.Modules['ID'] = {
     OriginalOptions: "", //If ResetPref is used
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['ID']; //Change id here
-        POST = POST[_this.ID];
+        var _this = this;
+        POST = POST[this.ID];
 
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST));
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
     },
 
     ResetPref: function () {// will add the reset option in the pref manager. Can be deleted.
-        var _this = AVE.Modules['ID']; //Change id here
-        _this.Options = JSON.parse(_this.OriginalOptions);
+        var _this = this;
+        this.Options = JSON.parse(this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
-        var _this = AVE.Modules['ID'];
-        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
+        var _this = this;
+        var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
             _this.Options[key].Value = value;
         });
-        _this.Enabled = _this.Options.Enabled.Value;
+        this.Enabled = this.Options.Enabled.Value;
     },
 
     Load: function () {
@@ -70,7 +70,8 @@ AVE.Modules['ID'] = {
 
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager
         html: function () {
-            var htmlStr = "";
+            //var _this = AVE.Modules['ID'];
+            var htmlStr = '';
             return htmlStr;
         },
         callback: function () {

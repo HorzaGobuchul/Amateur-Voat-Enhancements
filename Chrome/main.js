@@ -10,7 +10,6 @@ Storage.SetValue = function (key, value) {
 
         if (result) { // defined
             console.log('Saved');
-            console.log(result["aaa"]);
         } else { // uninitialised
             console.log("failed");
         }
@@ -33,11 +32,9 @@ chrome.runtime.onMessage.addListener(
 	                    Storage.DeleteValue(data.key);
 	                    break;
 	            }
-	            console.log("Data: " + data.request + ", Type: " + data.type);
 	            break;
 	        case 'GetMetadata':
 	            sendResponse({ request: "SetMetadata", message: { version: info.version, name: info.name } });
-	            console.log("Data: " + data.request);
 	            break;
 	        case 'OpenInTab':
 	            chrome.tabs.create({ url: data.url, selected: false, openerTabId: sender.tab.id });
