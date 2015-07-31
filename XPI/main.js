@@ -50,6 +50,7 @@ pageMod.PageMod({
     "./Modules/ShortKeys.js",
     "./Modules/ToggleChildComment.js",
     "./Modules/SubmissionFilter.js",
+    "./Modules/CommentFilter.js",
     "./BuildDep.js",
     ],
     onAttach: function (worker) {

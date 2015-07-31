@@ -30,6 +30,7 @@ AVE.Utils = {
             thread: /voat.co\/v\/[a-z]*\/comments\/\d*/i,
             register: /voat.co\/account\/register/i,
             userShort: /voat.co\/u\/[\w\d]*\/?$/i,
+            modlog: /voat.co\/v\/[a-z]*\/modlog/i,
             user: /voat.co\/user\/[\w\d]*\/?$/i,
             manage: /voat.co\/account\/manage/i,
             saved: /voat.co\/user\/.*\/saved/i,
@@ -50,6 +51,7 @@ AVE.Utils = {
         else if (RegExpTypes.api.test(url)) { return "api"; }
         else if (RegExpTypes.thread.test(url)) { return "thread"; }
         else if (RegExpTypes.submit.test(url)) { return "submit"; }
+        else if (RegExpTypes.modlog.test(url)) { return "modlog"; }
         else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
         else if (RegExpTypes.subverses.test(url)) { return "subverses"; }
         else if (RegExpTypes.domain.test(url)) { return "domain"; }

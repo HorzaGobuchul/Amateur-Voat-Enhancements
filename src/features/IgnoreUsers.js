@@ -23,6 +23,8 @@ AVE.Modules['IgnoreUsers'] = {
 
     IgnoreList: [],
 
+    Processed: [], //Ids of comments that have already been processed
+
     OriginalOptions: "", //If ResetPref is used
 
     SavePref: function (POST) {
@@ -65,6 +67,13 @@ AVE.Modules['IgnoreUsers'] = {
         var _this = AVE.Modules['IgnoreUsers'];
         if (AVE.Utils.currentPageType == "thread") { // comments
             $("p.tagline > a.author").each(function () {
+
+                if ($.inArray($(this).parents("div.comment:first").find("input#CommentId").val(), _this.Processed) != -1) {
+                    return true;
+                } else {
+                    _this.Processed.push($(this).parents("div.comment:first").find("input#CommentId").val());
+                }
+
                 var name = $(this).attr("data-username");
                 if ($.inArray(name.toLowerCase(), _this.IgnoreList) === -1) { return true; }
 
@@ -72,11 +81,13 @@ AVE.Modules['IgnoreUsers'] = {
                     print('Removed comment by ' + name)
                     $(this).parents("div.comment[class*='id-']:first").remove();
                 } else {
-                    $(this).parent().parent().find("div[id*='commentContent-']")
-                        .text('[Ignored User]')
-                        .css("font-size", "10px")
-                        .css("margin-left", "20px")
-                        .css("font-weight", "bold");
+                    var CommentContainer = $(this).parent().parent().find("div[id*='commentContent-']");
+                    CommentContainer.find("div.md").hide();
+                    CommentContainer.append('<a href="javascript:void(0)" title="Show comment" AVE="IgnoredComment">[Ignored User] Click to display comment.</a>');
+                    CommentContainer.find("a[AVE='IgnoredComment']")
+                            .css("font-size", "10px")
+                            .css("margin-left", "20px")
+                            .css("font-weight", "bold");
                 }
             });
         } else if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "search", "domain"]) !== -1) { // submissions
@@ -99,6 +110,18 @@ AVE.Modules['IgnoreUsers'] = {
             $("<span> [Ignored User]</span>").appendTo("div.alert-title")
                 .css("font-weight", "bold")
                 .css("color", "#B45656");
+        }
+
+        this.Listeners();
+    },
+
+    Listeners: function () {
+        if ($("a[AVE='IgnoredComment']").length > 0) {
+            $("a[AVE='IgnoredComment']").off("click"); //We don't want to multiply the eventListeners for the same elements when updating.
+            $("a[AVE='IgnoredComment']").on("click", function () {
+                $(this).parent().find("div.md").show();
+                $(this).remove();
+            });
         }
     },
 

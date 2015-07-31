@@ -114,7 +114,7 @@ AVE.Modules['SubmissionFilter'] = {
                     $.each(this.Keywords, function () {
                         re = new RegExp(this);
                         if (re.test(titleStr)) {
-                            print("AVE: removed submission with title \"" + titleStr + "\" (tag: \"" + this + "\")");
+                            print("AVE: removed submission with title \"" + titleStr + "\" (kw: \"" + this + "\")");
                             titleRef.parents("div.submission:first").remove();
                             found = true; //no point in continuing since the submission no longer exists
                             return false; //break
@@ -145,15 +145,15 @@ AVE.Modules['SubmissionFilter'] = {
                                 Keyword(s) \
                                     <input id="{@id}-kw" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@keywords}"></input>\
                                     Subverse(s) \
-                                    <input id="{@id}-sub" style="width:30%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@subverses}"></input>\
+                                    <input id="{@id}-sub" style="width:29%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@subverses}"></input>\
                                 </span>\
                                 <a href="javascript:void(0)" title="Remove filter" style="font-size: 16px;font-weight: bold;" class="RemoveFilter" id="{@id}">-</a>';
 
-            htmlStr += '<span style="font-weight:bold;"> Example: "ex" matches "rex", "example" and "bexter".</span><br />';
+            htmlStr += '<span style="font-weight:bold;"> Example: "ex" matches "rex", "example" and "bexter".<br />Separate keywords and subverse names by a space.</span><br />';
 
             $.each(_this.Options.Filters.Value, function () {
                 var filter = Pref_this.htmlNewFilter + "<br />"
-                filter = filter.replace(/{@id}/ig, $("div#SubmissionFilter > div.AVE_ModuleCustomInput > span.AVE_Submission_Filter").length);
+                filter = filter.replace(/{@id}/ig, this.Id);
                 filter = filter.replace("{@keywords}", this.Keywords.join(" "));
                 filter = filter.replace("{@subverses}", this.ApplyToSub.join(" "));
 

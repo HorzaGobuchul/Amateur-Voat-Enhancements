@@ -34,6 +34,18 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.20.3.3:",
+        "   New feature: CommentFilter",
+        "       You can choose keywords to filter comments (and specify subverses too)",
+        "       By default the filtered comments will be replaced by a short label informing about the responsible keyword and a link to display the text.",
+        "       If RemoveFiltered is checked, the comments will be removed, along with their children.",
+        "   IgnoreUsers:",
+        "       Added feature to display hidden comments by clicking the replacement label",
+        "   Corrected bug in SubmissionFilter and CommentFilter where filters weren't saved properly",
+        "   Corrected CSS issue with the SubmissionFilter and CommentFilter modules in PrefManager ",
+        "   Corrected bug in ToggleMedia that prevented the module from detecting media in comments, but only in sublission posts",
+        "   Added support /modlog/ pages:",
+        "       NeverEndingVoat will no longer try to insert itself in those pages",
         "V2.19.11.22:",
         "   New feature: SubmissionFilter",
         "   Extend what a submission page is (to \"search\" and \"domains\" pages)",

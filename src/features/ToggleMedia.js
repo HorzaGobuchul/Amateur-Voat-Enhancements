@@ -79,7 +79,16 @@ AVE.Modules['ToggleMedia'] = {
             if (strSel[strSel.length - 1] == ",")
             { strSel = strSel.slice(0, -1); }
 
-            this.sel = $(strSel).filter(function (idx) { return $(this).parents("div.submission[class*='id-']:first").css("opacity") == 1; });
+            this.sel = $(strSel).filter(function (idx) {
+                if ($(this).parents("div.submission[class*='id-']:first").css("opacity") == 1) {
+                    //Is this element in a submission post and not a duplicate inserted by NeverEndingVoat?
+                    return true;
+                } else if ($(this).parents("div.md").length > 0) {
+                    //Is this element in a comment?
+                    return true;
+                }
+                return false;
+            });
 
             //print(this.sel.length);
 

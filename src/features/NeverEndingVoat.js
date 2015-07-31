@@ -175,7 +175,6 @@ AVE.Modules['NeverEndingVoat'] = {
                 if (AVE.Modules['ToggleMedia'] && AVE.Modules['ToggleMedia'].Enabled) {
                     if ($("[id='GM_ExpandAllImages']").hasClass("expanded")) {
                         setTimeout(function () { AVE.Modules['ToggleMedia'].ToggleMedia(true) }, 750);
-
                     }
                 }
             }
