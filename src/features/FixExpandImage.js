@@ -92,7 +92,7 @@ AVE.Modules['FixExpandImage'] = {
         }
 
         this.obsInThread = new OnNodeChange($("div.expando:hidden"), function (e) {
-            //if ($(this).is(":not(div.expando)")) { print("a!!"); return true; }
+            //if ($(this).is(":not(div.expando)")) { print(":not(div.expando)"); return true; }
 
             var img = $(e.target).find("img:first");
             if (img.length > 0) {
@@ -107,7 +107,7 @@ AVE.Modules['FixExpandImage'] = {
                 });
 
                 exp.animate({
-                    width: 150 + "px", //just enough width to let the media info show
+                    width: 150 + "px", //just enough width to display the media info line
                     height: img.height() + 20 + "px",
                 }, 150);
             }

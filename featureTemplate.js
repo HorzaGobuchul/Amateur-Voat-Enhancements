@@ -5,7 +5,6 @@ AVE.Modules['ID'] = {
     Category: 'Cat',
 
     Index: 100,
-    Debug: true, //Means this is a beta feature. It Won't be added to the release build if left.
     Enabled: false,
 
     Store: {},

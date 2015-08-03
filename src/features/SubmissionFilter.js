@@ -112,6 +112,7 @@ AVE.Modules['SubmissionFilter'] = {
                 found = false;
                 if (this.ApplyToSub.length == 0 || $.inArray(AVE.Utils.subverseName, this.ApplyToSub) != -1) {
                     $.each(this.Keywords, function () {
+                        if (this.length == 0) { return true;}//Just in case
                         re = new RegExp(this);
                         if (re.test(titleStr)) {
                             print("AVE: removed submission with title \"" + titleStr + "\" (kw: \"" + this + "\")");

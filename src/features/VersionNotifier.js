@@ -34,6 +34,15 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.21.6.4:",
+        "   New feature: ShowSubmissionVoatBalance",
+        "       This module adds the possiblity to display the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote.",
+        "   Excluded API pages at the extension level (instead of simply in the script)",
+        "   UserInfoFixedPos:",
+        "       Added option to toggle the user block with an icon (arrow)",
+        "   FixContainerWidth:",
+        "       Added option to justify text in comments",
+        "       Fixed comments' max-width being set to 60em by default, replaced with 100%",
         "V2.20.3.3:",
         "   New feature: CommentFilter",
         "       You can choose keywords to filter comments (and specify subverses too)",

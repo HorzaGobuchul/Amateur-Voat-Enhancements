@@ -72,6 +72,7 @@ pageMod.PageMod({
                             Storage.DeleteValue(data.key);
                             break;
                     }
+                    break;
                 case 'GetMetadata':
                     worker.postMessage({ request: "SetMetadata", message: { version: info.version, name: info.title } });
                     break;

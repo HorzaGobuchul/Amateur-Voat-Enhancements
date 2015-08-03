@@ -1,7 +1,7 @@
 AVE.Modules['PreferenceManager'] = {
     ID: 'PreferenceManager',
     Name: 'Preference manager',
-    Desc: 'AVE\'s preference manager. Will contain a button to reset all data stored soon.',
+    Desc: 'Manage AVE\'s stored data.',
     Category: 'Manager',
 
     Index: 0,

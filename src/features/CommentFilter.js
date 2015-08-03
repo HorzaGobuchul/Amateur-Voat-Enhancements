@@ -128,6 +128,7 @@ AVE.Modules['CommentFilter'] = {
                 found = false;
                 if (this.ApplyToSub.length == 0 || $.inArray(AVE.Utils.subverseName, this.ApplyToSub) != -1) {
                     $.each(this.Keywords, function () {
+                        if (this.length == 0) { return true; }//Just in case
                         re = new RegExp(this);
                         if (re.test(commentStr)) {
                             if (_this.Options.RemoveFiltered.Value) {

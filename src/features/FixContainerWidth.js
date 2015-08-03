@@ -19,6 +19,10 @@ AVE.Modules['FixContainerWidth'] = {
             Range: [1,100],
             Value: 100,
         },
+        Justify: {
+            Type: 'boolean',
+            Value: false,
+        },
     },
 
     OriginalOptions: "",
@@ -62,12 +66,22 @@ AVE.Modules['FixContainerWidth'] = {
 
     Start: function () {
         $("div#container").css("max-width", this.Options.Width.Value + "%");
+        if (AVE.Utils.currentPageType == "thread") {
+            $("div.md").css("max-width", "100%");
+
+            if (this.Options.Justify.Value){
+                $("div.md").css("text-align", "justify");
+            }
+        }
     },
 
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager
         html: function () {
             var _this = AVE.Modules['FixContainerWidth'];
-            var htmlStr = '<input style="width:50%;display:inline;" id="Width" value="'+_this.Options.Width.Value+'" type="range" min="' + _this.Options.Width.Range[0] + ' max="' + _this.Options.Width.Range[1] + '"/> <span id="FixContainerWidth_Value"></span>%';
+            var htmlStr = '<input style="width:50%;display:inline;" id="Width" value="' + _this.Options.Width.Value + '" type="range" min="' + _this.Options.Width.Range[0] + ' max="' + _this.Options.Width.Range[1] + '"/> <span id="FixContainerWidth_Value"></span>%';
+
+            htmlStr += '<br /><input ' + (_this.Options.Justify.Value ? 'checked="true"' : "") + ' id="Justify" type="checkbox"/><label for="Justify">Justify text in comments.</label>';
+
             return htmlStr;
         },
         callback: function () {

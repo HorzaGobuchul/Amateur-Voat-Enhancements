@@ -18,6 +18,10 @@ AVE.Modules['UserInfoFixedPos'] = {
             Type: 'boolean',
             Value: false,
         },
+        ToggleBlock: {
+            Type: 'boolean',
+            Value: true,
+        },
     },
 
     SavePref: function (POST) {
@@ -84,12 +88,44 @@ AVE.Modules['UserInfoFixedPos'] = {
             //Reset header-account's so that it is not a few pixels too high.
             $('div#header-account').css('position', '');
         }
+        
+        if (this.Options.ToggleBlock.Value) {
+            //Add arrow icon element
+            $('#header-account').append('<div title="Hide user block" id="AVE_ToggleUserBlock" style="font-size:20px;font-weight:bold;cursor:pointer;float:left;padding:5px;">&rArr;</div>')
+            //Set user block as float:right;
+            $('div#header-account > div.logged-in,div.logged-out').css("float", "right");
+
+            this.Listeners();
+        }
+    },
+
+    Listeners: function () {
+        $("div#AVE_ToggleUserBlock").on("click", function () {//
+            if ($('div#header-account > div.logged-in,div.logged-out').is(":hidden")) {//If user block is already hidden
+                //Show arrow pointing to the right
+                $("div#AVE_ToggleUserBlock").html("&rArr;");
+                //Change element's title
+                $("div#AVE_ToggleUserBlock").attr("title", "Hide user block");
+                //Show user block
+                $('div#header-account > div.logged-in,div.logged-out').show();
+            } else {//If user block is visible
+                //Show arrow pointing to the left
+                $("div#AVE_ToggleUserBlock").html("&lArr;");
+                //Change element's title
+                $("div#AVE_ToggleUserBlock").attr("title", "Show user block");
+                //Hide user block
+                $('div#header-account > div.logged-in,div.logged-out').hide();
+            }
+        });
     },
 
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager
         html: function () {
+            var _this = AVE.Modules['UserInfoFixedPos'];
             var htmlStr = "";
-            htmlStr += '<input ' + (AVE.Modules['UserInfoFixedPos'].Options.DivideBlock.Value ? 'checked="true"' : "") + ' id="DivideBlock" type="checkbox"/><label style="display:inline;" for="DivideBlock"> Do you want the header account separated- username and numbers at the top and icons below?</label>'
+            htmlStr += '<input ' + (_this.Options.DivideBlock.Value ? 'checked="true"' : "") + ' id="DivideBlock" type="checkbox"/><label style="display:inline;" for="DivideBlock"> Do you want the header account separated- username and numbers at the top and icons below?</label>';
+            htmlStr += '<br /><input ' + (_this.Options.ToggleBlock.Value ? 'checked="true"' : "") + ' id="ToggleBlock" type="checkbox"/><label style="display:inline;" for="ToggleBlock"> Show icon to toggle hide/show the user block.</label>';
+
             return htmlStr;
         },
     },
