@@ -11,7 +11,7 @@ AVE.Storage = {
         if (val == undefined) {
             if (def == undefined) {
                 return null;
-            } else { return def }
+            } return def;
         } return val;
     },
 

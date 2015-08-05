@@ -1,12 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        2015-07-31
+// @date        2015-08-05
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
-// @version     2.20.3.3
+// @exclude     *://*.voat.co/api*
+// @exclude     *://voat.co/api*
+// @version     2.21.6.6
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -54,8 +56,6 @@ AVE.Init = {
 /// END Init ///
 
 /// Utils ///
-/* global self */
-
 AVE.Utils = {
     regExpSet: /([^:]*):([0-9]*)/i,
     regExpTag: /([^:]*):([^:]*)/i,
@@ -287,7 +287,7 @@ AVE.Storage = {
         if (val == undefined) {
             if (def == undefined) {
                 return null;
-            } else { return def }
+            } return def;
         } return val;
     },
 
@@ -307,11 +307,11 @@ AVE.Storage = {
 };
 /// END Storage ///
 
-/// Preference manager:  AVE\'s preference manager. Will contain a button to reset all data stored soon. ///
+/// Preference manager:  Manage AVE\'s stored data. ///
 AVE.Modules['PreferenceManager'] = {
     ID: 'PreferenceManager',
     Name: 'Preference manager',
-    Desc: 'AVE\'s preference manager. Will contain a button to reset all data stored soon.',
+    Desc: 'Manage AVE\'s stored data.',
     Category: 'Manager',
 
     Index: 0,
@@ -865,6 +865,18 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.21.6.6:",
+        "   Fixed issue with the Cashmere custom style that hid the usertag icon",
+        "   Fixed issue where ToggleMedia would trigger a click on failed media (e.g. error 404), thus redirecting instead of toggling the non-existent expando.",
+        "V2.21.6.4:",
+        "   New feature: ShowSubmissionVoatBalance",
+        "       This module adds the possiblity to display the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote.",
+        "   Excluded API pages at the extension level (instead of simply in the script)",
+        "   UserInfoFixedPos:",
+        "       Added option to toggle the user block with an icon (arrow)",
+        "   FixContainerWidth:",
+        "       Added option to justify text in comments",
+        "       Fixed comments' max-width being set to 60em by default, replaced with 100%",
         "V2.20.3.3:",
         "   New feature: CommentFilter",
         "       You can choose keywords to filter comments (and specify subverses too)",
@@ -1258,6 +1270,10 @@ AVE.Modules['UserInfoFixedPos'] = {
             Type: 'boolean',
             Value: false,
         },
+        ToggleBlock: {
+            Type: 'boolean',
+            Value: true,
+        },
     },
 
     SavePref: function (POST) {
@@ -1324,12 +1340,44 @@ AVE.Modules['UserInfoFixedPos'] = {
             //Reset header-account's so that it is not a few pixels too high.
             $('div#header-account').css('position', '');
         }
+        
+        if (this.Options.ToggleBlock.Value) {
+            //Add arrow icon element
+            $('#header-account').append('<div title="Hide user block" id="AVE_ToggleUserBlock" style="font-size:20px;font-weight:bold;cursor:pointer;float:left;padding:5px;">&rArr;</div>')
+            //Set user block as float:right;
+            $('div#header-account > div.logged-in,div.logged-out').css("float", "right");
+
+            this.Listeners();
+        }
+    },
+
+    Listeners: function () {
+        $("div#AVE_ToggleUserBlock").on("click", function () {//
+            if ($('div#header-account > div.logged-in,div.logged-out').is(":hidden")) {//If user block is already hidden
+                //Show arrow pointing to the right
+                $("div#AVE_ToggleUserBlock").html("&rArr;");
+                //Change element's title
+                $("div#AVE_ToggleUserBlock").attr("title", "Hide user block");
+                //Show user block
+                $('div#header-account > div.logged-in,div.logged-out').show();
+            } else {//If user block is visible
+                //Show arrow pointing to the left
+                $("div#AVE_ToggleUserBlock").html("&lArr;");
+                //Change element's title
+                $("div#AVE_ToggleUserBlock").attr("title", "Show user block");
+                //Hide user block
+                $('div#header-account > div.logged-in,div.logged-out').hide();
+            }
+        });
     },
 
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager
         html: function () {
+            var _this = AVE.Modules['UserInfoFixedPos'];
             var htmlStr = "";
-            htmlStr += '<input ' + (AVE.Modules['UserInfoFixedPos'].Options.DivideBlock.Value ? 'checked="true"' : "") + ' id="DivideBlock" type="checkbox"/><label style="display:inline;" for="DivideBlock"> Do you want the header account separated- username and numbers at the top and icons below?</label>'
+            htmlStr += '<input ' + (_this.Options.DivideBlock.Value ? 'checked="true"' : "") + ' id="DivideBlock" type="checkbox"/><label style="display:inline;" for="DivideBlock"> Do you want the header account separated- username and numbers at the top and icons below?</label>';
+            htmlStr += '<br /><input ' + (_this.Options.ToggleBlock.Value ? 'checked="true"' : "") + ' id="ToggleBlock" type="checkbox"/><label style="display:inline;" for="ToggleBlock"> Show icon to toggle hide/show the user block.</label>';
+
             return htmlStr;
         },
     },
@@ -1452,7 +1500,7 @@ span.AVE_UserTag:empty{\
     width: 14px;\
     margin: 0px 0px -3px 4px;\
     /* SVG from Jquery Mobile Icons Set */\
-    background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23' + (AVE.Utils.CSSstyle == "dark" ? "ABABAB" : "BBB") + '%22%20d%3D%22M5%2C0H0v5l9%2C9l5-5L5%2C0z%20M3%2C4C2.447%2C4%2C2%2C3.553%2C2%2C3s0.447-1%2C1-1s1%2C0.447%2C1%2C1S3.553%2C4%2C3%2C4z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E");\
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23' + (AVE.Utils.CSSstyle == "dark" ? "ABABAB" : "BBB") + '%22%20d%3D%22M5%2C0H0v5l9%2C9l5-5L5%2C0z%20M3%2C4C2.447%2C4%2C2%2C3.553%2C2%2C3s0.447-1%2C1-1s1%2C0.447%2C1%2C1S3.553%2C4%2C3%2C4z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E") !important;\
     background-repeat: no-repeat;\
     display: inline-block;\
 }\
@@ -1886,8 +1934,8 @@ AVE.Modules['ToggleMedia'] = {
     },
 
     sel: [],
-    ImgMedia: "[title*='JPG'],[title*='PNG'],[title*='GIF'],[title*='Gfycat'],[title*='Gifv'],[title*='Imgur Album']",
-    VidMedia: "[title*='YouTube'],[title*='Vimeo']",
+    ImgMedia: "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']",
+    VidMedia: "[title='YouTube'],[title='Vimeo']",
     SelfText: "[onclick^='loadSelfText']",
     // voat.co/v/test/comments/37149
 
@@ -1902,16 +1950,17 @@ AVE.Modules['ToggleMedia'] = {
             if (strSel[strSel.length - 1] == ",")
             { strSel = strSel.slice(0, -1); }
 
-            this.sel = $(strSel).filter(function (idx) {
-                if ($(this).parents("div.submission[class*='id-']:first").css("opacity") == 1) {
-                    //Is this element in a submission post and not a duplicate inserted by NeverEndingVoat?
-                    return true;
-                } else if ($(this).parents("div.md").length > 0) {
-                    //Is this element in a comment?
-                    return true;
-                }
-                return false;
-            });
+            this.sel = $(strSel).filter(':parents(.titlebox)') //Remove from selection all media in the subverse's bar.
+                                .filter(function (idx) {
+                                    if ($(this).parents("div.submission[class*='id-']:first").css("opacity") == 1) {
+                                        //Is this element in a submission post and not a duplicate inserted by NeverEndingVoat?
+                                        return true;
+                                    } else if ($(this).parents("div.md").length > 0) {
+                                        //Is this element in a comment?
+                                        return true;
+                                    }
+                                    return false;
+                                });
 
             //print(this.sel.length);
 
@@ -1961,8 +2010,12 @@ AVE.Modules['ToggleMedia'] = {
             if (
                 (state && this.sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
                 state === this.sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
-                ) {
-                this.sel[el].click();
+                )
+            {
+                //A click on a media that failed (e.g. error 404) will redirect instead of toggling the expando.
+                if (this.sel.eq(el).find("span.link-expando-type").text() !== "Error") {
+                    this.sel[el].click();
+                }
             }
         }
     },
@@ -2268,6 +2321,7 @@ AVE.Modules['CommentFilter'] = {
                 found = false;
                 if (this.ApplyToSub.length == 0 || $.inArray(AVE.Utils.subverseName, this.ApplyToSub) != -1) {
                     $.each(this.Keywords, function () {
+                        if (this.length == 0) { return true; }//Just in case
                         re = new RegExp(this);
                         if (re.test(commentStr)) {
                             if (_this.Options.RemoveFiltered.Value) {
@@ -2451,6 +2505,10 @@ AVE.Modules['FixContainerWidth'] = {
             Range: [1,100],
             Value: 100,
         },
+        Justify: {
+            Type: 'boolean',
+            Value: false,
+        },
     },
 
     OriginalOptions: "",
@@ -2494,12 +2552,22 @@ AVE.Modules['FixContainerWidth'] = {
 
     Start: function () {
         $("div#container").css("max-width", this.Options.Width.Value + "%");
+        if (AVE.Utils.currentPageType == "thread") {
+            $("div.md").css("max-width", "100%");
+
+            if (this.Options.Justify.Value){
+                $("div.md").css("text-align", "justify");
+            }
+        }
     },
 
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager
         html: function () {
             var _this = AVE.Modules['FixContainerWidth'];
-            var htmlStr = '<input style="width:50%;display:inline;" id="Width" value="'+_this.Options.Width.Value+'" type="range" min="' + _this.Options.Width.Range[0] + ' max="' + _this.Options.Width.Range[1] + '"/> <span id="FixContainerWidth_Value"></span>%';
+            var htmlStr = '<input style="width:50%;display:inline;" id="Width" value="' + _this.Options.Width.Value + '" type="range" min="' + _this.Options.Width.Range[0] + ' max="' + _this.Options.Width.Range[1] + '"/> <span id="FixContainerWidth_Value"></span>%';
+
+            htmlStr += '<br /><input ' + (_this.Options.Justify.Value ? 'checked="true"' : "") + ' id="Justify" type="checkbox"/><label for="Justify">Justify text in comments.</label>';
+
             return htmlStr;
         },
         callback: function () {
@@ -2609,7 +2677,7 @@ AVE.Modules['FixExpandImage'] = {
         }
 
         this.obsInThread = new OnNodeChange($("div.expando:hidden"), function (e) {
-            //if ($(this).is(":not(div.expando)")) { print("a!!"); return true; }
+            //if ($(this).is(":not(div.expando)")) { print(":not(div.expando)"); return true; }
 
             var img = $(e.target).find("img:first");
             if (img.length > 0) {
@@ -2624,7 +2692,7 @@ AVE.Modules['FixExpandImage'] = {
                 });
 
                 exp.animate({
-                    width: 150 + "px", //just enough width to let the media info show
+                    width: 150 + "px", //just enough width to display the media info line
                     height: img.height() + 20 + "px",
                 }, 150);
             }
@@ -3840,6 +3908,95 @@ AVE.Modules['ShortKeys'] = {
 };
 /// END Shortcut keys ///
 
+/// Show submission\'s actual vote balance:  This module displays the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote. ///
+AVE.Modules['ShowSubmissionVoatBalance'] = {
+    ID: 'ShowSubmissionVoatBalance',
+    Name: 'Show submission\'s actual vote balance',
+    Desc: 'This module displays the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote.',
+    Category: 'Subverse',
+
+    Index: 100,
+    Enabled: false,
+
+    Store: {},
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: false,
+        },
+        // Add option to show (+1|-1) between the vote arrows and remove element in the tagline
+    },
+
+    OriginalOptions: "",
+
+    SavePref: function (POST) {
+        var _this = this;
+        POST = POST[this.ID];
+
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
+    },
+
+    ResetPref: function () {
+        var _this = this;
+        this.Options = JSON.parse(this.OriginalOptions);
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = this;
+        var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
+
+        $.each(JSON.parse(Opt), function (key, value) {
+            _this.Options[key].Value = value;
+        });
+        this.Enabled = this.Options.Enabled.Value;
+    },
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.OriginalOptions = JSON.stringify(this.Options);
+        this.SetOptionsFromPref();
+
+        if (this.Enabled) {
+            this.Start();
+        }
+    },
+
+    Update: function () {
+        if (this.Enabled) {
+            this.Start();
+        }
+    },
+
+    Start: function () {
+        var _this = this;
+
+        $("div.score.likes:visible,div.score.dislikes:visible").each(function () {
+            _this.ShowVoteBalance($(this).parent());
+        });
+
+        this.Listeners();
+    },
+
+    Listeners: function () {
+        var _this = this;
+        $("div[aria-label='upvote'],div[aria-label='downvote']").off();//We don't want duplicates of this listener created because of "Update"
+        $("div[aria-label='upvote'],div[aria-label='downvote']").on("click", function () {
+            _this.ShowVoteBalance($(this).parent(),true);
+        });
+    },
+
+    ShowVoteBalance: function (target, click) {
+        //If the user hasn't voted on this post we have nothing to do here
+        if (!click && target.find("div.score.unvoted").is(":visible")) { return true; } //continue
+
+        target.find("div.score.dislikes").hide();
+        target.find("div.score.likes").hide();
+        target.find("div.score.unvoted").show().text(target.find("div.score.likes").text() - target.find("div.score.dislikes").text());
+    },
+};
+/// END Show submission\'s actual vote balance ///
+
 /// Submission Filter:  Remove submissions which title matches one of the filters. Additionally, you can specify a subverse, where a filter will only be applied. ///
 AVE.Modules['SubmissionFilter'] = {
     ID: 'SubmissionFilter',
@@ -3955,6 +4112,7 @@ AVE.Modules['SubmissionFilter'] = {
                 found = false;
                 if (this.ApplyToSub.length == 0 || $.inArray(AVE.Utils.subverseName, this.ApplyToSub) != -1) {
                     $.each(this.Keywords, function () {
+                        if (this.length == 0) { return true;}//Just in case
                         re = new RegExp(this);
                         if (re.test(titleStr)) {
                             print("AVE: removed submission with title \"" + titleStr + "\" (kw: \"" + this + "\")");

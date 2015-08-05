@@ -34,6 +34,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.21.6.6:",
+        "   Fixed issue with the Cashmere custom style that hid the usertag icon",
+        "   Fixed issue where ToggleMedia would trigger a click on failed media (e.g. error 404), thus redirecting instead of toggling the non-existent expando.",
         "V2.21.6.4:",
         "   New feature: ShowSubmissionVoatBalance",
         "       This module adds the possiblity to display the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote.",

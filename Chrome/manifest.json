@@ -19,6 +19,11 @@
 				"http://*.voat.co/*",
 				"https://*.voat.co/*"
 			],
+			"exclude_matches": [
+				"http://voat.co/api/*",
+				"https://voat.co/api/*",
+				"http://*.voat.co/api/*",
+				"https://*.voat.co/api/*"],
 			"js": [
 				"./Ext/jquery.min.js",
 				"./Ext/to-markdown.js",
@@ -46,6 +51,7 @@
 				"./Modules/ToggleChildComment.js",
 				"./Modules/SubmissionFilter.js",
 				"./Modules/CommentFilter.js",
+				"./Modules/ShowSubmissionVoatBalance.js",
 				"./BuildDep.js"
 				],
 			"css": [

@@ -63,8 +63,8 @@ AVE.Modules['ToggleMedia'] = {
     },
 
     sel: [],
-    ImgMedia: "[title*='JPG'],[title*='PNG'],[title*='GIF'],[title*='Gfycat'],[title*='Gifv'],[title*='Imgur Album']",
-    VidMedia: "[title*='YouTube'],[title*='Vimeo']",
+    ImgMedia: "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']",
+    VidMedia: "[title='YouTube'],[title='Vimeo']",
     SelfText: "[onclick^='loadSelfText']",
     // voat.co/v/test/comments/37149
 
@@ -79,16 +79,17 @@ AVE.Modules['ToggleMedia'] = {
             if (strSel[strSel.length - 1] == ",")
             { strSel = strSel.slice(0, -1); }
 
-            this.sel = $(strSel).filter(function (idx) {
-                if ($(this).parents("div.submission[class*='id-']:first").css("opacity") == 1) {
-                    //Is this element in a submission post and not a duplicate inserted by NeverEndingVoat?
-                    return true;
-                } else if ($(this).parents("div.md").length > 0) {
-                    //Is this element in a comment?
-                    return true;
-                }
-                return false;
-            });
+            this.sel = $(strSel).filter(':parents(.titlebox)') //Remove from selection all media in the subverse's bar.
+                                .filter(function (idx) {
+                                    if ($(this).parents("div.submission[class*='id-']:first").css("opacity") == 1) {
+                                        //Is this element in a submission post and not a duplicate inserted by NeverEndingVoat?
+                                        return true;
+                                    } else if ($(this).parents("div.md").length > 0) {
+                                        //Is this element in a comment?
+                                        return true;
+                                    }
+                                    return false;
+                                });
 
             //print(this.sel.length);
 
@@ -138,8 +139,12 @@ AVE.Modules['ToggleMedia'] = {
             if (
                 (state && this.sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
                 state === this.sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
-                ) {
-                this.sel[el].click();
+                )
+            {
+                //A click on a media that failed (e.g. error 404) will redirect instead of toggling the expando.
+                if (this.sel.eq(el).find("span.link-expando-type").text() !== "Error") {
+                    this.sel[el].click();
+                }
             }
         }
     },

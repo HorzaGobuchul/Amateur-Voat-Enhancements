@@ -2,7 +2,7 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
     ID: 'ShowSubmissionVoatBalance',
     Name: 'Show submission\'s actual vote balance',
     Desc: 'This module displays the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote.',
-    Category: 'Posts',
+    Category: 'Subverse',
 
     Index: 100,
     Enabled: false,
@@ -14,7 +14,7 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
             Type: 'boolean',
             Value: false,
         },
-        // Add option to show (+1|-1) between the vote arrows and remove element in tagline
+        // Add option to show (+1|-1) between the vote arrows and remove element in the tagline
     },
 
     OriginalOptions: "",
@@ -51,7 +51,11 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
         }
     },
 
-    Processed: [], //Ids of comments that have already been processed
+    Update: function () {
+        if (this.Enabled) {
+            this.Start();
+        }
+    },
 
     Start: function () {
         var _this = this;
@@ -63,20 +67,12 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
         this.Listeners();
     },
 
-    Update: function () {
-        if (this.Enabled) {
-            this.Start();
-        }
-    },
-
     Listeners: function () {
         var _this = this;
-        $("div[aria-label='upvote'],div[aria-label='downvote']").off();
+        $("div[aria-label='upvote'],div[aria-label='downvote']").off();//We don't want duplicates of this listener created because of "Update"
         $("div[aria-label='upvote'],div[aria-label='downvote']").on("click", function () {
-            print("clicked");
             _this.ShowVoteBalance($(this).parent(),true);
         });
-
     },
 
     ShowVoteBalance: function (target, click) {
@@ -86,6 +82,5 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
         target.find("div.score.dislikes").hide();
         target.find("div.score.likes").hide();
         target.find("div.score.unvoted").show().text(target.find("div.score.likes").text() - target.find("div.score.dislikes").text());
-        print(target.find("div.score.likes").text() - target.find("div.score.dislikes").text());
     },
 };

@@ -23,6 +23,7 @@ Storage.DeleteValue = function (key) {
 
 pageMod.PageMod({
     include: ['*.voat.co'],
+    exclude: ['*.voat.co/api'],
     contentScriptWhen: 'ready',//start
     contentScriptFile: [
     "./Ext/jquery.min.js",
@@ -51,6 +52,7 @@ pageMod.PageMod({
     "./Modules/ToggleChildComment.js",
     "./Modules/SubmissionFilter.js",
     "./Modules/CommentFilter.js",
+    "./Modules/ShowSubmissionVoatBalance.js",
     "./BuildDep.js",
     ],
     onAttach: function (worker) {
