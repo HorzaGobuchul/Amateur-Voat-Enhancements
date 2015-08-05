@@ -194,13 +194,10 @@ table#formTable{\
     },
 
     AppendToPage: function () {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
         var Tag_html, name, tag;
-        //All mention of an username as a link.
-        var sel = /\/user\/[^/]*\/?$/i;
 
-        $("a[href*='/user/']").each(function () {
-            if (!$(this).attr('href').match(sel)) { return true; } //useful?
+        $("a[href^='/user/'],a[href^='/u/']").each(function () {
             if ($(this).next("span.AVE_UserTag").length > 0) { return true; } //don't add if it already exists
             if ($(this).parents("div#header-account").length > 0) { return true; } //don't add if it the userpage link in the account header
 
@@ -251,7 +248,7 @@ table#formTable{\
     obsVoteChange: null,
 
     Listeners: function () {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
 
         $(".AVE_UserTag").off("click");
         $(".AVE_UserTag").on("click", function () {
@@ -395,7 +392,7 @@ table#formTable{\
     },
 
     UpdateUserTag: function (tag) {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
         $("span[class*='AVE_UserTag'][id*='" + tag.username + "']").each(function () {
 
             if (tag.tag != "") {
@@ -428,21 +425,21 @@ table#formTable{\
     },
 
     RemoveTag: function (username) {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
         delete _this.usertags[username];
 
         _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.usertags));
     },
 
     SetTag: function (opt) {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
         _this.usertags[opt.username] = new _this.UserTagObj(opt.tag, opt.colour, opt.ignore, opt.balance);
 
         _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.usertags));
     },
 
     GetTag: function (userName) {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
         return _this.usertags[userName] || false;
     },
 

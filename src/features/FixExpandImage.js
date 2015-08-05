@@ -42,8 +42,21 @@ AVE.Modules['FixExpandImage'] = {
             this.Start();
         }
     },
+    
+    ImgMedia: "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']",
 
     Start: function () {
+        /*
+        !! THIS CSS FIX IS BORROWED FROM /V/SCRIBBLE 1.5 !!
+        */
+        if ($("style").length == 0) { $("style").appendTo("head"); }
+        $("style").append('.link-expando {overflow: visible;position: relative;z-index: 1;}.usertext{overflow: visible;}');
+
+        if (AVE.Utils.currentPageType !== "thread") {
+            $("div.entry:has(" + this.ImgMedia + ")")
+            .css("overflow", "visible");
+        }
+
         this.Listeners();
     },
 
@@ -53,65 +66,28 @@ AVE.Modules['FixExpandImage'] = {
         }
     },
 
-    obsInSub: null,
-    obsInThread: null,
+    obsImgExp: null,
 
     Listeners: function () {
-        var ImgMedia = "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']";
+        //Here we disabled the selection of the image.
 
-        if (this.obsInSub) {
-            this.obsInSub.disconnect();
-            //Instead of disconnecting and recreating, maybe I could add the new targets to the observer.
-        }
-        this.obsInSub = new OnNodeChange($("a" + ImgMedia), function (e) {
-            var container = $(e.target).parent().find("div.link-expando:first");
-            var img = container.find("img:first");
-
-            if (img.length > 0) {
-                var parentWidth = $(this).parent().parent().width();
-
-                img.css("position", "absolute")
-                   .css("margin-top", "20px");
-
-                img.OnAttrChange(function () {
-                    window.getSelection().removeAllRanges();
-                    container.width(parentWidth);//img.width());
-                    container.height(img.height() + 20);
-                });
-
-                container.animate({
-                    width: parentWidth + "px",
-                    height: img.height() + 20 + "px",
-                }, 1500);
-            }
-        });
-        this.obsInSub.observe();
-
-        if (this.obsInThread) {
-            this.obsInThread.disconnect();
+        if (this.obsImgExp) {
+            this.obsImgExp.disconnect();
         }
 
-        this.obsInThread = new OnNodeChange($("div.expando:hidden"), function (e) {
-            //if ($(this).is(":not(div.expando)")) { print(":not(div.expando)"); return true; }
+        this.obsImgExp = new OnNodeChange($("div.expando:hidden, a" + this.ImgMedia + ":has(span.link-expando-type)"), function (e) {
+            var img = $(e.target).find("img:first"); //In sub
+            if (img.length == 0) { img = $(this).next("div.link-expando").find("img"); } //In thread
 
-            var img = $(e.target).find("img:first");
             if (img.length > 0) {
-                var exp = $(this).hasClass("link-expando") ? $(this) : $(this).find("div.expando-link");
-                img.css("position", "absolute")
-                   .css("margin-top", "20px");
-
+                var container = $(this).hasClass("link-expando") ? $(this) : //!!Weird!!
+                                                                   ($(this).find("div.expando-link") || //In Sub
+                                                                    $(this).find("div.link-expando"));  //In Thread
                 img.OnAttrChange(function () {
                     window.getSelection().removeAllRanges();
-                    exp.width(150);//img.width());
-                    exp.height(img.height() + 20);
                 });
-
-                exp.animate({
-                    width: 150 + "px", //just enough width to display the media info line
-                    height: img.height() + 20 + "px",
-                }, 150);
             }
         });
-        this.obsInThread.observe()
+        this.obsImgExp.observe();
     },
 };

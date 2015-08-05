@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        2015-08-05
+// @date        2015-08-06
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.21.6.6
+// @version     2.21.6.8
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -865,12 +865,18 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.21.6.8:",
+        "   FixExpandImage: fixed issue due to collision with some custom styles",
+        "       Implemented solution from /V/SCRIBBLE by /U/HEWITT",
+        "       Simplified module",
+        "   UserTag:",
+        "       Added detection of user-links of form a[href^='/u/']",
         "V2.21.6.6:",
         "   Fixed issue with the Cashmere custom style that hid the usertag icon",
         "   Fixed issue where ToggleMedia would trigger a click on failed media (e.g. error 404), thus redirecting instead of toggling the non-existent expando.",
         "V2.21.6.4:",
         "   New feature: ShowSubmissionVoatBalance",
-        "       This module adds the possiblity to display the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote.",
+        "       This module adds the possibility to display the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote.",
         "   Excluded API pages at the extension level (instead of simply in the script)",
         "   UserInfoFixedPos:",
         "       Added option to toggle the user block with an icon (arrow)",
@@ -1581,13 +1587,10 @@ table#formTable{\
     },
 
     AppendToPage: function () {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
         var Tag_html, name, tag;
-        //All mention of an username as a link.
-        var sel = /\/user\/[^/]*\/?$/i;
 
-        $("a[href*='/user/']").each(function () {
-            if (!$(this).attr('href').match(sel)) { return true; } //useful?
+        $("a[href^='/user/'],a[href^='/u/']").each(function () {
             if ($(this).next("span.AVE_UserTag").length > 0) { return true; } //don't add if it already exists
             if ($(this).parents("div#header-account").length > 0) { return true; } //don't add if it the userpage link in the account header
 
@@ -1638,7 +1641,7 @@ table#formTable{\
     obsVoteChange: null,
 
     Listeners: function () {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
 
         $(".AVE_UserTag").off("click");
         $(".AVE_UserTag").on("click", function () {
@@ -1782,7 +1785,7 @@ table#formTable{\
     },
 
     UpdateUserTag: function (tag) {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
         $("span[class*='AVE_UserTag'][id*='" + tag.username + "']").each(function () {
 
             if (tag.tag != "") {
@@ -1815,21 +1818,21 @@ table#formTable{\
     },
 
     RemoveTag: function (username) {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
         delete _this.usertags[username];
 
         _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.usertags));
     },
 
     SetTag: function (opt) {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
         _this.usertags[opt.username] = new _this.UserTagObj(opt.tag, opt.colour, opt.ignore, opt.balance);
 
         _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.usertags));
     },
 
     GetTag: function (userName) {
-        var _this = AVE.Modules['UserTag'];
+        var _this = this;
         return _this.usertags[userName] || false;
     },
 
@@ -2553,7 +2556,7 @@ AVE.Modules['FixContainerWidth'] = {
     Start: function () {
         $("div#container").css("max-width", this.Options.Width.Value + "%");
         if (AVE.Utils.currentPageType == "thread") {
-            $("div.md").css("max-width", "100%");
+            $("div.md").css("max-width", "");
 
             if (this.Options.Justify.Value){
                 $("div.md").css("text-align", "justify");
@@ -2627,8 +2630,21 @@ AVE.Modules['FixExpandImage'] = {
             this.Start();
         }
     },
+    
+    ImgMedia: "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']",
 
     Start: function () {
+        /*
+        !! THIS CSS FIX IS BORROWED FROM /V/SCRIBBLE 1.5 !!
+        */
+        if ($("style").length == 0) { $("style").appendTo("head"); }
+        $("style").append('.link-expando {overflow: visible;position: relative;z-index: 1;}.usertext{overflow: visible;}');
+
+        if (AVE.Utils.currentPageType !== "thread") {
+            $("div.entry:has(" + this.ImgMedia + ")")
+            .css("overflow", "visible");
+        }
+
         this.Listeners();
     },
 
@@ -2638,66 +2654,29 @@ AVE.Modules['FixExpandImage'] = {
         }
     },
 
-    obsInSub: null,
-    obsInThread: null,
+    obsImgExp: null,
 
     Listeners: function () {
-        var ImgMedia = "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']";
+        //Here we disabled the selection of the image.
 
-        if (this.obsInSub) {
-            this.obsInSub.disconnect();
-            //Instead of disconnecting and recreating, maybe I could add the new targets to the observer.
-        }
-        this.obsInSub = new OnNodeChange($("a" + ImgMedia), function (e) {
-            var container = $(e.target).parent().find("div.link-expando:first");
-            var img = container.find("img:first");
-
-            if (img.length > 0) {
-                var parentWidth = $(this).parent().parent().width();
-
-                img.css("position", "absolute")
-                   .css("margin-top", "20px");
-
-                img.OnAttrChange(function () {
-                    window.getSelection().removeAllRanges();
-                    container.width(parentWidth);//img.width());
-                    container.height(img.height() + 20);
-                });
-
-                container.animate({
-                    width: parentWidth + "px",
-                    height: img.height() + 20 + "px",
-                }, 1500);
-            }
-        });
-        this.obsInSub.observe();
-
-        if (this.obsInThread) {
-            this.obsInThread.disconnect();
+        if (this.obsImgExp) {
+            this.obsImgExp.disconnect();
         }
 
-        this.obsInThread = new OnNodeChange($("div.expando:hidden"), function (e) {
-            //if ($(this).is(":not(div.expando)")) { print(":not(div.expando)"); return true; }
+        this.obsImgExp = new OnNodeChange($("div.expando:hidden, a" + this.ImgMedia + ":has(span.link-expando-type)"), function (e) {
+            var img = $(e.target).find("img:first"); //In sub
+            if (img.length == 0) { img = $(this).next("div.link-expando").find("img"); } //In thread
 
-            var img = $(e.target).find("img:first");
             if (img.length > 0) {
-                var exp = $(this).hasClass("link-expando") ? $(this) : $(this).find("div.expando-link");
-                img.css("position", "absolute")
-                   .css("margin-top", "20px");
-
+                var container = $(this).hasClass("link-expando") ? $(this) : //!!Weird!!
+                                                                   ($(this).find("div.expando-link") || //In Sub
+                                                                    $(this).find("div.link-expando"));  //In Thread
                 img.OnAttrChange(function () {
                     window.getSelection().removeAllRanges();
-                    exp.width(150);//img.width());
-                    exp.height(img.height() + 20);
                 });
-
-                exp.animate({
-                    width: 150 + "px", //just enough width to display the media info line
-                    height: img.height() + 20 + "px",
-                }, 150);
             }
         });
-        this.obsInThread.observe()
+        this.obsImgExp.observe();
     },
 };
 /// END Fix expanding images ///

@@ -67,7 +67,7 @@ AVE.Modules['FixContainerWidth'] = {
     Start: function () {
         $("div#container").css("max-width", this.Options.Width.Value + "%");
         if (AVE.Utils.currentPageType == "thread") {
-            $("div.md").css("max-width", "100%");
+            $("div.md").css("max-width", "");
 
             if (this.Options.Justify.Value){
                 $("div.md").css("text-align", "justify");
