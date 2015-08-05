@@ -69,8 +69,7 @@ AVE.Modules['FixExpandImage'] = {
     obsImgExp: null,
 
     Listeners: function () {
-        //Here we disabled the selection of the image.
-
+        //Here we disable the selection of the image.
         if (this.obsImgExp) {
             this.obsImgExp.disconnect();
         }
