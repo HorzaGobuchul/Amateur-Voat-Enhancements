@@ -52,9 +52,15 @@ AVE.Modules['FixExpandImage'] = {
         if ($("style[for='AVE']").length == 0) { $("head").append('<style for="AVE"></style>'); }
         $("style[for='AVE']").append('\n.link-expando {overflow:visible;position:relative;z-index:1;}\
                                         .usertext{overflow: visible !important;}\
-                                        .entry{margin-left:60px;margin-top:10px;overflow: visible;}\
                                         .md{overflow: visible;}\
                                         .comment{overflow: visible;}');
+
+
+        if (AVE.Utils.currentPageType !== "thread") {
+            $("style[for='AVE']").append('\n.entry{margin-left:60px;margin-top:10px;overflow: visible;}');
+        } else {
+            $("style[for='AVE']").append('\n.entry{margin-left:10px;overflow:visible;}');
+        }
 
         this.Listeners();
     },
