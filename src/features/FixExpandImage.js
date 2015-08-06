@@ -49,13 +49,12 @@ AVE.Modules['FixExpandImage'] = {
         /*
         !! THIS CSS FIX IS BORROWED FROM /V/SCRIBBLE 1.5 !!
         */
-        if ($("style").length == 0) { $("style").appendTo("head"); }
-        $("style").append('.link-expando {overflow: visible;position: relative;z-index: 1;}.usertext{overflow: visible;}');
-
-        if (AVE.Utils.currentPageType !== "thread") {
-            $("div.entry:has(" + this.ImgMedia + ")")
-            .css("overflow", "visible");
-        }
+        if ($("style[for='AVE']").length == 0) { $("head").append('<style for="AVE"></style>'); }
+        $("style[for='AVE']").append('\n.link-expando {overflow:visible;position:relative;z-index:1;}\
+                                        .usertext{overflow: visible !important;}\
+                                        .entry{margin-left:60px;margin-top:10px;overflow: visible;}\
+                                        .md{overflow: visible;}\
+                                        .comment{overflow: visible;}');
 
         this.Listeners();
     },

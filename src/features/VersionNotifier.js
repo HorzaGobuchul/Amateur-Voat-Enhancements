@@ -34,6 +34,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.21.6.9:",
+        "   FixExpandImage:",
+        "       Small appearance fix",
         "V2.21.6.8:",
         "   FixExpandImage: fixed issue due to collision with some custom styles",
         "       Implemented solution from /V/SCRIBBLE by /U/HEWITT",
