@@ -34,6 +34,14 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.21.8.11:",
+        "   Added Utils function \"AddStyle\"",
+        "   UserInfoFixedPos:",
+        "       Changed and centered collapse/expand icons",
+        "   FixExpandImage:",
+        "       Still fixing new CSS solution",
+        "   ShortKeys:",
+        "       Collapse chain-comment (Enter key by default)",
         "V2.21.6.9:",
         "   FixExpandImage:",
         "       Small appearance fix",

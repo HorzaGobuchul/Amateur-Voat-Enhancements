@@ -94,6 +94,11 @@ AVE.Utils = {
         var o = Math.round(((parseInt(r) * 299) + (parseInt(g) * 587) + (parseInt(b) * 114)) / 1000);
         return (o > 125) ? 'black' : 'white';
     },
+
+    AddStyle: function (StyleStr) {
+        if ($("style[for='AVE']").length == 0) { $("head").append('<style for="AVE"></style>'); }
+        $("style[for='AVE']").append("\n" + StyleStr);
+    },
 };
 
 (function ($) {

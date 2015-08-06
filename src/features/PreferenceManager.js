@@ -204,7 +204,7 @@ AVE.Modules['PreferenceManager'] = {
     Modules: [],//List of modules
 
     AppendToPage: function () {
-        $("<style></style>").appendTo("head").html(this.MngWinStyle);
+        AVE.Utils.AddStyle(this.MngWinStyle);
 
         if ($("span.user:contains('Manage')").length > 0) {
             var LinkHTML = '<span class="user"><a style="font-weight:bold;" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span> <span class="separator">|</span> ';

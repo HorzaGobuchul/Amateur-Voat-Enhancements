@@ -50,17 +50,13 @@ AVE.Modules['FixExpandImage'] = {
         !! THIS CSS FIX IS BORROWED FROM /V/SCRIBBLE 1.5 !!
         */
         if ($("style[for='AVE']").length == 0) { $("head").append('<style for="AVE"></style>'); }
-        $("style[for='AVE']").append('\n.link-expando {overflow:visible;position:relative;z-index:1;}\
-                                        .usertext{overflow: visible !important;}\
-                                        .md{overflow: visible;}\
-                                        .comment{overflow: visible;}');
-
-
-        if (AVE.Utils.currentPageType !== "thread") {
-            $("style[for='AVE']").append('\n.entry{margin-left:60px;margin-top:10px;overflow: visible;}');
-        } else {
-            $("style[for='AVE']").append('\n.entry{margin-left:10px;overflow:visible;}');
-        }
+        AVE.Utils.AddStyle('.link-expando {overflow:visible;position:relative;z-index:1;}\
+                            .usertext{overflow: visible !important;}\
+                            .md{overflow: visible;}\
+                            .comment{overflow: visible;}\
+                            .entry{overflow:visible;}\
+           div.submission > .entry{margin-left:60px;margin-top:10px;}\
+              div.comment > .entry{margin-left:30px;}');
 
         this.Listeners();
     },
