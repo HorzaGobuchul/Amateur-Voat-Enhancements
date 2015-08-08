@@ -69,8 +69,9 @@ AVE.Modules['FixContainerWidth'] = {
         if (AVE.Utils.currentPageType == "thread") {
             $("div.md").css("max-width", "100%");
 
-            if (this.Options.Justify.Value){
+            if (this.Options.Justify.Value) {
                 $("div.md").css("text-align", "justify");
+                $("div.md").css("padding-right", "10px");
             }
         }
     },

@@ -50,13 +50,16 @@ AVE.Modules['FixExpandImage'] = {
         !! THIS CSS FIX IS BORROWED FROM /V/SCRIBBLE 1.5 !!
         */
         if ($("style[for='AVE']").length == 0) { $("head").append('<style for="AVE"></style>'); }
-        AVE.Utils.AddStyle('.link-expando {overflow:visible;position:relative;z-index:1;}\
-                            .usertext{overflow: visible !important;}\
-                            .md{overflow: visible;}\
-                            .comment{overflow: visible;}\
-                            .entry{overflow:visible;}\
-           div.submission > .entry{margin-left:60px;margin-top:10px;}\
-              div.comment > .entry{margin-left:30px;}');
+        AVE.Utils.AddStyle('.link-expando {overflow:visible;position:relative;z-index:1;margin-top: 10px;}\
+                            .usertext {overflow: visible !important;}\
+                            .md {overflow: visible;}\
+                            .comment {overflow: visible;}\
+                            .entry {overflow:visible;}\
+           div.submission > .entry {margin-left:60px;}\
+              div.comment > .entry {margin-left:30px;}\
+                   .entry > div.collapsed {margin-left:0px;}\
+          form#form-xxxxx > div.usertext-body > div.md {overflow:auto;}\
+                     form > div.row {overflow:hidden;}');
 
         this.Listeners();
     },

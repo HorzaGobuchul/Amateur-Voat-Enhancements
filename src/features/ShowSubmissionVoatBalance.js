@@ -55,6 +55,7 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
         if (this.Enabled) {
             this.Start();
         }
+        //If update all will processed another time. This shouldn't happen
     },
 
     Start: function () {
@@ -71,7 +72,7 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
         var _this = this;
         $("div[aria-label='upvote'],div[aria-label='downvote']").off();//We don't want duplicates of this listener created because of "Update"
         $("div[aria-label='upvote'],div[aria-label='downvote']").on("click", function () {
-            _this.ShowVoteBalance($(this).parent(),true);
+            _this.ShowVoteBalance($(this).parent(), true);
         });
     },
 
@@ -79,8 +80,32 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
         //If the user hasn't voted on this post we have nothing to do here
         if (!click && target.find("div.score.unvoted").is(":visible")) { return true; } //continue
 
-        target.find("div.score.dislikes").hide();
-        target.find("div.score.likes").hide();
-        target.find("div.score.unvoted").show().text(target.find("div.score.likes").text() - target.find("div.score.dislikes").text());
+        var vote, status;
+
+        vote = target.prop("class").split(" ")[1];  //Get vote status
+        status = target.find("div.score." + vote);  //Get element currently displaying the vote balance
+        vote = ["unvoted", "likes"].indexOf(vote);  //Get vote value from status(-1, 0, 1)
+
+        //Check if down or up count is equal to the unvoted one.
+        //  In which case this means the user already voted on this submission
+        //      Correct new vote count accordingly
+
+        //If the user did not just click to vote, this means it was done in the past and the vote is counted in the up/downvote counts
+        if (!click) { vote = 0; }
+        print(vote);
+
+        //We get the current vote values from the tagline or Score tab in a thread
+        var up, down;
+        if (AVE.Utils.currentPageType !== "thread") {
+            up = parseInt(target.parent().find("span.commentvotesratio > span.post_upvotes").text()) || 0;
+            down = parseInt(target.parent().find("span.commentvotesratio > span.post_downvotes").text()) || 0;
+        } else {
+            var val = $("div.submission-score-box:nth-child(6)").find("b");
+            up = parseInt(val.eq(1).text()) || 0;
+            down = -1 * parseInt(val.eq(2).text()) || 0;
+        }
+
+        print(vote + "  " + up + "  " + down);
+        status.text(vote + up + down);
     },
 };

@@ -73,7 +73,7 @@ AVE.Modules['UserInfoFixedPos'] = {
             $('div#header-account').css('position', '');
         }
 
-        if (this.Options.ToggleBlock.Value) {
+        if (this.Options.ToggleBlock.Value && $('#header-account:has(div.logged-in)').length > 0) {
             //Add arrow icon element
             $('#header-account').append('<div title="Hide user block" class="expanded" id="AVE_ToggleUserBlock"></div>')
 
