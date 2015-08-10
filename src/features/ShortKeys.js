@@ -51,6 +51,10 @@ AVE.Modules['ShortKeys'] = {
             Type: 'char',
             Value: 'x',
         },
+        ToggleCommentChain: {
+            Type: 'char',
+            Value: '',
+        },
     },
 
     OriginalOptions: "",
@@ -102,6 +106,7 @@ AVE.Modules['ShortKeys'] = {
         var OpenL = this.Options.OpenLinkKey.Value;
         var OpenLC = this.Options.OpenLCKey.Value;
         var Expand = this.Options.ExpandKey.Value;
+        var TCC = this.Options.ToggleCommentChain.Value;
 
         $(document).keydown(function (event) {
             //Exit if there is no post currently selected
@@ -118,6 +123,8 @@ AVE.Modules['ShortKeys'] = {
             } else {
                 var key = event.key.toUpperCase();
             }
+
+            if (event.which === 13) { key = ""; } //Enter/Return key
 
             if (key == up.toUpperCase()) { // upvote
                 sel.parent().find(".midcol").find("div[aria-label='upvote']").first().click();
@@ -225,8 +232,35 @@ AVE.Modules['ShortKeys'] = {
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[1] });
                 }
             } else if (key == Expand.toUpperCase()) { // Expand media/self-text
-                if (!sel.parent().hasClass("submission")) { return; }
-                sel.find("div.expando-button").click();
+                if (sel.parent().hasClass("submission")) {
+                    //In submission
+                    sel.find("div.expando-button").click();
+                } else {
+                    //In comment
+                    var expand = true;
+                    var media = sel.find("div.md").find("a[title]");
+
+                    media.each(function () {
+                        //Expand is false if at least 
+                        if ($(this).next(".link-expando:visible").length > 0)
+                        { expand = false; return;}
+                    });
+
+                    media.each(function () {
+                        if (expand !== $(this).next(".link-expando:visible").length > 0)
+                        { this.click(); }
+                    });
+                }
+            } else if (key == TCC.toUpperCase()) { // Toggle comment chain or load more replies
+                if (sel.parent().hasClass("submission")) { return; }
+
+                if (sel.find("a.inline-loadcomments-btn:first").length > 0) {
+                    //Load more comment if possible
+                    sel.find("a.inline-loadcomments-btn:first").click();
+                } else if (sel.find('a.expand:visible:first').length > 0) {
+                    //Hide selected comment otherwise
+                    sel.find('a.expand:visible:first').click();
+                }
             }
         });
     },
@@ -255,6 +289,7 @@ AVE.Modules['ShortKeys'] = {
         html: function () {
             var _this = AVE.Modules['ShortKeys'];
             var htmlStr = "";
+            htmlStr += '<h2>Leave field empty for Enter/Return key</h2>';
             //Up and Down vote
             htmlStr += '<table id="AVE_ShortcutKeys" style="text-align: right;">';
             htmlStr += '<tr>';
@@ -272,6 +307,12 @@ AVE.Modules['ShortKeys'] = {
             //Toggle expand media
             htmlStr += '<td>&nbsp; Toggle expand: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="ExpandKey" value="' + _this.Options.ExpandKey.Value + '"></input>';
             htmlStr += '</tr>';
+            //Toggle expand comment
+            htmlStr += '<tr>';
+            htmlStr += '<td>&nbsp; <span title="Toggle comment chain or load more replies">Toggle comment</span>: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="ToggleCommentChain" value="' + _this.Options.ToggleCommentChain.Value + '"></input>';
+            htmlStr += '</tr>';
+
+
             htmlStr += '</table>';
             htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br />';
             return htmlStr;

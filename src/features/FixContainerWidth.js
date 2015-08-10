@@ -65,14 +65,11 @@ AVE.Modules['FixContainerWidth'] = {
     },
 
     Start: function () {
-        $("div#container").css("max-width", this.Options.Width.Value + "%");
-        if (AVE.Utils.currentPageType == "thread") {
-            $("div.md").css("max-width", "100%");
+        AVE.Utils.AddStyle('div#container{max-width:' + this.Options.Width.Value + '%}\
+                            div.md{max-width:100% !important;}');
 
-            if (this.Options.Justify.Value) {
-                $("div.md").css("text-align", "justify");
-                $("div.md").css("padding-right", "10px");
-            }
+        if (this.Options.Justify.Value) {
+            AVE.Utils.AddStyle('div.md{text-align:justify;padding-right:10px;}');
         }
     },
 

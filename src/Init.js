@@ -9,6 +9,10 @@ AVE.Init = {
     LoadModules: function () {
         AVE.Utils.Set();
         print("AVE: Current page > " + AVE.Utils.currentPageType);
+        
+        //DNS protection page
+        if ($("div.content.error-page").length > 0) { return;}
+
         if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) == -1) {
             $(document).ready(function () {
                 $.each(AVE.Modules, function () {

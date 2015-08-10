@@ -1,7 +1,7 @@
 AVE.Modules['ShowSubmissionVoatBalance'] = {
     ID: 'ShowSubmissionVoatBalance',
     Name: 'Show submission\'s actual vote balance',
-    Desc: 'This module displays the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote.',
+    Desc: 'This module displays the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote.<br /><strong>Warning: the vote count will not be accurate if you change a vote already registered by Voat.</strong>',
     Category: 'Subverse',
 
     Index: 100,
@@ -86,13 +86,8 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
         status = target.find("div.score." + vote);  //Get element currently displaying the vote balance
         vote = ["unvoted", "likes"].indexOf(vote);  //Get vote value from status(-1, 0, 1)
 
-        //Check if down or up count is equal to the unvoted one.
-        //  In which case this means the user already voted on this submission
-        //      Correct new vote count accordingly
-
         //If the user did not just click to vote, this means it was done in the past and the vote is counted in the up/downvote counts
         if (!click) { vote = 0; }
-        print(vote);
 
         //We get the current vote values from the tagline or Score tab in a thread
         var up, down;
@@ -105,7 +100,7 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
             down = -1 * parseInt(val.eq(2).text()) || 0;
         }
 
-        print(vote + "  " + up + "  " + down);
+        //print("Vote: " + vote + ", up:  " + up + ", down: " + down + " => " + (vote + up + down));
         status.text(vote + up + down);
     },
 };

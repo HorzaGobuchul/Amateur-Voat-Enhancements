@@ -57,6 +57,7 @@ AVE.Modules['FixExpandImage'] = {
                             .entry {overflow:visible;}\
            div.submission > .entry {margin-left:60px;}\
               div.comment > .entry {margin-left:30px;}\
+    div.content-no-margin > .comment > .entry{margin-left:0px;}/*Comments outside of threads (like /username/comments*/\
                    .entry > div.collapsed {margin-left:0px;}\
           form#form-xxxxx > div.usertext-body > div.md {overflow:auto;}\
                      form > div.row {overflow:hidden;}');
@@ -73,22 +74,13 @@ AVE.Modules['FixExpandImage'] = {
     obsImgExp: null,
 
     Listeners: function () {
-        //Here we disable the selection of the image.
-        if (this.obsImgExp) {
-            this.obsImgExp.disconnect();
-        }
-
+        if (this.obsImgExp) { this.obsImgExp.disconnect(); }
         this.obsImgExp = new OnNodeChange($("div.expando:hidden, a" + this.ImgMedia + ":has(span.link-expando-type)"), function (e) {
             var img = $(e.target).find("img:first"); //In sub
             if (img.length == 0) { img = $(this).next("div.link-expando").find("img"); } //In thread
 
             if (img.length > 0) {
-                var container = $(this).hasClass("link-expando") ? $(this) : //!!Weird!!
-                                                                   ($(this).find("div.expando-link") || //In Sub
-                                                                    $(this).find("div.link-expando"));  //In Thread
-                img.OnAttrChange(function () {
-                    window.getSelection().removeAllRanges();
-                });
+                img.OnAttrChange(function () { window.getSelection().removeAllRanges(); });
             }
         });
         this.obsImgExp.observe();

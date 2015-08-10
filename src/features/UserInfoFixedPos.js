@@ -62,6 +62,8 @@ AVE.Modules['UserInfoFixedPos'] = {
         });
         this.SetAccountHeaderPosAsFixed(headerAccountPos)
 
+        $("div#header-container").css("z-index", "1000");
+
         if (this.Options.DivideBlock.Value && $("div#header-account > div.logged-in").length > 0) {
             //Align header-account's content
             $("div#header-account > div.logged-in").css("text-align", "center");

@@ -85,9 +85,10 @@ AVE.Modules['SelectPost'] = {
 
     Listeners: function () {
         var _this = AVE.Modules['SelectPost'];
-        $(".entry").off("click");
-        $(".entry").on("click", function () {
-            _this.ToggleSelectedState($(this));
+        $("div[class*='id-']:has(div.entry)").off("click");
+        $("div[class*='id-']:has(div.entry)").on("click", function (event) {
+            _this.ToggleSelectedState($(this).find(".entry"));
+            event.stopPropagation();
         });
     },
     
