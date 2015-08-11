@@ -43,7 +43,7 @@ AVE.Modules['FixExpandImage'] = {
         }
     },
     
-    ImgMedia: "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']",
+    ImgMedia: "a[title='JPG'],a[title='PNG'],a[title='GIF']",//These are the only media that are resizable
 
     Start: function () {
         /*
@@ -74,15 +74,58 @@ AVE.Modules['FixExpandImage'] = {
     obsImgExp: null,
 
     Listeners: function () {
-        if (this.obsImgExp) { this.obsImgExp.disconnect(); }
-        this.obsImgExp = new OnNodeChange($("div.expando:hidden, a" + this.ImgMedia + ":has(span.link-expando-type)"), function (e) {
-            var img = $(e.target).find("img:first"); //In sub
-            if (img.length == 0) { img = $(this).next("div.link-expando").find("img"); } //In thread
+        var time = new Date().getTime(); var ntime = 0;
 
-            if (img.length > 0) {
-                img.OnAttrChange(function () { window.getSelection().removeAllRanges(); });
-            }
-        });
+        //var a = $(this.ImgMedia);
+        //print("thread " + a.length);
+        //ntime = new Date().getTime();
+        //print("testing for thread (" + (ntime - time) + "ms)");
+        //time = ntime;
+
+        //var b = $("div.expando");
+        //print("submission: " + b.length);
+        //ntime = new Date().getTime();
+        //print("testing for submissions (" + (ntime - time) + "ms)");
+        //time = ntime;
+
+        //var b = $("div.expando, " + this.ImgMedia);
+        //print("Combined: " + b.length);
+        //ntime = new Date().getTime();
+        //print("testing Combined (" + (ntime - time) + "ms)");
+        //time = ntime;
+        //return;
+
+        var ntime = 0; var time = new Date().getTime();
+        if (this.obsImgExp) {
+            //this.obsImgExp.disconnect();
+            //ntime = new Date().getTime();
+            //print("Disconnecting (" + (ntime - time) + "ms)");
+            //time = ntime;
+
+            this.obsImgExp.targets = $("div.expando, " + this.ImgMedia);
+            //print(this.obsImgExp.targets.length);
+            //ntime = new Date().getTime();
+            //print("Updating targets (" + (ntime - time) + "ms)");
+            //time = ntime;
+        }
+        else {
+            this.obsImgExp = new OnNodeChange($("div.expando, " + this.ImgMedia), function (e) {
+                var img = $(e.target).find("img:first"); //In sub
+                if (img.length == 0) { img = $(this).next("div.link-expando").find("img"); } //In thread
+
+                if (img.length > 0) {
+                    img.OnAttrChange(function () { window.getSelection().removeAllRanges(); });
+                }
+            });
+
+            //ntime = new Date().getTime();
+            //print("Setting (" + (ntime - time) + "ms)");
+            //time = ntime;
+        }
+
         this.obsImgExp.observe();
+        //ntime = new Date().getTime();
+        //print("Observing (" + (ntime - time) + "ms)");
+        //time = ntime;
     },
 };

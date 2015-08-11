@@ -174,6 +174,7 @@ var OnNodeChange = (function () {
             subtree: true,
             childList: true,
         };
+        this.observed = [];
         this.targets = t;
 
         this.observer = new MutationObserver(function (mutations) {
@@ -187,7 +188,10 @@ var OnNodeChange = (function () {
         this.observe = function () {
             var _this = this;
             return this.targets.each(function () {
-                _this.observer.observe(this, _this.options);
+                if ($.inArray(this, _this.observed) == -1) {
+                    _this.observer.observe(this, _this.options);
+                    _this.observed.push(this);
+                }
             });
         };
 

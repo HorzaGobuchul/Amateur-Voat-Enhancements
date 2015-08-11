@@ -174,7 +174,7 @@ AVE.Modules['PreferenceManager'] = {
                     <div class="MngWinHeader">\
                         <span class="MngrWinTitle"><a target="_blank" href="https://voat.co/v/AVE">AVE</a></span> <span style="cursor:pointer;font-size:10px;" id="AVE_Version">Version @{version}</span>\
                         <div class="TopButtons">\
-                            <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default" id="SaveData">Save Changes</a>\
+                            <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-unsub" id="SaveData">Save Changes</a>\
                             <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default" id="CloseWinMngr">x</a>\
                         </div>\
                     </div>\
@@ -291,7 +291,6 @@ AVE.Modules['PreferenceManager'] = {
 
         //Save Data
         $("div.MngrWin > div.MngWinHeader > div.TopButtons > a#SaveData").on("click", function () {
-
             var input;
             $.each(_this.Categories, function () {
                 moduleForms = $("form[cat='" + this + "'] > div.ModuleBlock");
@@ -319,6 +318,7 @@ AVE.Modules['PreferenceManager'] = {
             });
 
             $("div.TopButtons > a#SaveData").removeClass("btn-sub");
+            $("div.TopButtons > a#SaveData").addClass("btn-unsub");
             $("#CloseWinMngr").click();
         });
 
@@ -333,6 +333,7 @@ AVE.Modules['PreferenceManager'] = {
             if ($("div.TopButtons > a#SaveData").hasClass("btn-sub")) { return; }
             //$("section.ModulePref").find("input").off("change"); //Can't use off here because it removes custom event listeners
             $("div.TopButtons > a#SaveData").addClass("btn-sub");
+            $("div.TopButtons > a#SaveData").removeClass("btn-unsub");
             //if save btn has btn-sub class prompt confirmation
         });
     },

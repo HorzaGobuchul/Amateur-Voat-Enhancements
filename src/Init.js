@@ -25,9 +25,14 @@ AVE.Init = {
 
     UpdateModules: function () { //Get this in the reload module?
         $.each(AVE.Modules, function () {
+            //var ntime = 0; var time = new Date().getTime();
+            
             if (typeof this.Update === "function") {
                 this.Update();
-                //print("updating: " + this.Name);
+
+                //ntime = new Date().getTime();
+                //print("updated > " + this.Name + " (" + (ntime - time) + "ms)");
+                //time = ntime;
             }
         });
     },

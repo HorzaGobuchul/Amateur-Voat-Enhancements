@@ -106,7 +106,7 @@ AVE.Modules['AppendQuote'] = {
             var htmlStr = "";
             htmlStr += '<input style="display:inline;width:80%;padding:0px;letter-spacing:0.35px;" class="form-control" type="text" Module="'+ _this.ID +'" id="Formatting" value="' + _this.Options.Formatting.Value + '"></input>';
             htmlStr += ' <button id="AutoQuoteFormatShowPreview" class="btn-whoaverse-paging" type="button">Show Preview</button>'
-            htmlStr += '<div class="md" id="AutoQuoteFormatPreview" style="height:150px; background-color: #' +(AVE.Utils.CSSstyle == "dark" ? "292929": "D1D0FE") + '; position: fixed; width:430px;padding: 10px; border-radius: 6px; border: 3px solid black;display: none;overflow: auto;"></div>';
+            htmlStr += '<div class="md" id="AutoQuoteFormatPreview" style="height:150px; background-color: #' +(AVE.Utils.CSSstyle == "dark" ? "292929": "FFF") + '; position: fixed; width:430px;padding: 10px; border-radius: 6px; border: 2px solid black;display: none;overflow: auto;"></div>';
             htmlStr += "<br /> {@username}: username of the comment's author,";
             htmlStr += '<br /> {@permaLink}: permaLink to the comment,';
             htmlStr += "<br /> {@userpage}: link to the username's page,";

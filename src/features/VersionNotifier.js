@@ -59,7 +59,15 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.21.12.21:",
+        "V2.21.12.24:",
+        "   AppendQuote:",
+        "       Changed preview's background colour (light theme)",
+        "   FixExpandImage:",
+        "       Modified CSS selector that needed 500ms to process (down to ~3ms)",
+        "       OnNodeChange function has also been modified, but shows no significant improvement",
+        "V2.21.12.22:",
+        "   VersionNotifier:",
+        "       Can now be disable (won't show a notification when AVE is updated)",
         "   PreferenceManager:",
         "       When a setting is modified the save button changes colour",
         "       If changes have been recorded but not saved, you will be asked to confirm when exiting",

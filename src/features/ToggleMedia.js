@@ -70,7 +70,7 @@ AVE.Modules['ToggleMedia'] = {
 
     Start: function () {
         var AcceptedTypes = this.Options.MediaTypes.Value;
-        if (AcceptedTypes != "000" && $.inArray(AVE.Utils.currentPageType, ["subverses", "sets", "mysets", "user", "user-manage"]) == -1) {
+        if (AcceptedTypes != "000" && $.inArray(AVE.Utils.currentPageType, ["subverses", "sets", "mysets", "user", "user-manage", "about"]) == -1) {
 
             var strSel = (AcceptedTypes[0] == true ? this.ImgMedia + "," : "") +
                          (AcceptedTypes[1] == true ? this.VidMedia + "," : "") +
