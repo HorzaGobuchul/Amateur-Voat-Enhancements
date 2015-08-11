@@ -2,7 +2,7 @@
 AVE.Modules['ShortKeys'] = {
     ID: 'ShortKeys',
     Name: 'Shortcut keys',
-    Desc: 'Use your keyboard to navigate Voat.',
+    Desc: 'Use your keyboard to navigate Voat. Leave field empty for Enter/Return key',
     Category: 'Posts',
 
     Enabled: false,
@@ -256,10 +256,10 @@ AVE.Modules['ShortKeys'] = {
 
                 if (sel.find("a.inline-loadcomments-btn:first").length > 0) {
                     //Load more comment if possible
-                    sel.find("a.inline-loadcomments-btn:first").click();
+                    sel.find("a.inline-loadcomments-btn:first")[0].click();
                 } else if (sel.find('a.expand:visible:first').length > 0) {
                     //Hide selected comment otherwise
-                    sel.find('a.expand:visible:first').click();
+                    sel.find('a.expand:visible:first')[0].click();
                 }
             }
         });
@@ -289,7 +289,6 @@ AVE.Modules['ShortKeys'] = {
         html: function () {
             var _this = AVE.Modules['ShortKeys'];
             var htmlStr = "";
-            htmlStr += '<h2>Leave field empty for Enter/Return key</h2>';
             //Up and Down vote
             htmlStr += '<table id="AVE_ShortcutKeys" style="text-align: right;">';
             htmlStr += '<tr>';

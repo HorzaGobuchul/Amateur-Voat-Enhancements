@@ -61,9 +61,7 @@ AVE.Modules['UserInfoFixedPos'] = {
             _this.SetAccountHeaderPosAsFixed(headerAccountPos)
         });
         this.SetAccountHeaderPosAsFixed(headerAccountPos)
-
-        $("div#header-container").css("z-index", "1000");
-
+        
         if (this.Options.DivideBlock.Value && $("div#header-account > div.logged-in").length > 0) {
             //Align header-account's content
             $("div#header-account > div.logged-in").css("text-align", "center");
@@ -104,6 +102,9 @@ div#AVE_ToggleUserBlock.collapsed{\
 .logged-in{\
     margin-bottom:2px;\
 }\
+/* Next is a fix for the Scribble custom style */\
+div#container {z-index: 1;}\
+div#header-container {z-index: 2;}\
             ');
     },
 

@@ -61,6 +61,12 @@ AVE.Modules['Shortcuts'] = {
         }
     },
 
+    AddShortcutsButtonInSetPage: function () {
+        //Not implemented yet.
+        //The set pages are bound to change soon.
+        return false;
+    },
+
     AddShortcutsButtonInSetsPage: function () {
         var inShortcut = false;
         var tempSetName = "";
@@ -111,7 +117,7 @@ AVE.Modules['Shortcuts'] = {
             tempSubName = $(this).find(".h4").attr("href").substr(3);
             inShortcut = _this.isSubInShortcuts(tempSubName);
 
-            var btnHTML = '<br /><button style="margin-top:5px;" id="AVE_Subverses_Shortcut" subverse="'+ tempSubName + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">'+ (inShortcut ? "-" : "+") + ' shortcut </button>';
+            var btnHTML = '<br /><button style="margin-top:5px;" id="AVE_Subverses_Shortcut" subverse="' + tempSubName + '" type="button" class="btn-whoaverse-paging btn-xs btn-default ' + (inShortcut ? "" : "btn-sub") + '">' + (inShortcut ? "-" : "+") + ' shortcut </button>';
             $(btnHTML).appendTo($(this).find(".midcol").first());
         });
 
@@ -155,10 +161,11 @@ AVE.Modules['Shortcuts'] = {
         _this = AVE.Modules['Shortcuts'];
 
         if (!this.isPageInShortcuts()) {
-            var btnHTML = '<button id="AVE_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default btn-sub">+ shortcut</button>';
+            //style="display:inline" is a fix for the Scribble custom style that tries to hide the block button, but instead hides this shorcut button.
+            var btnHTML = '\xa0<button id="AVE_Shortcut" style="display:inline" type="button" class="btn-whoaverse-paging btn-xs btn-default btn-sub">+ shortcut</button>';
         }
         else {
-            var btnHTML = '<button id="AVE_Shortcut" type="button" class="btn-whoaverse-paging btn-xs btn-default">- shortcut</button>';
+            var btnHTML = '\xa0<button id="AVE_Shortcut" style="display:inline" type="button" class="btn-whoaverse-paging btn-xs btn-default">- shortcut</button>';
         }
 
         if ($(".btn-whoaverse-paging.btn-xs.btn-default.btn-unsub").length) {

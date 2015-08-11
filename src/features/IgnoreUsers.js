@@ -78,7 +78,7 @@ AVE.Modules['IgnoreUsers'] = {
                 if ($.inArray(name.toLowerCase(), _this.IgnoreList) === -1) { return true; }
 
                 if (_this.Options.HardIgnore.Value) {
-                    print('Removed comment by ' + name)
+                    print('AVE: Removed comment by ' + name)
                     $(this).parents("div.comment[class*='id-']:first").remove();
                 } else {
                     var CommentContainer = $(this).parent().parent().find("div[id*='commentContent-']");
@@ -92,11 +92,18 @@ AVE.Modules['IgnoreUsers'] = {
             });
         } else if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "search", "domain"]) !== -1) { // submissions
             $("p.tagline > a.author").each(function () {
+
+                if ($.inArray($(this).parents("div.submission:first").attr("data-fullname"), _this.Processed) != -1) {
+                    return true;
+                } else {
+                    _this.Processed.push($(this).parents("div.submission:first").attr("data-fullname"));
+                }
+
                 var name = $(this).attr("data-username");
                 if (!name || $.inArray(name.toLowerCase(), _this.IgnoreList) === -1) { return true; }
 
                 if (_this.Options.HardIgnore.Value) {
-                    print('Removed submissions titled: "'+$(this).parents("div.entry:first").find("p.title > a[class*='title']:first").text()+'" by '+name)
+                    print('AVE: Removed submissions titled: "'+$(this).parents("div.entry:first").find("p.title > a[class*='title']:first").text()+'" by '+name)
                     $(this).parents("div.submission").remove();
                 } else {
                     $(this).parents("div.entry:first").find("p.title > a[class*='title']:first").text('[Ignored User]').css("font-size", "13px");

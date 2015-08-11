@@ -68,12 +68,11 @@ AVE.Modules['FixContainerWidth'] = {
         AVE.Utils.AddStyle('div#container{max-width:' + this.Options.Width.Value + '%}\
                             div.md{max-width:100% !important;}');
 
-        if (this.Options.Justify.Value) {
-            AVE.Utils.AddStyle('div.md{text-align:justify;padding-right:10px;}');
-        }
+        if (this.Options.Justify.Value)
+        { AVE.Utils.AddStyle('div.md{text-align:justify;padding-right:10px;}'); }
     },
 
-    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+    AppendToPreferenceManager: {
         html: function () {
             var _this = AVE.Modules['FixContainerWidth'];
             var htmlStr = '<input style="width:50%;display:inline;" id="Width" value="' + _this.Options.Width.Value + '" type="range" min="' + _this.Options.Width.Range[0] + ' max="' + _this.Options.Width.Range[1] + '"/> <span id="FixContainerWidth_Value"></span>%';

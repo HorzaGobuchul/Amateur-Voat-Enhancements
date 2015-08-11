@@ -1,5 +1,3 @@
-/* global self */
-
 AVE.Modules['VersionNotifier'] = {
     ID: 'VersionNotifier',
     Name: 'Version notifier',
@@ -34,7 +32,7 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.21.10.20:",
+        "V2.21.10.21:",
         "   SelectPost",
         "       Fixed an old issue that would let user select a submission only by clicking a precise part of the post. Submissions can now be selected by clicking anywhere on it.",
         "   fixExpandImage fixed CSS bugs:",
@@ -44,6 +42,7 @@ AVE.Modules['VersionNotifier'] = {
         "       Expando element in submissions were positioned below the rest of the post without any margin",
         "       Sidebar text could overflow without scrollbars",
         "   ShowSubmissionVoatBalance:",
+        "       Force-deactivated until I find a better solution",
         "       The new vote now keeps the vote colour instead of showing the neutral gray (unvoted)",
         "   ShortKeys:",
         "       Use the Enter key (default value) to collapse/expand child-comment and also to load new replies",
@@ -53,7 +52,8 @@ AVE.Modules['VersionNotifier'] = {
         "   UserInfoFixedPos:",
         "       Toggle's >> and << have been replaced with SVG icons",
         "       Toggle icons are not displayed when not logged-in",
-        "   AVE will no longer start on the \"Are you trying to hurt us\" page.",
+        "   AVE will no longer start on the \"Are you trying to hurt us\" page",
+        "   Added support for /about/ pages and catch-all for account and sub related pages",
         "V2.21.7.11:",
         "   Added Utils function \"AddStyle\"",
         "   UserInfoFixedPos:",

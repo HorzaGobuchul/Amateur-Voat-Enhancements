@@ -26,13 +26,18 @@ AVE.Utils = {
             subverse: /voat.co\/v\/[a-z]*\/?(\?page=[0-9]*)?/i,
             comments: /voat.co\/user\/[\w\d]*\/comments/i,
             thread: /voat.co\/v\/[a-z]*\/comments\/\d*/i,
+            sub_rel: /voat.co\/v\/[a-z]*\/[a-z]{1,}/i,
             register: /voat.co\/account\/register/i,
             userShort: /voat.co\/u\/[\w\d]*\/?$/i,
             modlog: /voat.co\/v\/[a-z]*\/modlog/i,
+            about: /voat.co\/v\/[a-z]*\/about/i,
+            sub_new: /voat.co\/v\/[a-z]*\/new/i,
+            sub_top: /voat.co\/v\/[a-z]*\/top/i,
             user: /voat.co\/user\/[\w\d]*\/?$/i,
             manage: /voat.co\/account\/manage/i,
             saved: /voat.co\/user\/.*\/saved/i,
             login: /voat.co\/account\/Login/i,
+            account_rel: /voat.co\/account/i,
             subverses: /voat.co\/subverses/i,
             messaging: /voat.co\/messaging/i,
             search: /voat.co\/search\?q=/i,
@@ -48,8 +53,12 @@ AVE.Utils = {
         if (RegExpTypes.frontpage.test(url)) { return "frontpage"; }
         else if (RegExpTypes.api.test(url)) { return "api"; }
         else if (RegExpTypes.thread.test(url)) { return "thread"; }
+        else if (RegExpTypes.sub_new.test(url)) { return "subverse"; }
+        else if (RegExpTypes.sub_top.test(url)) { return "subverse"; }
         else if (RegExpTypes.submit.test(url)) { return "submit"; }
         else if (RegExpTypes.modlog.test(url)) { return "modlog"; }
+        else if (RegExpTypes.about.test(url)) { return "about"; }
+        else if (RegExpTypes.sub_rel.test(url)) { return "sub_related"; }
         else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
         else if (RegExpTypes.subverses.test(url)) { return "subverses"; }
         else if (RegExpTypes.domain.test(url)) { return "domain"; }
@@ -66,6 +75,7 @@ AVE.Utils = {
         else if (RegExpTypes.saved.test(url)) { return "saved"; }
         else if (RegExpTypes.register.test(url)) { return "account-register"; }
         else if (RegExpTypes.login.test(url)) { return "account-login"; }
+        else if (RegExpTypes.account_rel.test(url)) { return "account-related"; }
 
         return "none";
     },

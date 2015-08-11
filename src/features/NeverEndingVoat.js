@@ -129,7 +129,7 @@ AVE.Modules['NeverEndingVoat'] = {
         } else {
             nextPageURL = "https://" + window.location.hostname + window.location.pathname + "?page=" + (this.currentPage + 1);
         }
-        print("loading page: " + nextPageURL);
+        print("AVE: loading page: " + nextPageURL);
         $.ajax({
             url: nextPageURL,
             cache: false,
@@ -137,7 +137,7 @@ AVE.Modules['NeverEndingVoat'] = {
             var error = false;
             if ($(html).find("div.submission[class*='id-']").length == 0) { $("a#AVE_loadmorebutton").text(_this.Labels[2]); return false; } //catchall for error pages
             _this.currentPage++;
-            print($(html).find("div.submission[class*='id-']").length);
+            //print($(html).find("div.submission[class*='id-']").length);
 
             if (_this.Options.ExpandSubmissionBlock.Value && $("div.content[role='main']").css("margin-right") != "0") {
                 $("div.content[role='main']").css("margin", "0px 10px");
