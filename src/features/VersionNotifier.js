@@ -10,15 +10,42 @@ AVE.Modules['VersionNotifier'] = {
     Store: {},
 
     Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: true,
+        },
+    },
+
+    SavePref: function (POST) {
+        var _this = this;
+
+        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = this;
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
+
+        if (Opt != undefined) {
+            Opt = JSON.parse(Opt);
+            $.each(Opt, function (key, value) {
+                _this.Options[key].Value = value;
+            });
+        }
+        _this.Enabled = _this.Options.Enabled.Value;
     },
 
     Load: function () {
         this.Store = AVE.Storage;
+        this.OriginalOptions = JSON.stringify(this.Options);
+        this.SetOptionsFromPref();
+
         //this.Store.DeleteValue(this.Store.Prefix + this.ID + "_Version")
-        this.Enabled = this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") != AVE.Utils.MetaData.version;
 
         if (this.Enabled) {
-            this.Start();
+            if (this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") != AVE.Utils.MetaData.version) {
+                this.Start();
+            }
         }
     },
 
@@ -32,6 +59,10 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.21.12.21:",
+        "   PreferenceManager:",
+        "       When a setting is modified the save button changes colour",
+        "       If changes have been recorded but not saved, you will be asked to confirm when exiting",
         "V2.21.10.21:",
         "   SelectPost",
         "       Fixed an old issue that would let user select a submission only by clicking a precise part of the post. Submissions can now be selected by clicking anywhere on it.",

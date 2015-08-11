@@ -174,7 +174,7 @@ AVE.Modules['PreferenceManager'] = {
                     <div class="MngWinHeader">\
                         <span class="MngrWinTitle"><a target="_blank" href="https://voat.co/v/AVE">AVE</a></span> <span style="cursor:pointer;font-size:10px;" id="AVE_Version">Version @{version}</span>\
                         <div class="TopButtons">\
-                            <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub" id="SaveData">Save Changes</a>\
+                            <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default" id="SaveData">Save Changes</a>\
                             <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default" id="CloseWinMngr">x</a>\
                         </div>\
                     </div>\
@@ -277,14 +277,21 @@ AVE.Modules['PreferenceManager'] = {
             }
         });
 
+        //Exit the prefMngr
         $("#CloseWinMngr").on("click", function (event) {
+            if ($("div.TopButtons > a#SaveData").hasClass("btn-sub")) {
+                if (!confirm("You have unsaved changes.\n\nAre you sure you want to exit?"))
+                { return; }
+            }
             $(".MngrWin").hide();
             $(".overlay").hide();
 
             event.stopPropagation();
         });
+
         //Save Data
         $("div.MngrWin > div.MngWinHeader > div.TopButtons > a#SaveData").on("click", function () {
+
             var input;
             $.each(_this.Categories, function () {
                 moduleForms = $("form[cat='" + this + "'] > div.ModuleBlock");
@@ -310,6 +317,8 @@ AVE.Modules['PreferenceManager'] = {
                 });
 
             });
+
+            $("div.TopButtons > a#SaveData").removeClass("btn-sub");
             $("#CloseWinMngr").click();
         });
 
@@ -319,17 +328,13 @@ AVE.Modules['PreferenceManager'] = {
                 $("#CloseWinMngr").click();
             }
         });
-    },
 
-    AppendToPreferenceManager: {
-        html: function () {
-            //return 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="submit" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
-        },
-        callback: function () {
-            //$("input#ResetAllData").on("click", function (param) {
-            //    alert(typeof param);
-            //});
-        },
+        $("section.ModulePref").find("input").on("change", function () {
+            if ($("div.TopButtons > a#SaveData").hasClass("btn-sub")) { return; }
+            //$("section.ModulePref").find("input").off("change"); //Can't use off here because it removes custom event listeners
+            $("div.TopButtons > a#SaveData").addClass("btn-sub");
+            //if save btn has btn-sub class prompt confirmation
+        });
     },
 
     AddModule: function (module, cat, pos) {
