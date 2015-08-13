@@ -336,6 +336,16 @@ AVE.Modules['PreferenceManager'] = {
             $("div.TopButtons > a#SaveData").removeClass("btn-unsub");
             //if save btn has btn-sub class prompt confirmation
         });
+
+        $("section.ModulePref").find("input").on("input", function () {
+            if ($("div.TopButtons > a#SaveData").hasClass("btn-sub")) { return; }
+            //$("section.ModulePref").find("input").off("change"); //Can't use off here because it removes custom event listeners
+            $("div.TopButtons > a#SaveData").addClass("btn-sub");
+            $("div.TopButtons > a#SaveData").removeClass("btn-unsub");
+        });
+        $("section.ModulePref").find("a").on('click', function () {
+            $("section.ModulePref").find("input:first").change();
+        });
     },
 
     AddModule: function (module, cat, pos) {

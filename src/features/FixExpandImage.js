@@ -13,10 +13,15 @@ AVE.Modules['FixExpandImage'] = {
             Type: 'boolean',
             Value: true,
         },
+        OverSidebar: {
+            Type: 'boolean',
+            Desc: 'Let images expand over the sidebard.',
+            Value: true,
+        },
     },
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['FixExpandImage'];
+        var _this = this;
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
@@ -46,11 +51,12 @@ AVE.Modules['FixExpandImage'] = {
     ImgMedia: "a[title='JPG'],a[title='PNG'],a[title='GIF']",//These are the only media that are resizable
 
     Start: function () {
-        /*
-        !! THIS CSS FIX IS BORROWED FROM /V/SCRIBBLE 1.5 !!
-        */
-        if ($("style[for='AVE']").length == 0) { $("head").append('<style for="AVE"></style>'); }
-        AVE.Utils.AddStyle('.link-expando {overflow:visible;position:relative;z-index:1;margin-top: 10px;}\
+        if (this.Options.OverSidebar.Value) {
+            /*
+            !! THIS CSS FIX IS BORROWED FROM /V/SCRIBBLE 1.5 !!
+            */
+            if ($("style[for='AVE']").length == 0) { $("head").append('<style for="AVE"></style>'); }
+            AVE.Utils.AddStyle('.link-expando {overflow:visible;position:relative;z-index:1;margin-top: 10px;}\
                             .usertext {overflow: visible !important;}\
                             .md {overflow: visible;}\
                             .comment {overflow: visible;}\
@@ -61,6 +67,7 @@ AVE.Modules['FixExpandImage'] = {
                    .entry > div.collapsed {margin-left:0px;}\
           form#form-xxxxx > div.usertext-body > div.md {overflow:auto;}\
                      form > div.row {overflow:hidden;}');
+        }
 
         this.Listeners();
     },
@@ -74,39 +81,8 @@ AVE.Modules['FixExpandImage'] = {
     obsImgExp: null,
 
     Listeners: function () {
-        var time = new Date().getTime(); var ntime = 0;
-
-        //var a = $(this.ImgMedia);
-        //print("thread " + a.length);
-        //ntime = new Date().getTime();
-        //print("testing for thread (" + (ntime - time) + "ms)");
-        //time = ntime;
-
-        //var b = $("div.expando");
-        //print("submission: " + b.length);
-        //ntime = new Date().getTime();
-        //print("testing for submissions (" + (ntime - time) + "ms)");
-        //time = ntime;
-
-        //var b = $("div.expando, " + this.ImgMedia);
-        //print("Combined: " + b.length);
-        //ntime = new Date().getTime();
-        //print("testing Combined (" + (ntime - time) + "ms)");
-        //time = ntime;
-        //return;
-
-        var ntime = 0; var time = new Date().getTime();
         if (this.obsImgExp) {
-            //this.obsImgExp.disconnect();
-            //ntime = new Date().getTime();
-            //print("Disconnecting (" + (ntime - time) + "ms)");
-            //time = ntime;
-
             this.obsImgExp.targets = $("div.expando, " + this.ImgMedia);
-            //print(this.obsImgExp.targets.length);
-            //ntime = new Date().getTime();
-            //print("Updating targets (" + (ntime - time) + "ms)");
-            //time = ntime;
         }
         else {
             this.obsImgExp = new OnNodeChange($("div.expando, " + this.ImgMedia), function (e) {
@@ -117,15 +93,16 @@ AVE.Modules['FixExpandImage'] = {
                     img.OnAttrChange(function () { window.getSelection().removeAllRanges(); });
                 }
             });
-
-            //ntime = new Date().getTime();
-            //print("Setting (" + (ntime - time) + "ms)");
-            //time = ntime;
         }
-
         this.obsImgExp.observe();
-        //ntime = new Date().getTime();
-        //print("Observing (" + (ntime - time) + "ms)");
-        //time = ntime;
+    },
+
+    AppendToPreferenceManager: {
+        html: function () {
+            var _this = AVE.Modules['FixExpandImage'];
+            var htmlStr = "";
+            htmlStr += '<input ' + (_this.Options.OverSidebar.Value ? 'checked="true"' : "") + ' id="OverSidebar" type="checkbox"/><label for="OverSidebar"> '+_this.Options.OverSidebar.Desc+'</label>';
+            return htmlStr;
+        },
     },
 };

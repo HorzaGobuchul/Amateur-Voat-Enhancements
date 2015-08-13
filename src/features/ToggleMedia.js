@@ -86,7 +86,10 @@ AVE.Modules['ToggleMedia'] = {
                                         return true;
                                     } else if ($(this).parents("div.md").length > 0) {
                                         //Is this element in a comment?
-                                        return true;
+                                        if ($(this).find("span.link-expando-type").length > 0) {
+                                            //Does it contain an expando element?
+                                            return true;
+                                        }
                                     }
                                     return false;
                                 });

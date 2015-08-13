@@ -46,7 +46,7 @@ AVE.Modules['SubmissionFilter'] = {
             if (tV[1] == "kw") {
                 if (v.length == 0) { return true; } //If no kw were specified: continue
                 else {
-                    _this.Options.Filters.Value.push(new _this.Filter(id, v.toLowerCase().split(" "), []))
+                    _this.Options.Filters.Value.push(new _this.Filter(id, v.toLowerCase().split(","), []))
                 }
             } else if (tV[1] == "sub") {
                 var inArr = $.grep(_this.Options.Filters.Value, function (e) { return e.Id == id; });
@@ -55,7 +55,7 @@ AVE.Modules['SubmissionFilter'] = {
                     return true;
                 } else if (v.length != 0) {
                     var idx = $.inArray(inArr[0], _this.Options.Filters.Value);
-                    _this.Options.Filters.Value[idx].ApplyToSub = v.toLowerCase().split(" ");
+                    _this.Options.Filters.Value[idx].ApplyToSub = v.toLowerCase().split(",");
                 }
             }
         });
@@ -150,13 +150,13 @@ AVE.Modules['SubmissionFilter'] = {
                                 </span>\
                                 <a href="javascript:void(0)" title="Remove filter" style="font-size: 16px;font-weight: bold;" class="RemoveFilter" id="{@id}">-</a>';
 
-            htmlStr += '<span style="font-weight:bold;"> Example: "ex" matches "rex", "example" and "bexter".<br />Separate keywords and subverse names by a space.</span><br />';
+            htmlStr += '<span style="font-weight:bold;"> Example: "ex" matches "rex", "example" and "bexter".<br />Separate keywords and subverse names by a comma.</span><br />';
 
             $.each(_this.Options.Filters.Value, function () {
                 var filter = Pref_this.htmlNewFilter + "<br />"
                 filter = filter.replace(/{@id}/ig, this.Id);
-                filter = filter.replace("{@keywords}", this.Keywords.join(" "));
-                filter = filter.replace("{@subverses}", this.ApplyToSub.join(" "));
+                filter = filter.replace("{@keywords}", this.Keywords.join(","));
+                filter = filter.replace("{@subverses}", this.ApplyToSub.join(","));
 
                 htmlStr += filter;
             });

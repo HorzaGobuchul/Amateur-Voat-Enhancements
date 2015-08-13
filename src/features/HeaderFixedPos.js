@@ -48,13 +48,19 @@ AVE.Modules['HeaderFixedPos'] = {
             AVE.Utils.ListHeaderHeight = $('#sr-header-area').height();
         });
 
-        AVE.Utils.ListHeaderHeight = $('#sr-header-area').height();
+        AVE.Utils.ListHeaderHeight = 23;//$('#sr-header-area').height();
+
+        var bg, border;
+        bg = $("#sr-header-area").css("background-color");
+        border = $("#sr-header-area").css("borderBottomWidth") + " " +
+                 $("#sr-header-area").css("borderBottomStyle") + " " +
+                 $("#sr-header-area").css("borderBottomColor");
 
         $('.width-clip').css('position', 'fixed')
             .css("z-index", "1000")
-            .css('border-bottom', '1px solid ' + (AVE.Utils.CSSstyle == "dark" ? "#222" : "#DCDCDC"))
+            .css('border-bottom', border)//'1px solid ' + (AVE.Utils.CSSstyle == "dark" ? "#222" : "#DCDCDC"))
             .css("height", AVE.Utils.ListHeaderHeight + "px")
-            .css("background-color", AVE.Utils.CSSstyle == "dark" ? "#333" : "#FFF");
+            .css("background-color", bg)//AVE.Utils.CSSstyle == "dark" ? "#333" : "#FFF");
 
         $('.width-clip').find("br:last").remove();//Chrome
 

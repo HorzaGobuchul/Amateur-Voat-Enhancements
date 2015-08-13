@@ -59,6 +59,15 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.21.12.28:",
+        "   SelectPost:",
+        "       CSS selector optimized (x10 improvement)",
+        "   Filter modules:",
+        "       Keywords and sbverses should now be seperated by commas instead of spaces",
+        "   HeaderFixedPos & UserInfoFixedPos:",
+        "       The elements' colour and border's values now adapt to the current style (custom style if it exists)",
+        "   ToggleMedia:",
+        "       Filter elements who have a media title but don't contain an expando span",
         "V2.21.12.24:",
         "   AppendQuote:",
         "       Changed preview's background colour (light theme)",

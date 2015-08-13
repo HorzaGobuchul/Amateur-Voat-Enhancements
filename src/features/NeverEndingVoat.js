@@ -107,7 +107,7 @@ AVE.Modules['NeverEndingVoat'] = {
 
         if (_this.Options.AutoLoad.Value) {
             $(window).scroll(function () {
-                if ($(document).scrollTop() + $(window).height() >= $("body").height()) {
+                if ($(window).scrollTop() + $(window).height() >= $(document).height()) {
                     _this.LoadMore();
                 }
             });

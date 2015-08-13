@@ -35,7 +35,7 @@ AVE.Modules['SelectPost'] = {
     OriginalOptions: {}, //For reset function
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['SelectPost'];
+        var _this = this;
         var colours = ["ContentColour", "QuoteCodeColour", "VoteCountBoxColour", "ContextColour"];
         POST = POST[_this.ID];
 
@@ -47,13 +47,13 @@ AVE.Modules['SelectPost'] = {
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(_this.Options));
     },
 
-    ResetPref: function(){
-        var _this = AVE.Modules['SelectPost'];
+    ResetPref: function () {
+        var _this = this;
         _this.Options = JSON.parse(_this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
-        var _this = AVE.Modules['SelectPost'];
+        var _this = this;
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID);
 
         if (Opt != undefined) {
@@ -84,17 +84,18 @@ AVE.Modules['SelectPost'] = {
     },
 
     Listeners: function () {
-        var _this = AVE.Modules['SelectPost'];
-        $("div[class*='id-']:has(div.entry)").off("click");//div.submission[class*='id-'], div.comment[class*='id-'] //without :has()
-        $("div[class*='id-']:has(div.entry)").on("click", function (event) {
+        var _this = this;
+        $("div.submission[class*='id-'], div.comment[class*='id-']").off("click");
+        $("div.submission[class*='id-'], div.comment[class*='id-']").on("click", function (event) {
             _this.ToggleSelectedState($(this).find(".entry:first"));
             event.stopPropagation();
         });
     },
     
     ToggleSelectedState: function (obj) {
+        var _this = this;
         var style = (AVE.Utils.CSSstyle == "dark" ? 0 : 1);
-        _this = AVE.Modules['SelectPost'];
+
         if (AVE.Utils.SelectedPost != undefined) {
             AVE.Utils.SelectedPost.parents("div[class*=' id-']:first").css('background-color', '');
             AVE.Utils.SelectedPost.find("blockquote").css('background-color', '');

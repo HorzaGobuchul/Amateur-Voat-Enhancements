@@ -52,6 +52,8 @@ AVE.Modules['UserInfoFixedPos'] = {
         }
     },
 
+    bg: "",
+
     Start: function () {
         var _this = this;
         if (!AVE.Utils.ListHeaderHeight) { AVE.Utils.ListHeaderHeight = 0; }
@@ -80,6 +82,19 @@ AVE.Modules['UserInfoFixedPos'] = {
             this.Listeners();
         }
 
+        this.bg = $("div#header-container").css("background-color") + " " +
+                  $("div#header-container").css("background-image") + " " +
+                  $("div#header-container").css("background-repeat") + " " +
+                  $("div#header-container").css("background-attachment") + " " +
+                  $("div#header-container").css("background-position") + " " +
+                  $("div#header-container").css("background-clip") + " " +
+                  $("div#header-container").css("background-origin");
+        if ($("div#header-container").css("background-color") == "transparent" &&
+            $("div#header-container").css("background-image") == "none") {
+            //If there is no color nor image set, we set one by default
+            this.bg = AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
+        }
+
         AVE.Utils.AddStyle('\
 div#AVE_ToggleUserBlock{\
     background-position: center center;\
@@ -102,12 +117,19 @@ div#AVE_ToggleUserBlock.collapsed{\
 .logged-in{\
     margin-bottom:2px;\
 }\
-/* Next is a fix for the Scribble custom style */\
+div#header-account > div.logged-in{\
+    background: '+this.bg+'\
+}\
+');
+        if ($.trim($("style#custom_css").text()).length > 0) {
+            AVE.Utils.AddStyle('\
+/* Next is a fix for some custom styles */\
 div#container {z-index: 1;}\
 div#header-container {z-index: 2;}\
-            ');
+.modal-backdrop.in {display: none;}\
+.modal#linkFlairSelectModal{top: 140px;}');
+        }
     },
-
 
     SetAccountHeaderPosAsFixed: function (headerAccountPos) {
         if ($(window).scrollTop() + AVE.Utils.ListHeaderHeight > headerAccountPos) {
@@ -116,13 +138,13 @@ div#header-container {z-index: 2;}\
                                 .css('right', '0')
                                 .css("text-align", "center")
                                 .css("height", "0px");
-            $('div#header-account > div.logged-in').css("background", AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)");
+            //$('div#header-account > div.logged-in').css("background", this.bg);
         } else {
             $('div#header-account').css('position', '')
                                    .css('top', this.Options.DivideBlock.Value ? "1px" : "")
                                    .css("text-align", "")
                                    .css("height", "");
-            $('div#header-account > div.logged-in').css("background", "");
+            //$('div#header-account > div.logged-in').css("background", "");
         }
     },
 
