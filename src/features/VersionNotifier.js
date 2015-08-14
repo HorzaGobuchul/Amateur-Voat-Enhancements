@@ -59,9 +59,12 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.22.13.32",
+        "V2.22.3.4",
+        "   ShortKeys:",
+        "       Added keys to navigate to top and bottom of the page (key also selects first or last post in page)",
+        "V2.22.1.4",
         "   ToggleCustomStyle:",
-        "       Adds a checkbox to enable/disable custom style on a per subverse basis.",
+        "       Adds a checkbox to enable/disable custom style on a per subverse basis",
         "   ToggleMedia:",
         "       Fixed bug that let ToggleMedia expand links that add media triggers as title (e.g. JPG, Youtube, ...)",
         "   PreferenceManager:",

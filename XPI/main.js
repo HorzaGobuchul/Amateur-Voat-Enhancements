@@ -34,6 +34,7 @@ pageMod.PageMod({
     "./Core/Utils.js",
     "./Modules/PreferenceManager.js",
     "./Modules/VersionNotifier.js",
+    "./Modules/ToggleCustomStyle.js",
     "./Modules/HeaderFixedPos.js",
     "./Modules/UpdateAfterLoadingMore.js",
     "./Modules/UserInfoFixedPos.js",

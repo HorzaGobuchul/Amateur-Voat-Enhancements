@@ -1,4 +1,3 @@
-/* global self */
 AVE.Modules['ShortKeys'] = {
     ID: 'ShortKeys',
     Name: 'Shortcut keys',
@@ -57,11 +56,11 @@ AVE.Modules['ShortKeys'] = {
         },
         NavigateTop: {
             Type: 'char',
-            Value: '',
+            Value: 'f',
         },
         NavigateBottom: {
             Type: 'char',
-            Value: '',
+            Value: 'v',
         },
     },
 
@@ -115,10 +114,10 @@ AVE.Modules['ShortKeys'] = {
         var OpenLC = this.Options.OpenLCKey.Value;
         var Expand = this.Options.ExpandKey.Value;
         var TCC = this.Options.ToggleCommentChain.Value;
+        var NavTop = this.Options.NavigateTop.Value;
+        var NavBottom = this.Options.NavigateBottom.Value;
 
         $(document).keydown(function (event) {
-            //Exit if there is no post currently selected
-            if (!AVE.Utils.SelectedPost) { return; }
             //Exit if the focus is given to a text input
             if ($(":input").is(":focus")) { return; }
             //Exit if a key modifier is pressed (ctrl, shift)
@@ -133,6 +132,23 @@ AVE.Modules['ShortKeys'] = {
             }
 
             if (event.which === 13) { key = ""; } //Enter/Return key
+
+            if (key == NavTop.toUpperCase()) { // Navigate to the top of the page
+                //Scroll to top
+                $(window).scrollTop(0);
+                //Set first post as selected
+                var obj = $("div.submission[class*='id'], div.comment[class*='id']");
+                if (AVE.Modules['SelectPost']) { AVE.Modules['SelectPost'].ToggleSelectedState(obj.find(".entry:first")); }
+            } else if (key == NavBottom.toUpperCase()) { // Navigate to the bottom of the page
+                //Scroll to bottom
+                $(window).scrollTop($(document).height());
+                //Set last post as selected
+                var obj = $("div.submission[class*='id']:last,div.comment[class*='id']:last");
+                if (AVE.Modules['SelectPost']) { AVE.Modules['SelectPost'].ToggleSelectedState(obj.find(".entry:first")); }
+            }
+
+            //All following keys need a post selected to work
+            if (!AVE.Utils.SelectedPost) {  return; }
 
             if (key == up.toUpperCase()) { // upvote
                 sel.parent().find(".midcol").find("div[aria-label='upvote']").first().click();
@@ -317,6 +333,8 @@ AVE.Modules['ShortKeys'] = {
             //Toggle expand comment
             htmlStr += '<tr>';
             htmlStr += '<td>&nbsp; <span title="Toggle comment chain or load more replies">Toggle comment</span>: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="ToggleCommentChain" value="' + _this.Options.ToggleCommentChain.Value + '"></input>';
+            htmlStr += '<td>&nbsp; <span title="Navigate to the top of the page">Top of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="NavigateTop" value="' + _this.Options.NavigateTop.Value + '"></input>';
+            htmlStr += '<td>&nbsp; <span title="Navigate to the bottom of the page">Bottom of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="NavigateBottom" value="' + _this.Options.NavigateBottom.Value + '"></input></td>';
             htmlStr += '</tr>';
 
 

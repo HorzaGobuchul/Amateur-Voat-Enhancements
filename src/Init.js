@@ -17,7 +17,8 @@ AVE.Init = {
             $(document).ready(function () {
                 $.each(AVE.Modules, function () {
                     //print("Loading: "+this.Name + " - " + Object.keys(AVE.Modules).length+ " modules.");
-                    this.Load();
+                    try { this.Load(); }
+                    catch (e) { print("AVE: Error loading " + this.ID); }
                 });
             });
         }
