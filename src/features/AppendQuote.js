@@ -21,13 +21,13 @@ AVE.Modules['AppendQuote'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['AppendQuote'];
+        var _this = this;
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
     ResetPref: function () {
-        var _this = AVE.Modules['AppendQuote'];
+        var _this = this;
         _this.Options = JSON.parse(_this.OriginalOptions);
     },
 
@@ -76,7 +76,8 @@ AVE.Modules['AppendQuote'] = {
     },
 
     Listeners: function () {
-        var _this = AVE.Modules['AppendQuote'];
+        var _this = this;
+
         $("a#AVE_QuotePost").off("click");
         $("a#AVE_QuotePost").on("click", function () {
             var comment = AVE.Utils.ParseQuotedText($(this).parent().parent().parent().find('.md:first').html())

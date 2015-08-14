@@ -59,6 +59,17 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.22.13.32",
+        "   ToggleCustomStyle:",
+        "       Adds a checkbox to enable/disable custom style on a per subverse basis.",
+        "   ToggleMedia:",
+        "       Fixed bug that let ToggleMedia expand links that add media triggers as title (e.g. JPG, Youtube, ...)",
+        "   PreferenceManager:",
+        "       Added option to toggle off the change loss warning",
+        "   NeverEndingVoat",
+        "       The module no longer creates a new page separator when an error happened or when there is no more content to insert",
+        "       A normal occurrence was labeled as an error, now labeled as \"no more content\"",
+        "       Corrected a bug where the ToggleMedia module would detect 0 media in the page after NeverEndingVoat tried loading a new page and showed an error",
         "V2.21.12.28:",
         "   SelectPost:",
         "       CSS selector optimized (x10 improvement)",

@@ -23,7 +23,7 @@ AVE.Init = {
         }
     },
 
-    UpdateModules: function () { //Get this in the reload module?
+    UpdateModules: function () {
         $.each(AVE.Modules, function () {
             //var ntime = 0; var time = new Date().getTime();
             

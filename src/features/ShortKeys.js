@@ -55,6 +55,14 @@ AVE.Modules['ShortKeys'] = {
             Type: 'char',
             Value: '',
         },
+        NavigateTop: {
+            Type: 'char',
+            Value: '',
+        },
+        NavigateBottom: {
+            Type: 'char',
+            Value: '',
+        },
     },
 
     OriginalOptions: "",

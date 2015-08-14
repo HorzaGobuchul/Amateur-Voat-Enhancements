@@ -9,10 +9,15 @@ AVE.Modules['PreferenceManager'] = {
     Store: {},
 
     Options: {
+        LossChangeNotification: {
+            Type: 'boolean',
+            Desc: "Show a warning if you are trying to exit the Preference Manager after having modified one or more preferences.",
+            Value: true,
+        },
     },
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['PreferenceManager'];
+        var _this = this;
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
@@ -24,13 +29,18 @@ AVE.Modules['PreferenceManager'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                _this.Options[key].Value = value;
+                try{
+                    _this.Options[key].Value = value;
+                } catch (e){
+                    //print("AVE ["+_this.ID+"]: option \""+key+"\" couldn't be found and assigned to.")
+                }
             });
         }
     },
 
     Load: function () {
         this.Store = AVE.Storage;
+        this.SetOptionsFromPref();
         this.Start();
     },
 
@@ -227,7 +237,7 @@ AVE.Modules['PreferenceManager'] = {
     },
 
     BuildManager: function () {
-        var _this = AVE.Modules['PreferenceManager'];
+        var _this = this;
         var MngWinHTML = _this.MngWinHTML.replace('@{version}', AVE.Utils.MetaData.version);
         $(MngWinHTML).appendTo("body");
         $(".MngrWin").show();
@@ -279,7 +289,7 @@ AVE.Modules['PreferenceManager'] = {
 
         //Exit the prefMngr
         $("#CloseWinMngr").on("click", function (event) {
-            if ($("div.TopButtons > a#SaveData").hasClass("btn-sub")) {
+            if (_this.Options.LossChangeNotification.Value && $("div.TopButtons > a#SaveData").hasClass("btn-sub")) {
                 if (!confirm("You have unsaved changes.\n\nAre you sure you want to exit?"))
                 { return; }
             }
@@ -439,14 +449,17 @@ AVE.Modules['PreferenceManager'] = {
 
     AppendToPreferenceManager: {
         html: function () {
+            var _this = AVE.Modules['PreferenceManager'];
             var htmlStr = "";
+
+            htmlStr += '<input ' + (_this.Options.LossChangeNotification.Value ? 'checked="true"' : "") + ' id="LossChangeNotification" type="checkbox"/><label style="display: inline;" for="LossChangeNotification"> ' + _this.Options.LossChangeNotification.Desc + '</label><br />';
+
             htmlStr += '<br />Export all stored data as a JSON file: <input style="font-weight:bold;" value="Export" id="AVE_ExportToJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON"></input>';
             htmlStr += '<br />Import settings/data from a JSON file: <input style="font-weight:bold;" value="Import" id="AVE_ImportFromJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON"></input> \
                         <input style="display:none;"value="file_Import" id="AVE_file_ImportFromJSON" type="file"></input><br /><br /><br />';
             htmlStr += 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="AVE_ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
             htmlStr += '<br/><span style="font-weight:bold;" id="AVE_Mng_Info"></span>';
 
-            //Reset / Export
             return htmlStr;
         },
         callback: function () {

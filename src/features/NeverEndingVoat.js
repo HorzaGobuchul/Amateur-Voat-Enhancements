@@ -76,7 +76,11 @@ AVE.Modules['NeverEndingVoat'] = {
         }
     },
 
-    Labels: ["Load more", "Sit tight ...", "Sorry, I couldn't find more content", "Something went wrong. Maybe try again?"],
+    Labels: ["Load more",
+             "Sit tight...",
+             "Sorry, I couldn't find more content",
+             "Something went wrong. Maybe try again?",
+             "An error occured. No point in trying again I'm afraid"],
     PostsIDs: [],
     SepStyle: '',
     currentPage: 0,
@@ -134,7 +138,7 @@ AVE.Modules['NeverEndingVoat'] = {
             url: nextPageURL,
             cache: false,
         }).done(function (html) {
-            var error = false;
+            var error = "sticky";
             if ($(html).find("div.submission[class*='id-']").length == 0) { $("a#AVE_loadmorebutton").text(_this.Labels[2]); return false; } //catchall for error pages
             _this.currentPage++;
             //print($(html).find("div.submission[class*='id-']").length);
@@ -144,26 +148,36 @@ AVE.Modules['NeverEndingVoat'] = {
                 $("div.side").css("z-index", "100");
             }
 
-            $("div.sitetable").append('<div style="' + _this.SepStyle + '" class="AVE_postSeparator">Page ' + (_this.currentPage) + '</div>');
+            $("div.sitetable").append('<div style="' + _this.SepStyle + '" id="AVE_page_' + (_this.currentPage) + '" class="AVE_postSeparator">Page ' + (_this.currentPage) + '</div>');
 
             //$("div.sitetable.linklisting").append('<div class="AVE_postSeparator alert-singlethread">Page ' + (_this.currentPage) + '</div>');
             $(html).find("div.submission[class*='id-']").each(function () {
                 if ($.inArray($(this).attr("data-fullname"), _this.PostsIDs) == -1) {
+                    error = null;
                     _this.PostsIDs.push($(this).attr("data-fullname"));
                     $("div.sitetable").append($(this));
                 } else if (_this.Options.DisplayDuplicates.Value && !$(this).hasClass("stickied")) {
                     $("div.sitetable").append($(this));
                     $(this).css("opacity", "0.3");
-                } else {
+                } else if (!$(this).hasClass("stickied")){
                     error = true;
                 }
             });
-
+            
             if (!error) {
                 $("a#AVE_loadmorebutton").text(_this.Labels[0]);
-            } else {
-                $("a#AVE_loadmorebutton").text("An error occured. No point in trying again I'm afraid.");
+            } else if (error == "sticky") {
+                //In a sub a page with no content will still show the sticky.
+                $("a#AVE_loadmorebutton").text(_this.Labels[2]);
+                $("div.AVE_postSeparator#AVE_page_" + (_this.currentPage)).remove();
+                _this.currentPage--;
+                return;
+            } if (error) {
+                $("a#AVE_loadmorebutton").text(_this.Labels[4]);
                 print("AVE: oups error in NeverEndingVoat:LoadMore()");
+                $("div.AVE_postSeparator#AVE_page_" + (_this.currentPage)).remove();
+                _this.currentPage--;
+                return;
             }
 
             // Add expando links to the new submissions

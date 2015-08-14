@@ -28,18 +28,18 @@ AVE.Modules['IgnoreUsers'] = {
     OriginalOptions: "", //If ResetPref is used
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['IgnoreUsers'];
+        var _this = this
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
     ResetPref: function () {// will add the reset option in the pref manager. Can be deleted.
-        var _this = AVE.Modules['IgnoreUsers'];
+        var _this = this
         _this.Options = JSON.parse(_this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
-        var _this = AVE.Modules['IgnoreUsers'];
+        var _this = this
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         Opt = JSON.parse(Opt);
@@ -64,7 +64,7 @@ AVE.Modules['IgnoreUsers'] = {
     },
 
     Start: function () {
-        var _this = AVE.Modules['IgnoreUsers'];
+        var _this = this
         if (AVE.Utils.currentPageType == "thread") { // comments
             $("p.tagline > a.author").each(function () {
 

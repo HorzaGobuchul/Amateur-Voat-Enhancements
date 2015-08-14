@@ -3,7 +3,7 @@ AVE.Modules['HeaderFixedPos'] = {
     Name: 'Fix header position',
     Desc: 'Set the subverse list header position as fixed.',
     Category: 'Fixes',
-    Index: 1,
+    Index: 100,
     Enabled: false,
 
     Store: {},
@@ -48,7 +48,7 @@ AVE.Modules['HeaderFixedPos'] = {
             AVE.Utils.ListHeaderHeight = $('#sr-header-area').height();
         });
 
-        AVE.Utils.ListHeaderHeight = 23;//$('#sr-header-area').height();
+        AVE.Utils.ListHeaderHeight = $('#sr-header-area').height(); //23
 
         var bg, border;
         bg = $("#sr-header-area").css("background-color");

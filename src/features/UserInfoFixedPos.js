@@ -4,7 +4,7 @@ AVE.Modules['UserInfoFixedPos'] = {
     Desc: 'Set the user info block\'s position as fixed.',
     Category: 'Fixes',
 
-    Index: 2,
+    Index: 100,
     Enabled: false,
 
     Store: {},
@@ -91,8 +91,11 @@ AVE.Modules['UserInfoFixedPos'] = {
                   $("div#header-container").css("background-origin");
         if ($("div#header-container").css("background-color") == "transparent" &&
             $("div#header-container").css("background-image") == "none") {
-            //If there is no color nor image set, we set one by default
-            this.bg = AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
+            this.bg = $("#sr-header-area").css("background-color");
+            if (this.bg == "transparent") {
+                //If there is no colour nor any image set, we set it by default
+                this.bg = AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
+            }
         }
 
         AVE.Utils.AddStyle('\
