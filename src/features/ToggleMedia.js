@@ -7,6 +7,8 @@ AVE.Modules['ToggleMedia'] = {
     Index: 5,
     Enabled: false,
 
+    RunAt: 'load',
+
     Store: {},
 
     Options: {

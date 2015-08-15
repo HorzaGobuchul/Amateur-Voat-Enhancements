@@ -59,6 +59,13 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.22.4.6",
+        "   Added option to start modules on DOMready or DOMload",
+        "       Resolved the issue causing the DisableShareALink module to be useless on Chrome",
+        "   PreferenceManager:",
+        "       Increased width by 100px",
+        "   ShortKeys:",
+        "       Corrected a bug where (in comment) it would expand link that have as title a media signature (e.g. JPG, PNG)",
         "V2.22.3.4",
         "   ShortKeys:",
         "       Added keys to navigate to top and bottom of the page (key also selects first or last post in page)",

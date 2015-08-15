@@ -64,7 +64,7 @@ AVE.Modules['PreferenceManager'] = {
                 right:0;\
                 margin-left:auto;\
                 margin-right:auto;\
-                width:650px;\
+                width:750px;\
                 height:600px;\
                 top: 5%;\
                 position:fixed;\
@@ -139,7 +139,7 @@ AVE.Modules['PreferenceManager'] = {
                 padding-left: 10px;\
                 padding-right: 10px;\
                 padding-top: 10px;\
-                width:525px;\
+                width:625px;\
                 height:552px;\
                 background: #' + (AVE.Utils.CSSstyle == "dark" ? "333" : "FFF") + ';\
                 color: #' + (AVE.Utils.CSSstyle == "dark" ? "AAA" : "404040") + ';\

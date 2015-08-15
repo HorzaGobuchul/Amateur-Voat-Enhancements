@@ -24,7 +24,7 @@ Storage.DeleteValue = function (key) {
 pageMod.PageMod({
     include: ['*.voat.co'],
     exclude: ['*.voat.co/api'],
-    contentScriptWhen: 'ready',//start
+    contentScriptWhen: 'start',
     contentScriptFile: [
     "./Ext/jquery.min.js",
     "./Ext/to-markdown.js",

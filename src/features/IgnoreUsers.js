@@ -103,7 +103,7 @@ AVE.Modules['IgnoreUsers'] = {
                 if (!name || $.inArray(name.toLowerCase(), _this.IgnoreList) === -1) { return true; }
 
                 if (_this.Options.HardIgnore.Value) {
-                    print('AVE: Removed submissions titled: "'+$(this).parents("div.entry:first").find("p.title > a[class*='title']:first").text()+'" by '+name)
+                    print('AVE: Removed submission titled: "'+$(this).parents("div.entry:first").find("p.title > a[class*='title']:first").text()+'" by '+name)
                     $(this).parents("div.submission").remove();
                 } else {
                     $(this).parents("div.entry:first").find("p.title > a[class*='title']:first").text('[Ignored User]').css("font-size", "13px");

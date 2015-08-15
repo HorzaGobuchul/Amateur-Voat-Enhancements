@@ -6,15 +6,19 @@ AVE.Utils = {
     CSSstyle: "",
     currentPageType: "",
     
-    Set: function () {
+    LateSet: function () {
+        this.CSSstyle = this.CSS_Style();
+    },
+
+    EarlySet: function () {
         this.subverseName = this.GetSubverseName();
         this.isPageSubverse = this.isPageSubverse();
-        this.CSSstyle = this.CSS_Style();
         this.currentPageType = this.Page();
     },
 
     CSS_Style: function () {
-        return $("body").attr("class");
+        return $('link[rel="stylesheet"][href^="/Content/Dark?"]').length > 0 ? "dark" : "light";
+        //return $("body").attr("class"); //Doesn't work because the class is added after DOMready and this is evaluated before DOMload
     },
 
     MetaData: null,

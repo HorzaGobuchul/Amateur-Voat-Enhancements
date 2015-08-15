@@ -9,6 +9,12 @@ AVE.Modules['ID'] = {
 
     Store: {},
 
+    //   "ready"   => On DOMready
+    //   "load"    => On DOMload
+    // "ready" by default if RunAt is undefined
+    // "load" by default if RunAt is not one of these two values
+    RunAt: "load", 
+
     Options: {
         Enabled: {
             Type: 'boolean',

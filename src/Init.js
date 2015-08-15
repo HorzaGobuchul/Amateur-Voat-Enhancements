@@ -3,25 +3,43 @@ AVE.Modules = {};
 
 AVE.Init = {
     Start: function () {
-        this.LoadModules();
-    },
+        var _this = this;    
 
-    LoadModules: function () {
-        AVE.Utils.Set();
-        print("AVE: Current page > " + AVE.Utils.currentPageType);
-        
-        //DDOS protection page
-        if ($("div.content.error-page").length > 0) { return;}
+        AVE.Utils.EarlySet();
 
         if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) == -1) {
+
             $(document).ready(function () {
+
+                AVE.Utils.LateSet();
+
+                print("AVE: Current page > " + AVE.Utils.currentPageType);
+                //print("AVE: Current style > " + AVE.Utils.CSSstyle);
+                
+                if ($("div.content.error-page").length > 0) { return; }//DDOS protection page
+
+                //print("AVE: Loading " + Object.keys(AVE.Modules).length + " modules.")
                 $.each(AVE.Modules, function () {
-                    //print("Loading: "+this.Name + " - " + Object.keys(AVE.Modules).length+ " modules.");
-                    try { this.Load(); }
-                    catch (e) { print("AVE: Error loading " + this.ID); }
+                    var mod = this;
+                    if (!mod.RunAt || mod.RunAt == "ready") {
+                        $(document).ready(function () {
+                            _this.LoadModules(mod);
+                        });
+                    } else {
+                        $(window).load(function () {
+                            _this.LoadModules(mod);
+                        });
+                    }
                 });
             });
         }
+    },
+
+    LoadModules: function (module) {
+        //print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")");
+
+        try { module.Load(); }
+        catch (e) { print("AVE: Error loading " + module.ID); }
     },
 
     UpdateModules: function () {

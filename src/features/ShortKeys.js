@@ -135,15 +135,16 @@ AVE.Modules['ShortKeys'] = {
 
             if (key == NavTop.toUpperCase()) { // Navigate to the top of the page
                 //Scroll to top
-                $(window).scrollTop(0);
                 //Set first post as selected
-                var obj = $("div.submission[class*='id'], div.comment[class*='id']");
+                var obj = $("div.submission[class*='id']:first,div.comment[class*='id']:first").first();
                 if (AVE.Modules['SelectPost']) { AVE.Modules['SelectPost'].ToggleSelectedState(obj.find(".entry:first")); }
+                $(window).scrollTop(0);
             } else if (key == NavBottom.toUpperCase()) { // Navigate to the bottom of the page
                 //Scroll to bottom
                 $(window).scrollTop($(document).height());
                 //Set last post as selected
-                var obj = $("div.submission[class*='id']:last,div.comment[class*='id']:last");
+                var obj = $("div.comment[class*='id']:last");
+                if (obj.length == 0) { var obj = $("div.submission[class*='id']:last"); }
                 if (AVE.Modules['SelectPost']) { AVE.Modules['SelectPost'].ToggleSelectedState(obj.find(".entry:first")); }
             }
 
@@ -262,16 +263,17 @@ AVE.Modules['ShortKeys'] = {
                 } else {
                     //In comment
                     var expand = true;
-                    var media = sel.find("div.md").find("a[title]");
+                    var media = sel.find("div.md:visible").find("a[title]");
 
                     media.each(function () {
-                        //Expand is false if at least 
+                        //Expand is false if at least one of the media is expanded
                         if ($(this).next(".link-expando:visible").length > 0)
                         { expand = false; return;}
                     });
 
                     media.each(function () {
-                        if (expand !== $(this).next(".link-expando:visible").length > 0)
+                        if ($(this).find("span.link-expando-type").length > 0 
+                            && expand !== $(this).next(".link-expando:visible").length > 0)
                         { this.click(); }
                     });
                 }
@@ -333,6 +335,7 @@ AVE.Modules['ShortKeys'] = {
             //Toggle expand comment
             htmlStr += '<tr>';
             htmlStr += '<td>&nbsp; <span title="Toggle comment chain or load more replies">Toggle comment</span>: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="ToggleCommentChain" value="' + _this.Options.ToggleCommentChain.Value + '"></input>';
+            //Navigate to Top and Bottom of the page
             htmlStr += '<td>&nbsp; <span title="Navigate to the top of the page">Top of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="NavigateTop" value="' + _this.Options.NavigateTop.Value + '"></input>';
             htmlStr += '<td>&nbsp; <span title="Navigate to the bottom of the page">Bottom of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="NavigateBottom" value="' + _this.Options.NavigateBottom.Value + '"></input></td>';
             htmlStr += '</tr>';

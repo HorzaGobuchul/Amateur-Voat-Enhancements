@@ -8,13 +8,13 @@
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.22.13.32
+// @version     2.22.4.6
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
 // @grant       GM_listValues
 // @grant       GM_openInTab
-// @run-at      document-end
+// @run-at      document-start
 // @updateURL   https://github.com/HorzaGobuchul/{@repoName}/raw/master/{@fileName}_meta.user.js
 // @downloadURL https://github.com/HorzaGobuchul/{@repoName}/raw/master/{@fileName}.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
