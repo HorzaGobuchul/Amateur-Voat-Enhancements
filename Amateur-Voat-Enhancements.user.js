@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        2015-08-15
+// @date        2015-08-16
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
@@ -41,15 +41,13 @@ AVE.Init = {
                 print("AVE: Current page > " + AVE.Utils.currentPageType);
                 //print("AVE: Current style > " + AVE.Utils.CSSstyle);
                 
-                if ($("div.content.error-page").length > 0) { return; }//DDOS protection page
+                //if ($("div.content.error-page").length > 0) { print("AVE: error page "); return; }//DDOS protection page
 
                 //print("AVE: Loading " + Object.keys(AVE.Modules).length + " modules.")
                 $.each(AVE.Modules, function () {
                     var mod = this;
                     if (!mod.RunAt || mod.RunAt == "ready") {
-                        $(document).ready(function () {
-                            _this.LoadModules(mod);
-                        });
+                        _this.LoadModules(mod);
                     } else {
                         $(window).load(function () {
                             _this.LoadModules(mod);
@@ -2012,11 +2010,11 @@ AVE.Modules['ToggleMedia'] = {
 };
 /// END Toggle media ///
 
-/// Toggle subverse custom style:  Adds a checkbox to enable/disable custom style on a per subverse basis. ///
+/// Toggle subverse custom style:  Adds a checkbox to enable/disable custom styles on a per subverse basis. ///
 AVE.Modules['ToggleCustomStyle'] = {
     ID: 'ToggleCustomStyle',
     Name: 'Toggle subverse custom style',
-    Desc: 'Adds a checkbox to enable/disable custom style on a per subverse basis.',
+    Desc: 'Adds a checkbox to enable/disable custom styles on a per subverse basis.',
     Category: 'General',
 
     Index: 10,
@@ -2078,7 +2076,7 @@ AVE.Modules['ToggleCustomStyle'] = {
     },
 
     AppendToPage: function () {
-        $('<input id="AVE_ToggleCustomStyle" ' + (this.DisabledCSS ? 'checked="true"' : "") + ' type="checkbox"> <label for="AVE_ToggleCustomStyle">Enable custom style</label><br />').insertAfter("h1.hover.whoaversename");
+        $('<input id="AVE_ToggleCustomStyle" ' + (this.DisabledCSS ? 'checked="true"' : "") + ' type="checkbox"> <label for="AVE_ToggleCustomStyle" style="position:inherit;">Enable custom style</label><br />').insertAfter("h1.hover.whoaversename");
     },
 
     Listeners: function () {
@@ -2104,7 +2102,7 @@ AVE.Modules['ToggleCustomStyle'] = {
 
                 this.Store.SetValue(this.StorageName, JSON.stringify(CSSlist));
             }
-            //Don't add CSS if we didn't remove it previously
+            //Don't add the CSS if we didn't remove it previously
             if ($.trim($("style#custom_css").text()).length == 0) {
                 $("style#custom_css").append(this.CustomCSS);
             }
@@ -2673,6 +2671,8 @@ AVE.Modules['FixExpandImage'] = {
     Enabled: false,
 
     Store: AVE.storage,
+
+    RunAt: "load",
 
     Options: {
         Enabled: {

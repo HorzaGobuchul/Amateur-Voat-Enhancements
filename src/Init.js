@@ -16,15 +16,13 @@ AVE.Init = {
                 print("AVE: Current page > " + AVE.Utils.currentPageType);
                 //print("AVE: Current style > " + AVE.Utils.CSSstyle);
                 
-                if ($("div.content.error-page").length > 0) { return; }//DDOS protection page
+                //if ($("div.content.error-page").length > 0) { print("AVE: error page "); return; }//DDOS protection page
 
                 //print("AVE: Loading " + Object.keys(AVE.Modules).length + " modules.")
                 $.each(AVE.Modules, function () {
                     var mod = this;
                     if (!mod.RunAt || mod.RunAt == "ready") {
-                        $(document).ready(function () {
-                            _this.LoadModules(mod);
-                        });
+                        _this.LoadModules(mod);
                     } else {
                         $(window).load(function () {
                             _this.LoadModules(mod);

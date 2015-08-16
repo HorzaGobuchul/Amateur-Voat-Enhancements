@@ -8,6 +8,8 @@ AVE.Modules['FixExpandImage'] = {
 
     Store: AVE.storage,
 
+    RunAt: "load",
+
     Options: {
         Enabled: {
             Type: 'boolean',
