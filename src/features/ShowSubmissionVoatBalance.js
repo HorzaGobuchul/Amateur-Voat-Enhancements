@@ -21,7 +21,7 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
 
     Processed: [], //Ids of comments that have already been processed
 
-    OriginalOptions: "",
+    //OriginalOptions: "",
 
     //SavePref: function (POST) {
     //    var _this = this;
@@ -84,7 +84,6 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
     },
 
     ShowVoteBalance: function (target, click, voteClick) {
-
         var vote, status;
 
         vote = target.prop("class").split(" ")[1];  //Get vote status

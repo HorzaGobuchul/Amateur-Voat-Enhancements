@@ -59,6 +59,18 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.22.5.11",
+        "   FixExpandImage:",
+        "       Corrected CSS selector that was adding a margin-left of 30px to comments in /user/username page",
+        "   Dark mode fix for \"play pen improvements\" and \"checking your bits\" pages. Thanks /u/Jammi!",
+        "   UserInfoFixedPos:",
+        "       Added option to have the userblock collapsed by default",
+        "   ToggleCustomStyle",
+        "       In thread, when re-enabled, a custom style is no longer added to both style#custom_css elements (one is deleted prior)",
+        "   ToggleMedia:",
+        "       Fixed bug happening when more than one link to an image were on the same line",
+        "   Core > Init:",
+        "       Fixed a bug touching modules that were set to start after the page is fully loaded, but weren't started at all",
         "V2.22.4.6",
         "   Added option to start modules on DOMready or DOMload",
         "       Resolved the issue causing the DisableShareALink module to be useless on Chrome",

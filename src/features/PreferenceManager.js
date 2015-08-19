@@ -320,9 +320,9 @@ AVE.Modules['PreferenceManager'] = {
                         }
                     });
                     //Send new pref to module
-                    if (typeof AVE.Modules[ModKey].SavePref === "function") {
+                    if (AVE.Modules[ModKey] && typeof AVE.Modules[ModKey].SavePref === "function") {
                         AVE.Modules[ModKey].SavePref(POST);
-                    }
+                    } else { print("AVE: error saving module " + ModKey); }
                 });
 
             });

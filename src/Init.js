@@ -3,7 +3,7 @@ AVE.Modules = {};
 
 AVE.Init = {
     Start: function () {
-        var _this = this;    
+        var _this = this;
 
         AVE.Utils.EarlySet();
 
@@ -15,21 +15,38 @@ AVE.Init = {
 
                 print("AVE: Current page > " + AVE.Utils.currentPageType);
                 //print("AVE: Current style > " + AVE.Utils.CSSstyle);
-                
-                //if ($("div.content.error-page").length > 0) { print("AVE: error page "); return; }//DDOS protection page
+
+                title = document.title.toLowerCase();
+
+                //By /u/Jammi: voat.co/v/AVE/comments/421861
+                if (~title.indexOf('checking your bits') || ~title.indexOf('play pen improvements')) {
+                    if (~document.cookie.indexOf('theme=dark')) {
+                        $.each(["body background #333", "body color #dfdfdf", "#header background #333", "#header-container background #333", "#header-container borderBottomColor #555", "#header-container borderTopColor #555", ".panel-info background #222", ".panel-heading background #222", ".panel-heading borderColor #444", ".panel-title background #222", ".panel-title color #dfdfdf", ".panel-body background #222", ".panel-body borderColor #444"],
+                               function () { var _this = this.split(" "); $(_this[0]).css(_this[1], _this[2]) });
+                    }
+                    return;
+                }//Error pages that are empty
 
                 //print("AVE: Loading " + Object.keys(AVE.Modules).length + " modules.")
                 $.each(AVE.Modules, function () {
                     var mod = this;
                     if (!mod.RunAt || mod.RunAt == "ready") {
                         _this.LoadModules(mod);
-                    } else {
-                        $(window).load(function () {
-                            _this.LoadModules(mod);
-                        });
                     }
                 });
             });
+
+            var LoadModuleOnLoadComplete = function () {
+                $.each(AVE.Modules, function () {
+                    if (this.RunAt && this.RunAt !== "ready") {
+                        _this.LoadModules(this);
+                    }
+                });
+            };
+
+            //$(window).load's callback isn't triggered if it is processed as the page's readystate already is "complete"
+            if (document.readyState == "complete") { LoadModuleOnLoadComplete(); }
+            else { $(window).load(function () { LoadModuleOnLoadComplete(); }); }
         }
     },
 

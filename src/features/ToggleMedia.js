@@ -25,7 +25,7 @@ AVE.Modules['ToggleMedia'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['ToggleMedia'];
+        var _this = this;
         POST = POST[_this.ID];
         var opt = {};
         opt.Enabled = POST.Enabled;
@@ -35,7 +35,7 @@ AVE.Modules['ToggleMedia'] = {
     },
 
     ResetPref: function () {
-        var _this = AVE.Modules['ToggleMedia'];
+        var _this = this;
         _this.Options = JSON.parse(_this.OriginalOptions);
     },
 
@@ -143,8 +143,8 @@ AVE.Modules['ToggleMedia'] = {
     ToggleMedia: function (state) {
         for (var el in this.sel.get()) {
             if (
-                (state && this.sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
-                state === this.sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
+                (state && this.sel.eq(el).next(".expando,.link-expando").length == 0) ||
+                state === this.sel.eq(el).next(".expando,.link-expando").first().is(':hidden')
                 )
             {
                 //A click on a media that failed (e.g. error 404) will redirect instead of toggling the expando.

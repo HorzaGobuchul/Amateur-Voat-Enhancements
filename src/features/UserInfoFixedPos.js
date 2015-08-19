@@ -22,10 +22,14 @@ AVE.Modules['UserInfoFixedPos'] = {
             Type: 'boolean',
             Value: true,
         },
+        PersistentHide: {
+            Type: 'boolean',
+            Value: false,
+        },
     },
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['UserInfoFixedPos'];
+        var _this = this;
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
@@ -80,6 +84,10 @@ AVE.Modules['UserInfoFixedPos'] = {
             $('#header-account').append('<div title="Hide user block" class="expanded" id="AVE_ToggleUserBlock"></div>')
 
             this.Listeners();
+        }
+
+        if (this.Options.PersistentHide.Value) {
+            $("div#AVE_ToggleUserBlock").click();
         }
 
         this.bg = $("div#header-container").css("background-color") + " " +
@@ -179,6 +187,7 @@ div#header-container {z-index: 2;}\
             var htmlStr = "";
             htmlStr += '<input ' + (_this.Options.DivideBlock.Value ? 'checked="true"' : "") + ' id="DivideBlock" type="checkbox"/><label style="display:inline;" for="DivideBlock"> Do you want the header account separated- username and numbers at the top and icons below?</label>';
             htmlStr += '<br /><input ' + (_this.Options.ToggleBlock.Value ? 'checked="true"' : "") + ' id="ToggleBlock" type="checkbox"/><label style="display:inline;" for="ToggleBlock"> Show icon to toggle hide/show the user block.</label>';
+            htmlStr += '<br /><input ' + (_this.Options.PersistentHide.Value ? 'checked="true"' : "") + ' id="PersistentHide" type="checkbox"/><label style="display:inline;" for="PersistentHide"> Always hide the userblock</label>';
 
             return htmlStr;
         },

@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements
 // @author      Horza
-// @date        2015-08-16
+// @date        2015-08-19
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.22.4.6
+// @version     2.22.5.11
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -28,7 +28,7 @@ AVE.Modules = {};
 
 AVE.Init = {
     Start: function () {
-        var _this = this;    
+        var _this = this;
 
         AVE.Utils.EarlySet();
 
@@ -40,21 +40,38 @@ AVE.Init = {
 
                 print("AVE: Current page > " + AVE.Utils.currentPageType);
                 //print("AVE: Current style > " + AVE.Utils.CSSstyle);
-                
-                //if ($("div.content.error-page").length > 0) { print("AVE: error page "); return; }//DDOS protection page
+
+                title = document.title.toLowerCase();
+
+                //By /u/Jammi: voat.co/v/AVE/comments/421861
+                if (~title.indexOf('checking your bits') || ~title.indexOf('play pen improvements')) {
+                    if (~document.cookie.indexOf('theme=dark')) {
+                        $.each(["body background #333", "body color #dfdfdf", "#header background #333", "#header-container background #333", "#header-container borderBottomColor #555", "#header-container borderTopColor #555", ".panel-info background #222", ".panel-heading background #222", ".panel-heading borderColor #444", ".panel-title background #222", ".panel-title color #dfdfdf", ".panel-body background #222", ".panel-body borderColor #444"],
+                               function () { var _this = this.split(" "); $(_this[0]).css(_this[1], _this[2]) });
+                    }
+                    return;
+                }//Error pages that are empty
 
                 //print("AVE: Loading " + Object.keys(AVE.Modules).length + " modules.")
                 $.each(AVE.Modules, function () {
                     var mod = this;
                     if (!mod.RunAt || mod.RunAt == "ready") {
                         _this.LoadModules(mod);
-                    } else {
-                        $(window).load(function () {
-                            _this.LoadModules(mod);
-                        });
                     }
                 });
             });
+
+            var LoadModuleOnLoadComplete = function () {
+                $.each(AVE.Modules, function () {
+                    if (this.RunAt && this.RunAt !== "ready") {
+                        _this.LoadModules(this);
+                    }
+                });
+            };
+
+            //$(window).load's callback isn't triggered if it is processed as the page's readystate already is "complete"
+            if (document.readyState == "complete") { LoadModuleOnLoadComplete(); }
+            else { $(window).load(function () { LoadModuleOnLoadComplete(); }); }
         }
     },
 
@@ -679,9 +696,9 @@ AVE.Modules['PreferenceManager'] = {
                         }
                     });
                     //Send new pref to module
-                    if (typeof AVE.Modules[ModKey].SavePref === "function") {
+                    if (AVE.Modules[ModKey] && typeof AVE.Modules[ModKey].SavePref === "function") {
                         AVE.Modules[ModKey].SavePref(POST);
-                    }
+                    } else { print("AVE: error saving module " + ModKey); }
                 });
 
             });
@@ -968,6 +985,18 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.22.5.11",
+        "   FixExpandImage:",
+        "       Corrected CSS selector that was adding a margin-left of 30px to comments in /user/username page",
+        "   Dark mode fix for \"play pen improvements\" and \"checking your bits\" pages. Thanks /u/Jammi!",
+        "   UserInfoFixedPos:",
+        "       Added option to have the userblock collapsed by default",
+        "   ToggleCustomStyle",
+        "       In thread, when re-enabled, a custom style is no longer added to both style#custom_css elements (one is deleted prior)",
+        "   ToggleMedia:",
+        "       Fixed bug happening when more than one link to an image were on the same line",
+        "   Core > Init:",
+        "       Fixed a bug touching modules that were set to start after the page is fully loaded, but weren't started at all",
         "V2.22.4.6",
         "   Added option to start modules on DOMready or DOMload",
         "       Resolved the issue causing the DisableShareALink module to be useless on Chrome",
@@ -1861,7 +1890,7 @@ AVE.Modules['ToggleMedia'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['ToggleMedia'];
+        var _this = this;
         POST = POST[_this.ID];
         var opt = {};
         opt.Enabled = POST.Enabled;
@@ -1871,7 +1900,7 @@ AVE.Modules['ToggleMedia'] = {
     },
 
     ResetPref: function () {
-        var _this = AVE.Modules['ToggleMedia'];
+        var _this = this;
         _this.Options = JSON.parse(_this.OriginalOptions);
     },
 
@@ -1979,8 +2008,8 @@ AVE.Modules['ToggleMedia'] = {
     ToggleMedia: function (state) {
         for (var el in this.sel.get()) {
             if (
-                (state && this.sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
-                state === this.sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
+                (state && this.sel.eq(el).next(".expando,.link-expando").length == 0) ||
+                state === this.sel.eq(el).next(".expando,.link-expando").first().is(':hidden')
                 )
             {
                 //A click on a media that failed (e.g. error 404) will redirect instead of toggling the expando.
@@ -2051,8 +2080,8 @@ AVE.Modules['ToggleCustomStyle'] = {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
-        if (this.Enabled && $.trim($("style#custom_css").text()).length > 0) {
-            this.CustomCSS = $("style#custom_css").text();
+        if (this.Enabled && $.trim($("style#custom_css:first").text()).length > 0) {
+            this.CustomCSS = $("style#custom_css:first").text();
             this.Start();
         }
     },
@@ -2066,6 +2095,10 @@ AVE.Modules['ToggleCustomStyle'] = {
 
         //print(this.Store.GetValue(this.StorageName, "[]"));
         //this.Store.DeleteValue(this.StorageName);
+
+        if ($("style#custom_css").length > 1) {
+            $("style#custom_css:last").remove();
+        }
 
         this.DisabledCSS = $.inArray(AVE.Utils.subverseName, JSON.parse(this.Store.GetValue(this.StorageName, "[]"))) == -1;
 
@@ -2728,7 +2761,8 @@ AVE.Modules['FixExpandImage'] = {
                             .comment {overflow: visible;}\
                             .entry {overflow:visible;}\
            div.submission > .entry {margin-left:60px;}\
-              div.comment > .entry {margin-left:30px;}\
+           .nestedlisting > .comment > .entry {margin-left:30px;}\
+                 .comment > .comment > .entry {margin-left:30px;}\
     div.content-no-margin > .comment > .entry{margin-left:0px;}/*Comments outside of threads (like /username/comments*/\
                    .entry > div.collapsed {margin-left:0px;}\
           form#form-xxxxx > div.usertext-body > div.md {overflow:auto;}\
@@ -4188,7 +4222,7 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
 
     Processed: [], //Ids of comments that have already been processed
 
-    OriginalOptions: "",
+    //OriginalOptions: "",
 
     //SavePref: function (POST) {
     //    var _this = this;
@@ -4251,7 +4285,6 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
     },
 
     ShowVoteBalance: function (target, click, voteClick) {
-
         var vote, status;
 
         vote = target.prop("class").split(" ")[1];  //Get vote status
@@ -4620,10 +4653,14 @@ AVE.Modules['UserInfoFixedPos'] = {
             Type: 'boolean',
             Value: true,
         },
+        PersistentHide: {
+            Type: 'boolean',
+            Value: false,
+        },
     },
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['UserInfoFixedPos'];
+        var _this = this;
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
@@ -4678,6 +4715,10 @@ AVE.Modules['UserInfoFixedPos'] = {
             $('#header-account').append('<div title="Hide user block" class="expanded" id="AVE_ToggleUserBlock"></div>')
 
             this.Listeners();
+        }
+
+        if (this.Options.PersistentHide.Value) {
+            $("div#AVE_ToggleUserBlock").click();
         }
 
         this.bg = $("div#header-container").css("background-color") + " " +
@@ -4777,6 +4818,7 @@ div#header-container {z-index: 2;}\
             var htmlStr = "";
             htmlStr += '<input ' + (_this.Options.DivideBlock.Value ? 'checked="true"' : "") + ' id="DivideBlock" type="checkbox"/><label style="display:inline;" for="DivideBlock"> Do you want the header account separated- username and numbers at the top and icons below?</label>';
             htmlStr += '<br /><input ' + (_this.Options.ToggleBlock.Value ? 'checked="true"' : "") + ' id="ToggleBlock" type="checkbox"/><label style="display:inline;" for="ToggleBlock"> Show icon to toggle hide/show the user block.</label>';
+            htmlStr += '<br /><input ' + (_this.Options.PersistentHide.Value ? 'checked="true"' : "") + ' id="PersistentHide" type="checkbox"/><label style="display:inline;" for="PersistentHide"> Always hide the userblock</label>';
 
             return htmlStr;
         },

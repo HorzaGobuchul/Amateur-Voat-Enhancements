@@ -38,8 +38,8 @@ AVE.Modules['ToggleCustomStyle'] = {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
-        if (this.Enabled && $.trim($("style#custom_css").text()).length > 0) {
-            this.CustomCSS = $("style#custom_css").text();
+        if (this.Enabled && $.trim($("style#custom_css:first").text()).length > 0) {
+            this.CustomCSS = $("style#custom_css:first").text();
             this.Start();
         }
     },
@@ -53,6 +53,10 @@ AVE.Modules['ToggleCustomStyle'] = {
 
         //print(this.Store.GetValue(this.StorageName, "[]"));
         //this.Store.DeleteValue(this.StorageName);
+
+        if ($("style#custom_css").length > 1) {
+            $("style#custom_css:last").remove();
+        }
 
         this.DisabledCSS = $.inArray(AVE.Utils.subverseName, JSON.parse(this.Store.GetValue(this.StorageName, "[]"))) == -1;
 

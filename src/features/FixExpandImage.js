@@ -64,7 +64,8 @@ AVE.Modules['FixExpandImage'] = {
                             .comment {overflow: visible;}\
                             .entry {overflow:visible;}\
            div.submission > .entry {margin-left:60px;}\
-              div.comment > .entry {margin-left:30px;}\
+           .nestedlisting > .comment > .entry {margin-left:30px;}\
+                 .comment > .comment > .entry {margin-left:30px;}\
     div.content-no-margin > .comment > .entry{margin-left:0px;}/*Comments outside of threads (like /username/comments*/\
                    .entry > div.collapsed {margin-left:0px;}\
           form#form-xxxxx > div.usertext-body > div.md {overflow:auto;}\
