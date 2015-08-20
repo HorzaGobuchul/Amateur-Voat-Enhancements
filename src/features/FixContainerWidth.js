@@ -65,7 +65,7 @@ AVE.Modules['FixContainerWidth'] = {
     },
 
     Start: function () {
-        AVE.Utils.AddStyle('div#container{max-width:' + this.Options.Width.Value + '%}\
+        AVE.Utils.AddStyle('div#container{max-width:' + this.Options.Width.Value + '% !important}\
                             div.md{max-width:100% !important;}');
 
         if (this.Options.Justify.Value)

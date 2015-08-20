@@ -1,8 +1,9 @@
 AVE.Modules['DisableShareALink'] = {
     ID: 'DisableShareALink',
     Name: 'Disable Share-a-Link',
-    Desc: 'This module will remove the Share-a-Link overlay block',
+    Desc: 'This module will remove the Share-a-Link overlay block.',
     Category: 'Fixes',
+    //The share-a-link feature doesn't exist anymore it seems. This module is obsolete.
 
     Index: 100,
     Enabled: false,

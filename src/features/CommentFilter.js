@@ -185,7 +185,7 @@ AVE.Modules['CommentFilter'] = {
             this.htmlNewFilter = '<span class="AVE_Comment_Filter" id="{@id}">\
                                 Keyword(s) \
                                     <input id="{@id}-kw" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="CommentFilter" value="{@keywords}"></input>\
-                                    Subverse(s) \
+                                Subverse(s) \
                                     <input id="{@id}-sub" style="width:29%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="CommentFilter" value="{@subverses}"></input>\
                                 </span>\
                                 <a href="javascript:void(0)" title="Remove filter" style="font-size: 16px;font-weight: bold;" class="RemoveFilter" id="{@id}">-</a>';

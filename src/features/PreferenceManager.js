@@ -210,8 +210,9 @@ AVE.Modules['PreferenceManager'] = {
     MngWinHTML: '',
     ModuleHTML: '',
 
-    Categories: ["General", "Subverse", "Thread", "Posts", "Manager", "Fixes"],//Available Categories to show
+    Categories: ["General", "Subverse", "Thread", "Posts", "Manager", "Style", "Fixes"],//Available Categories to show
     Modules: [],//List of modules
+    ModifiedModules: [],
 
     AppendToPage: function () {
         AVE.Utils.AddStyle(this.MngWinStyle);
@@ -300,36 +301,9 @@ AVE.Modules['PreferenceManager'] = {
         });
 
         //Save Data
-        $("div.MngrWin > div.MngWinHeader > div.TopButtons > a#SaveData").on("click", function () {
-            var input;
-            $.each(_this.Categories, function () {
-                moduleForms = $("form[cat='" + this + "'] > div.ModuleBlock");
-
-                moduleForms.each(function () {
-                    var ModKey = $(this).attr("id");
-                    var POST = {};
-                    POST[ModKey] = {};
-
-                    $(this).find("input").each(function () {
-                        var key = $(this).prop("id");
-                        if (key == "") { return true;}
-                        if ($(this).attr("type").toLowerCase() == "checkbox") {
-                            POST[ModKey][key] = $(this).is(":checked");
-                        } else {
-                            POST[ModKey][key] = $(this).val();
-                        }
-                    });
-                    //Send new pref to module
-                    if (AVE.Modules[ModKey] && typeof AVE.Modules[ModKey].SavePref === "function") {
-                        AVE.Modules[ModKey].SavePref(POST);
-                    } else { print("AVE: error saving module " + ModKey); }
-                });
-
-            });
-
-            $("div.TopButtons > a#SaveData").removeClass("btn-sub");
-            $("div.TopButtons > a#SaveData").addClass("btn-unsub");
-            $("#CloseWinMngr").click();
+        $(".MngWinHeader > .TopButtons > a#SaveData").on("click", function () {
+            var moduleForms = $("form[cat] > div.ModuleBlock");
+            _this.SaveModule(moduleForms, 0);
         });
 
         //Close the pref Manager with a click outside of it.
@@ -339,27 +313,83 @@ AVE.Modules['PreferenceManager'] = {
             }
         });
 
-        $("section.ModulePref").find("input").on("change", function () {
-            if ($("div.TopButtons > a#SaveData").hasClass("btn-sub")) { return; }
-            //$("section.ModulePref").find("input").off("change"); //Can't use off here because it removes custom event listeners
-            $("div.TopButtons > a#SaveData").addClass("btn-sub");
-            $("div.TopButtons > a#SaveData").removeClass("btn-unsub");
-            //if save btn has btn-sub class prompt confirmation
+        $("section.ModulePref").find(":input").on("change", function () {
+            _this.AddToModifiedModulesList($(this).parents("div.ModuleBlock:first").attr("id"));
+            _this.ToggleSaveButtonActive();
         });
 
         $("section.ModulePref").find("input").on("input", function () {
-            if ($("div.TopButtons > a#SaveData").hasClass("btn-sub")) { return; }
-            //$("section.ModulePref").find("input").off("change"); //Can't use off here because it removes custom event listeners
-            $("div.TopButtons > a#SaveData").addClass("btn-sub");
-            $("div.TopButtons > a#SaveData").removeClass("btn-unsub");
+            _this.AddToModifiedModulesList($(this).parents("div.ModuleBlock:first").attr("id"));
+            _this.ToggleSaveButtonActive();
         });
         $("section.ModulePref").find("a").on('click', function () {
-            $("section.ModulePref").find("input:first").change();
+            _this.AddToModifiedModulesList($(this).parents("div.ModuleBlock:first").attr("id"));
+            _this.ToggleSaveButtonActive();
         });
     },
 
+    ToggleSaveButtonActive: function () {
+        if ($("div.TopButtons > a#SaveData").hasClass("btn-sub")) { return; }
+        //$("section.ModulePref").find("input").off("change"); //Can't use off here because it removes custom event listeners
+        $("div.TopButtons > a#SaveData").addClass("btn-sub");
+        $("div.TopButtons > a#SaveData").removeClass("btn-unsub");
+        //if save btn has btn-sub class prompt confirmation
+    },
+    AddToModifiedModulesList: function (ID) {
+        if ($.inArray(ID, this.ModifiedModules) == -1) {
+            this.ModifiedModules.push(ID);
+        }
+    },
+
+    SaveModule: function (ModuleFormsList, idx) {
+        var _this = this;
+
+        var module = ModuleFormsList[idx];
+        var ModKey = $(module).attr("id");
+
+        if (!ModKey) { return;}
+
+        if ($.inArray(ModKey, this.ModifiedModules) != -1) {
+
+            $("div.TopButtons > a#SaveData").text("Saving " + ModKey);
+            var POST = {};
+            POST[ModKey] = {};
+
+            $(module).find(":input").each(function () {
+                var key = $(this).prop("id");
+                if (key == "") { return true; }
+                if ($(this).attr("type") && $(this).attr("type").toLowerCase() == "checkbox") {
+                    POST[ModKey][key] = $(this).is(":checked");
+                } else {
+                    POST[ModKey][key] = $(this).val();
+                }
+            });
+            //Send new pref to module
+            if (AVE.Modules[ModKey] && typeof AVE.Modules[ModKey].SavePref === "function") {
+                AVE.Modules[ModKey].SavePref(POST);
+            } else { print("AVE: error saving module " + ModKey); }
+        }
+
+        idx++;
+        if (idx < ModuleFormsList.length) {
+            if ($.inArray(ModKey, this.ModifiedModules) != -1) {
+                //Just enough delay to notice the saving process
+                setTimeout(function () { _this.SaveModule(ModuleFormsList, idx); }, 50);
+            } else {
+                //Don't set a time out if the previous module didn't need to be saved
+                _this.SaveModule(ModuleFormsList, idx);
+            }
+        } else {
+            this.ModifiedModules = [];
+            $("div.TopButtons > a#SaveData").text("Save Changes");
+            $("div.TopButtons > a#SaveData").removeClass("btn-sub");
+            $("div.TopButtons > a#SaveData").addClass("btn-unsub");
+            $("#CloseWinMngr").click();
+        }
+    },
+
     AddModule: function (module, cat, pos) {
-        var _this = AVE.Modules['PreferenceManager'];
+        var _this = this;
 
         if (module.Options.Enabled != undefined) {
             enabled = module.Options.Enabled.Value;
@@ -429,22 +459,6 @@ AVE.Modules['PreferenceManager'] = {
                 $(this).parent().find("span[class*='ModuleState']").removeClass("Enabled");
             }
         });
-    },
-
-    SaveModule: function (Mod_ID) {
-        var POST = {};
-        POST[Mod_ID] = {};
-
-        $(this).find("input").each(function () {
-            var key = $(this).prop("id")
-            if ($(this).attr("type").toLowerCase() == "checkbox") {
-                POST[Mod_ID][key] = this.checked;
-            } else {
-                POST[Mod_ID][key] = $(this).val();
-            }
-        });
-        //Send new pref to module
-        AVE.Modules[Mod_ID].SavePref(POST);
     },
 
     AppendToPreferenceManager: {

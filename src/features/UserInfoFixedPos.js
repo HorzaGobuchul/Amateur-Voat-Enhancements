@@ -114,8 +114,8 @@ div#AVE_ToggleUserBlock{\
     border-radius: 1em;\
     cursor:pointer;\
     float:right;\
-    width: 20px;\
-    height: 20px;\
+    width: 14px;\
+    height: 14px;\
 }\
 div#AVE_ToggleUserBlock.expanded{\
     /* SVG from Jquery Mobile Icon Set */\

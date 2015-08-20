@@ -59,6 +59,15 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.23.2.2",
+        "   New feature: Hide username",
+        "       Options to hide or replace references to your username (not in posts)",
+        "   PreferenceManager:",
+        "       Added \"style\" tab",
+        "       Added visual of the saving process",
+        "       In order to save processing time, instead of saving all modules, only those which pref have been modified will be saved now",
+        "   ToggleMedia",
+        "       Corrected fix that prevented module from detecting media in self-text posts",
         "V2.22.5.11",
         "   FixExpandImage:",
         "       Corrected CSS selector that was adding a margin-left of 30px to comments in /user/username page",

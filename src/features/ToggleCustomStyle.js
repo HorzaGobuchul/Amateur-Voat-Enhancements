@@ -2,7 +2,7 @@ AVE.Modules['ToggleCustomStyle'] = {
     ID: 'ToggleCustomStyle',
     Name: 'Toggle subverse custom style',
     Desc: 'Adds a checkbox to enable/disable custom styles on a per subverse basis.',
-    Category: 'General',
+    Category: 'Style',
 
     Index: 10,
     Enabled: false,
@@ -67,7 +67,7 @@ AVE.Modules['ToggleCustomStyle'] = {
     },
 
     AppendToPage: function () {
-        $('<input id="AVE_ToggleCustomStyle" ' + (this.DisabledCSS ? 'checked="true"' : "") + ' type="checkbox"> <label for="AVE_ToggleCustomStyle" style="position:inherit;">Enable custom style</label><br />').insertAfter("h1.hover.whoaversename");
+        $('<input style="position:inherit;" id="AVE_ToggleCustomStyle" ' + (this.DisabledCSS ? 'checked="true"' : "") + ' type="checkbox"> <label for="AVE_ToggleCustomStyle" style="position:inherit;display:inline !important">Enable custom style</label><br />').insertAfter("h1.hover.whoaversename");
     },
 
     Listeners: function () {

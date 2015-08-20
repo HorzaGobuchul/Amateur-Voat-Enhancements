@@ -1,7 +1,7 @@
 AVE.Modules['ShortKeys'] = {
     ID: 'ShortKeys',
     Name: 'Shortcut keys',
-    Desc: 'Use your keyboard to navigate Voat. Leave field empty for Enter/Return key',
+    Desc: 'Use your keyboard to navigate Voat. Leave field empty for Enter/Return key.',
     Category: 'Posts',
 
     Enabled: false,
