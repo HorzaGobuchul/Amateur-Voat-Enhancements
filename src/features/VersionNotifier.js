@@ -59,7 +59,7 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.23.2.2",
+        "V2.24.2.2",
         "   New feature: Hide username",
         "       Options to hide or replace references to your username (not in posts)",
         "   PreferenceManager:",

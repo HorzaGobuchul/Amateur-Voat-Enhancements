@@ -9,10 +9,13 @@ AVE.Modules['ID'] = {
 
     Store: {},
 
-    //   "ready"   => On DOMready
-    //   "load"    => On DOMload
+    //   "start"     => as soon as possible
+    //   "head"      => On head ready
+    //   "container" => On container ready (not yet implemented)
+    //   "ready"     => On DOMready
+    //   "load"      => On DOMload
     // "ready" by default if RunAt is undefined
-    // "load" by default if RunAt is not one of these two values
+    // "load" by default if RunAt is not one of these values above
     RunAt: "load", 
 
     Options: {

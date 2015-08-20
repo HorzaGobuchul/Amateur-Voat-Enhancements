@@ -6,11 +6,30 @@ AVE.Init = {
         var _this = this;
 
         AVE.Utils.EarlySet();
-
+        
         if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) == -1) {
 
-            $(document).ready(function () {
+            //Start as soon as possible
+            $.each(AVE.Modules, function () {
+                if (this.RunAt && this.RunAt === "start") {
+                    _this.LoadModules(this);
+                }
+            });
 
+            //On head ready
+            $("head").ready(function () {
+                $.each(AVE.Modules, function () {
+                    if (this.RunAt && this.RunAt === "head") {
+                        _this.LoadModules(this);
+                    }
+                });
+            });
+
+            //On container ready
+            //$("div#container").ready(function () { print("container ready"); });
+
+            //On doc ready
+            $(document).ready(function () {
                 AVE.Utils.LateSet();
 
                 print("AVE: Current page > " + AVE.Utils.currentPageType);
@@ -30,15 +49,16 @@ AVE.Init = {
                 //print("AVE: Loading " + Object.keys(AVE.Modules).length + " modules.")
                 $.each(AVE.Modules, function () {
                     var mod = this;
-                    if (!mod.RunAt || mod.RunAt == "ready") {
+                    if (!mod.RunAt || mod.RunAt === "ready") {
                         _this.LoadModules(mod);
                     }
                 });
             });
 
+            //On window loaded
             var LoadModuleOnLoadComplete = function () {
                 $.each(AVE.Modules, function () {
-                    if (this.RunAt && this.RunAt !== "ready") {
+                    if (this.RunAt && this.RunAt === "load") {
                         _this.LoadModules(this);
                     }
                 });

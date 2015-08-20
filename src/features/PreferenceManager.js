@@ -218,7 +218,7 @@ AVE.Modules['PreferenceManager'] = {
         AVE.Utils.AddStyle(this.MngWinStyle);
 
         if ($("span.user:contains('Manage')").length > 0) {
-            var LinkHTML = '<span class="user"><a style="font-weight:bold;" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span> <span class="separator">|</span> ';
+            var LinkHTML = '<span class="user"><a style="font-weight:bold;" id="AVE_PrefMngr" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span> <span class="separator">|</span> ';
             $(LinkHTML).insertBefore("span.user:contains('Manage')");
         } else { //If the user isn't logged in
             var LinkHTML = '<span class="user"> - <a style="font-weight:bold;" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span>';

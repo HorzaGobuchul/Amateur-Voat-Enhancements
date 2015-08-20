@@ -60,7 +60,7 @@ AVE.Modules['UserInfoFixedPos'] = {
 
     Start: function () {
         var _this = this;
-        if (!AVE.Utils.ListHeaderHeight) { AVE.Utils.ListHeaderHeight = 0; }
+        if (!AVE.Utils.ListHeaderHeight) { AVE.Utils.ListHeaderHeight = $('#sr-header-area').height(); }
 
         var headerAccountPos = $('#header-account').offset().top;
         $(window).scroll(function () {
@@ -131,15 +131,11 @@ div#AVE_ToggleUserBlock.collapsed{\
 div#header-account > div.logged-in{\
     background: '+this.bg+'\
 }\
-');
-        if ($.trim($("style#custom_css").text()).length > 0) {
-            AVE.Utils.AddStyle('\
 /* Next is a fix for some custom styles */\
 div#container {z-index: 1;}\
 div#header-container {z-index: 2;}\
 .modal-backdrop.in {display: none;}\
 .modal#linkFlairSelectModal{top: 140px;}');
-        }
     },
 
     SetAccountHeaderPosAsFixed: function (headerAccountPos) {
@@ -147,14 +143,14 @@ div#header-container {z-index: 2;}\
             $('div#header-account').css('position', 'fixed')
                                 .css('top', AVE.Utils.ListHeaderHeight + "px")
                                 .css('right', '0')
-                                .css("text-align", "center")
-                                .css("height", "0px");
+                                .css("text-align", "center");
+                                //.css("height", "0px");
             //$('div#header-account > div.logged-in').css("background", this.bg);
         } else {
             $('div#header-account').css('position', '')
-                                   .css('top', this.Options.DivideBlock.Value ? "1px" : "")
-                                   .css("text-align", "")
-                                   .css("height", "");
+                                   .css('top', this.Options.DivideBlock.Value ? AVE.Utils.ListHeaderHeight+"px" : "")
+                                   .css("text-align", "");
+                                   //.css("height", "");
             //$('div#header-account > div.logged-in').css("background", "");
         }
     },
@@ -169,6 +165,9 @@ div#header-container {z-index: 2;}\
                 $("div#AVE_ToggleUserBlock").attr("title", "Hide user block");
                 //Show user block
                 $('div#header-account > div.logged-in,div.logged-out').show();
+                //Restore #header-account's default size
+                $('div#header-account').css("width", "")
+                                       .css("height", "");
             } else {//If user block is visible
                 //Show collapse icon
                 $("div#AVE_ToggleUserBlock").removeClass("expanded");
@@ -177,6 +176,9 @@ div#header-container {z-index: 2;}\
                 $("div#AVE_ToggleUserBlock").attr("title", "Show user block");
                 //Hide user block
                 $('div#header-account > div.logged-in,div.logged-out').hide();
+                //Set #header-account's size to be that of the toggle icon
+                $('div#header-account').css("width", "14px")
+                                       .css("height", "14px");
             }
         });
     },

@@ -54,6 +54,8 @@ pageMod.PageMod({
     "./Modules/SubmissionFilter.js",
     "./Modules/CommentFilter.js",
     "./Modules/ShowSubmissionVoatBalance.js",
+    "./Modules/HideUsername.js",
+    "./Modules/InjectCustomStyle.js",
     "./BuildDep.js",
     ],
     onAttach: function (worker) {

@@ -16,7 +16,7 @@ AVE.Modules['HeaderFixedPos'] = {
     },
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['HeaderFixedPos'];
+        var _this = this;
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
