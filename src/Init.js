@@ -6,27 +6,49 @@ AVE.Init = {
         var _this = this;
 
         AVE.Utils.EarlySet();
+
+        ModLoad = {
+            Start: [],
+            HeadReady: [],
+            ContainerReady: [],
+            DocReady: [],
+            WinLoaded: [],
+        }
         
         if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) == -1) {
 
-            //Start as soon as possible
             $.each(AVE.Modules, function () {
-                if (this.RunAt && this.RunAt === "start") {
-                    _this.LoadModules(this);
+                if (!this.RunAt || this.RunAt === "ready") {
+                    ModLoad.DocReady.push(this.ID)
+                } else if (this.RunAt === "start") {
+                    ModLoad.Start.push(this.ID);
+                } else if (this.RunAt === "head") {
+                    ModLoad.HeadReady.push(this.ID);
+                } else if (this.RunAt === "container") {
+                    ModLoad.ContainerReady.push(this.ID);
+                } else if (this.RunAt === "load") {
+                    ModLoad.WinLoaded.push(this.ID);
                 }
+            });
+
+            //Start as soon as possible
+            $.each(ModLoad.Start, function () {
+                _this.LoadModules(this);
             });
 
             //On head ready
             $("head").ready(function () {
-                $.each(AVE.Modules, function () {
-                    if (this.RunAt && this.RunAt === "head") {
-                        _this.LoadModules(this);
-                    }
+                $.each(ModLoad.HeadReady, function () {
+                    _this.LoadModules(this);
                 });
             });
 
             //On container ready
-            //$("div#container").ready(function () { print("container ready"); });
+            $("div#container").ready(function () {
+                $.each(ModLoad.ContainerReady, function () {
+                    _this.LoadModules(this);
+                });
+            });
 
             //On doc ready
             $(document).ready(function () {
@@ -46,21 +68,15 @@ AVE.Init = {
                     return;
                 }//Error pages that are empty
 
-                //print("AVE: Loading " + Object.keys(AVE.Modules).length + " modules.")
-                $.each(AVE.Modules, function () {
-                    var mod = this;
-                    if (!mod.RunAt || mod.RunAt === "ready") {
-                        _this.LoadModules(mod);
-                    }
+                $.each(ModLoad.DocReady, function () {
+                    _this.LoadModules(this);
                 });
             });
 
             //On window loaded
             var LoadModuleOnLoadComplete = function () {
-                $.each(AVE.Modules, function () {
-                    if (this.RunAt && this.RunAt === "load") {
-                        _this.LoadModules(this);
-                    }
+                $.each(ModLoad.WinLoaded, function () {
+                    _this.LoadModules(this);
                 });
             };
 
@@ -70,11 +86,12 @@ AVE.Init = {
         }
     },
 
-    LoadModules: function (module) {
+    LoadModules: function (ID) {
+        //var module = AVE.Modules[ID];
         //print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")");
 
-        try { module.Load(); }
-        catch (e) { print("AVE: Error loading " + module.ID); }
+        try { AVE.Modules[ID].Load(); }
+        catch (e) { print("AVE: Error loading " + ID); }
     },
 
     UpdateModules: function () {

@@ -38,7 +38,7 @@ AVE.Modules['ToggleCustomStyle'] = {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
-        if (this.Enabled && $.trim($("style#custom_css:first").text()).length > 0) {
+        if (this.Enabled && !AVE.Modules['InjectCustomStyle'].Enabled && $.trim($("style#custom_css:first").text()).length > 0) {
             this.CustomCSS = $("style#custom_css:first").text();
             this.Start();
         }

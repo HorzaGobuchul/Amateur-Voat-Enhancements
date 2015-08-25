@@ -7,6 +7,8 @@ AVE.Modules['NeverEndingVoat'] = {
     Index: 100,
     Enabled: false,
 
+    RunAt: 'load',
+
     Store: {},
 
     Options: {
@@ -39,19 +41,19 @@ AVE.Modules['NeverEndingVoat'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['NeverEndingVoat'];
+        var _this = this;
         POST = POST[_this.ID];
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST));
     },
 
     ResetPref: function () {
-        var _this = AVE.Modules['NeverEndingVoat'];
+        var _this = this;
         _this.Options = JSON.parse(_this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
-        var _this = AVE.Modules['NeverEndingVoat'];
+        var _this = this;
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
@@ -181,18 +183,22 @@ AVE.Modules['NeverEndingVoat'] = {
             }
 
             // Add expando links to the new submissions
-            location.assign("javascript:UI.ExpandoManager.execute();void(0)");
+            if (!window.wrappedJSObject) { //Chrome
+                location.assign("javascript:UI.ExpandoManager.execute();void(0)");
+            } else {//firefox, because it stopped working with the location hack above
+                window.wrappedJSObject.UI.ExpandoManager.execute();
+            }
             // from https://github.com/voat/voat/blob/master/Voat/Voat.UI/Scripts/voat.ui.js#L190
 
             //Ugly, isn't it?
             if (_this.Options.ExpandNewMedia.Value) {
                 if (AVE.Modules['ToggleMedia'] && AVE.Modules['ToggleMedia'].Enabled) {
                     if ($("[id='GM_ExpandAllImages']").hasClass("expanded")) {
-                        setTimeout(function () { AVE.Modules['ToggleMedia'].ToggleMedia(true) }, 750);
+                        setTimeout(function () { AVE.Modules['ToggleMedia'].ToggleMedia(true) }, 1000);
                     }
                 }
             }
-
+            
             setTimeout(AVE.Init.UpdateModules, 500);
             window.location.hash = 'p=' + _this.currentPage;
 

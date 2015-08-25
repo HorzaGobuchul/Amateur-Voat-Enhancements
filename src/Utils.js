@@ -17,7 +17,7 @@ AVE.Utils = {
     },
 
     CSS_Style: function () {
-        return $('link[rel="stylesheet"][href^="/Content/Dark?"]').length > 0 ? "dark" : "light";
+        return $('link[rel="stylesheet"][href^="/Content/Dark"]').length > 0 ? "dark" : "light";
         //return $("body").attr("class"); //Doesn't work because the class is added after DOMready and this is evaluated before DOMload
     },
 

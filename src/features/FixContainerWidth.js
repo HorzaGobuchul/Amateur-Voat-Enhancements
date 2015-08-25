@@ -28,7 +28,7 @@ AVE.Modules['FixContainerWidth'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['FixContainerWidth'];
+        var _this = this;
         POST = POST[_this.ID];
 
         POST.Width = parseInt(POST.Width);
@@ -40,12 +40,12 @@ AVE.Modules['FixContainerWidth'] = {
     },
 
     ResetPref: function () {
-        var _this = AVE.Modules['FixContainerWidth'];
+        var _this = this;
         _this.Options = JSON.parse(_this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
-        var _this = AVE.Modules['FixContainerWidth'];
+        var _this = this;
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
@@ -87,7 +87,7 @@ AVE.Modules['FixContainerWidth'] = {
                 $("span#FixContainerWidth_Value").text($(this).val());
                 $("div#container").css("max-width", $(this).val() + "%");
             });
-            $("input#Width[type='range']").change();
+
         },
     },
 };

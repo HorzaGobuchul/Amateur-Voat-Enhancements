@@ -67,7 +67,7 @@ AVE.Modules['UserInfoFixedPos'] = {
             _this.SetAccountHeaderPosAsFixed(headerAccountPos)
         });
         this.SetAccountHeaderPosAsFixed(headerAccountPos)
-        
+
         if (this.Options.DivideBlock.Value && $("div#header-account > div.logged-in").length > 0) {
             //Align header-account's content
             $("div#header-account > div.logged-in").css("text-align", "center");
@@ -97,14 +97,27 @@ AVE.Modules['UserInfoFixedPos'] = {
                   $("div#header-container").css("background-position") + " " +
                   $("div#header-container").css("background-clip") + " " +
                   $("div#header-container").css("background-origin");
+
         if ($("div#header-container").css("background-color") == "transparent" &&
             $("div#header-container").css("background-image") == "none") {
-            this.bg = $("#sr-header-area").css("background-color");
-            if (this.bg == "transparent") {
-                //If there is no colour nor any image set, we set it by default
-                this.bg = AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
+            this.bg = $("#logged-in").css("background-color");
+
+            if (this.bg == "transparent" && 
+                this.bg == $("[title='Profile']").css("color")) {
+                $("[title='Profile']").css("color")
+                this.bg = $("#header-account").css("background-color");
+
+                if (this.bg == "transparent") {
+                    this.bg = $("div#header[role='banner']").css("background-color");
+
+                    if (this.bg == "transparent") {
+                        //If there is no colour nor any image set, we set a default value
+                        this.bg = AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
+                    }
+                }
             }
         }
+
 
         AVE.Utils.AddStyle('\
 div#AVE_ToggleUserBlock{\
@@ -129,7 +142,7 @@ div#AVE_ToggleUserBlock.collapsed{\
     margin-bottom:2px;\
 }\
 div#header-account > div.logged-in{\
-    background: '+this.bg+'\
+    background: ' + this.bg + '\
 }\
 /* Next is a fix for some custom styles */\
 div#container {z-index: 1;}\
@@ -143,14 +156,14 @@ div#header-container {z-index: 2;}\
             $('div#header-account').css('position', 'fixed')
                                 .css('top', AVE.Utils.ListHeaderHeight + "px")
                                 .css('right', '0')
-                                .css("text-align", "center");
-                                //.css("height", "0px");
+                                .css("text-align", "center")
+                                .css("bottom", "auto");
             //$('div#header-account > div.logged-in').css("background", this.bg);
         } else {
             $('div#header-account').css('position', '')
-                                   .css('top', this.Options.DivideBlock.Value ? AVE.Utils.ListHeaderHeight+"px" : "")
-                                   .css("text-align", "");
-                                   //.css("height", "");
+                                   .css('top', this.Options.DivideBlock.Value ? AVE.Utils.ListHeaderHeight + "px" : "")
+                                   .css("text-align", "")
+                                   .css("bottom", "");
             //$('div#header-account > div.logged-in').css("background", "");
         }
     },

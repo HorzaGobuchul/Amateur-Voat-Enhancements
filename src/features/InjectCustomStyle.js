@@ -1,7 +1,7 @@
 AVE.Modules['InjectCustomStyle'] = {
     ID: 'InjectCustomStyle',
     Name: 'Inject custom style',
-    Desc: 'Apply your custom style of choice everywhere on Voat.',
+    Desc: 'Apply your custom style of choice everywhere on Voat.<br />For the best result check "Disable custom subverse styles" in your preferences.',
     Category: 'Style',
 
     Index: 100,
@@ -9,7 +9,7 @@ AVE.Modules['InjectCustomStyle'] = {
 
     Store: {},
 
-    RunAt: "head",
+    RunAt: "start",
 
     Options: {
         Enabled: {
@@ -25,18 +25,12 @@ AVE.Modules['InjectCustomStyle'] = {
             Desc: 'Enter URL of a custom CSS file: ',
             Value: "",
         },
-        ApplyInEmpty: {
+        ApplyEverywhere: {
             Type: 'boolean',
-            Desc: 'Apply choosen custom style only in subverses that do not have one.',
+            Desc: 'Also insert the custom style in non-subverse pages (e.g. user page, moderator page, ...). The custom styles generaly aren\'t compatible with them.',
             Value: false,
         },
     },
-
-    //What happens if a custom style makes the AVE prefMng link hidden?
-    //  How can the user change the custom style then?
-    //      add a panick mode
-    //      add fixes to deactivate modules/opt that are problematic
-    //          meaning InjectCustomStyle must start very early
 
     OriginalOptions: "",
 
@@ -63,9 +57,18 @@ AVE.Modules['InjectCustomStyle'] = {
     },
 
     Load: function () {
+        var _this = this;
         this.Store = AVE.Storage;
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
+
+        if (!this.Options.ApplyEverywhere.Value) {
+            if ($.inArray(AVE.Utils.currentPageType,
+                ["frontpage", "set", "subverse", "thread",
+                 "domain", "search", "saved", "user-submissions", "user-comments"]) == -1) {
+                this.Enabled = false;
+            }
+        }
 
         if (this.Enabled) {
             this.Start();
@@ -73,32 +76,35 @@ AVE.Modules['InjectCustomStyle'] = {
     },
 
     CustomStyles: {
-        Cashmere:    "https://cdn.rawgit.com/mijowa/Cashmere/master/css/cashmere.min.css?AVE",
-        Flatron:     "https://cdn.rawgit.com/Gyyyn/Flatron-Voat/master/flatron.css?AVE", //buggy (see block info) Doesn't like big usernames
-        Scribble:    "https://cdn.rawgit.com/ScribbleForVoat/Scribble/master/base.min.css?AVE",
+        None: "",
+        Cashmere: "https://cdn.rawgit.com/mijowa/Cashmere/master/css/cashmere.min.css?AVE",
+        Flatron: "https://cdn.rawgit.com/Gyyyn/Flatron-Voat/master/flatron.css?AVE", //buggy (see block info) Doesn't like big usernames
+        Scribble: "https://cdn.rawgit.com/ScribbleForVoat/Scribble/master/base.min.css?AVE",
         Simplegoats: "https://cdn.rawgit.com/relaxedzombie/simplegoats/master/simplegoats.min.css?AVE",
-        SlimDark:    "https://cdn.rawgit.com/KinOfMany/SlimDark/master/style.css?AVE",
-        Typogra:     "https://cdn.rawgit.com/Nurdoidz/Typogra-Voat/master/Typogra.min.css",
+        SlimDark: "https://cdn.rawgit.com/KinOfMany/SlimDark/master/style.css?AVE",
+        Typogra: "https://cdn.rawgit.com/Nurdoidz/Typogra-Voat/master/Typogra.min.css",
     },
 
     Start: function () {
+        var _this = this;
         $("style#custom_css").ready(function () { $("style#custom_css").text(""); });
 
         var URL;
-        
-        if (this.Options.CustomStyleUrl.Value) {
-            URL = this.Options.CustomStyleUrl.Value;
-        } else if (this.Options.CustomStyleName.Value &&
-                    this.CustomStyles[this.Options.CustomStyleName.Value]) {
+
+        if (this.Options.CustomStyleName.Value &&
+            this.CustomStyles[this.Options.CustomStyleName.Value]) {
             URL = this.CustomStyles[this.Options.CustomStyleName.Value];
+        } else if (this.Options.CustomStyleUrl.Value) {
+            URL = this.Options.CustomStyleUrl.Value
         }
 
         if (URL) {
+            var theme = ~document.cookie.indexOf('theme=dark') ? "Dark" : "Light";
+            $("head").append('<link rel="stylesheet" href="/Content/' + theme + '?HiFromAVE" type="text/css">');
             $("head").append('<link rel="StyleSheet" href="' + URL + '" type="text/css">');
+            $("link[href^='/Content/" + theme + "?v=']").ready(function () { $("link[href^='/Content/" + theme + "?v=']").remove(); });
 
-            //$("head").append('<style>@import url("' + URL + '");</style>');
-
-            //If I use the following method, someone could too easily inject javascript and mess with the user.
+            //If I use the following method, someone could easily inject javascript code and mess with the user.
             //$.ajax({
             //    url: URL,
             //    cache: true,
@@ -120,15 +126,24 @@ AVE.Modules['InjectCustomStyle'] = {
                         });
                         break;
                     case "Cashmere":
-                    case "Simplegoats":
-                    case "Typogra":
-                        $("#header-account").css("bottom", "auto");
+                        AVE.Utils.AddStyle("a#GM_ExpandAllImages{display: inline !important;}");
                         break;
+                        //case "Simplegoats":
+                        //case "Typogra":
+                        //    break;
                     default:
                         break;
                 }
             }
         }
+
+        //Panic Mode
+        $(document).on("keydown", function (e) {
+            if (e.shiftKey && e.ctrlKey && e.which == 45) {
+                _this.PanicMode();
+                $(document).off("keydown");
+            }
+        });
     },
 
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager
@@ -147,14 +162,64 @@ AVE.Modules['InjectCustomStyle'] = {
             });
             htmlStr += '</select>';
 
-            htmlStr += '<br /><br />' + _this.Options.CustomStyleUrl.Desc + '<br /><input id="CustomStyleUrl" style="width:100%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.CustomStyleUrl.Value + '"></input><br /> <a target="_blank" href="https://userstyles.org/styles/browse/voat">Try a usertstyle<a/>: add ".css" at the end of the userstyle\'s url and paste it above.';
+            htmlStr += '<br /><br />' + _this.Options.CustomStyleUrl.Desc + '<br /><input id="CustomStyleUrl" style="width:85%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.CustomStyleUrl.Value + '"></input>';
+            htmlStr += '&nbsp; <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-unsub" id="AVE_CheckCSSFile">Check</a>';
+
+            htmlStr += '<br /> <a target="_blank" href="https://userstyles.org/styles/browse/voat">Try a usertstyle<a/>: add ".css" at the end of the userstyle\'s url and paste it above.';
+
+            htmlStr += '<br /><br /><input id="ApplyEverywhere" ' + (_this.Options.ApplyEverywhere.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ApplyEverywhere"> ' + _this.Options.ApplyEverywhere.Desc + '</label>';
+
+            htmlStr += '<br /><br /><h2><strong>Panic Mode</strong>: If you added a custom style that messes everything up and you cannot change back, do <strong>Ctrl+Shift+Insert</strong> to disable this module and reload the page.</h2>';
 
             return htmlStr;
         },
         callback: function () {
+            var _this = this;
 
-            //Check if URL returns MIME type text/css
-            //On key up
+            $("a#AVE_CheckCSSFile").on("click", function () {
+                var URL = $("div.AVE_ModuleCustomInput > input#CustomStyleUrl").val();
+                
+                if (URL) {
+                    $.ajax({
+                        url: URL,
+                        cache: true,
+                    }).done(function (data, status, request) {
+                        if (request.getResponseHeader('Content-type').split(";")[0] == "text/css") {
+                            _this.ShowInfo("It's Ok! The file can be loaded as CSS!", "#68c16b");
+                        } else {
+                            _this.ShowInfo("Not Ok! The file isn't sent as a CSS file (MIME type).", "#dd5454");
+                        }
+                    })
+                    .fail(function (jqXHR, textStatus) {
+                        _this.ShowInfo("Error while loading CSS file. Check the URL");
+                    });
+                }
+            });
         },
+
+        ShowInfo: function (message, color) {
+            if ($("span#CustomStyleUrl_InfoStr").length == 0) {
+                $('<br /><span id="CustomStyleUrl_InfoStr"></span>').insertAfter("a#AVE_CheckCSSFile");
+            }
+            $("span#CustomStyleUrl_InfoStr").text(message);
+            if (color) { $("span#CustomStyleUrl_InfoStr").css("color", color); }
+
+        },
+    },
+
+    //If the applied custom style messed everything up, so much that you can't toggle the module off:
+    PanicMode: function () {
+        var _this = this;
+
+        var POST = {};
+        POST[this.ID] = {
+            Enabled: false,
+            CustomStyleName: _this.Options.CustomStyleName.Value,
+            CustomStyleUrl: _this.Options.CustomStyleUrl.Value,
+            ApplyEverywhere: _this.Options.ApplyEverywhere.Value,
+        };
+        this.SavePref(POST);
+
+        window.location.reload();
     },
 };

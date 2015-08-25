@@ -65,8 +65,8 @@ AVE.Modules['ToggleMedia'] = {
     },
 
     sel: [],
-    ImgMedia: "[title='JPG'],[title='PNG'],[title='GIF'],[title='Gfycat'],[title='Gifv'],[title='Imgur Album']",
-    VidMedia: "[title='YouTube'],[title='Vimeo']",
+    ImgMedia: "[title^='JPG'],[title^='PNG'],[title^='GIF'],[title^='Gfycat'],[title^='Gifv'],[title^='Imgur Album']",
+    VidMedia: "[title^='YouTube'],[title^='Vimeo']",
     SelfText: "[onclick^='loadSelfText']",
     // voat.co/v/test/comments/37149
 
@@ -99,8 +99,6 @@ AVE.Modules['ToggleMedia'] = {
                                     return false;
                                 });
 
-            //print(this.sel.length);
-
             this.AppendToPage();
             this.Listeners();
         }
@@ -119,7 +117,7 @@ AVE.Modules['ToggleMedia'] = {
             $("a#GM_ExpandAllImages").text($("a#GM_ExpandAllImages").text().replace(/\([0-9]*\)/, "(" + this.sel.length + ")"));
         }
         else {
-            var btnHTML = '<li class="disabled"><a id="GM_ExpandAllImages" class="contribute submit-text">View Media (' + this.sel.length + ')</a></li>';
+            var btnHTML = '<li class="disabled"><a style="cursor:pointer;" id="GM_ExpandAllImages" class="contribute submit-text">View Media (' + this.sel.length + ')</a></li>';
             $(btnHTML).insertAfter(".disabled:last");
         }
     },

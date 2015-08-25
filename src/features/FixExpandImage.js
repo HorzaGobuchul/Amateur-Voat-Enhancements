@@ -45,6 +45,12 @@ AVE.Modules['FixExpandImage'] = {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
+        if ($.inArray(AVE.Utils.currentPageType,
+            ["frontpage", "set", "subverse", "thread",
+             "domain", "search", "saved", "user-submissions", "user-comments"]) == -1) {
+            this.Enabled = false;
+        }
+
         if (this.Enabled) {
             this.Start();
         }
@@ -53,23 +59,27 @@ AVE.Modules['FixExpandImage'] = {
     ImgMedia: "a[title='JPG'],a[title='PNG'],a[title='GIF']",//These are the only media that are resizable
 
     Start: function () {
-        if (this.Options.OverSidebar.Value) {
+        if (this.Options.OverSidebar.Value &&
+            $.inArray(AVE.Utils.currentPageType, ["saved", "user-submissions", "user-comments"]) == -1) {
             /*
             !! THIS CSS FIX IS BORROWED FROM /V/SCRIBBLE 1.5 !!
             */
-            if ($("style[for='AVE']").length == 0) { $("head").append('<style for="AVE"></style>'); }
-            AVE.Utils.AddStyle('.link-expando {overflow:visible;position:relative;z-index:1;margin-top: 10px;}\
-                            .usertext {overflow: visible !important;}\
-                            .md {overflow: visible;}\
-                            .comment {overflow: visible;}\
-                            .entry {overflow:visible;}\
-           div.submission > .entry {margin-left:60px;}\
-           .nestedlisting > .comment > .entry {margin-left:30px;}\
-                 .comment > .comment > .entry {margin-left:30px;}\
-    div.content-no-margin > .comment > .entry{margin-left:0px;}/*Comments outside of threads (like /username/comments*/\
-                   .entry > div.collapsed {margin-left:0px;}\
-          form#form-xxxxx > div.usertext-body > div.md {overflow:auto;}\
-                     form > div.row {overflow:hidden;}');
+            AVE.Utils.AddStyle('\
+                .usertext {\
+                    font-size: small;\
+                    overflow: auto;\
+                }\
+                .md {overflow: visible;}\
+                .comment > .entry {margin-left:30px;}\
+                .usertext {overflow: visible !important;}\
+                .link-expando {\
+                    overflow: visible;\
+                    position: relative;\
+                    z-index: 1;\
+                }\
+                .submission > .entry {margin-left: 59px;}\
+                .entry {overflow: visible;}\
+                .comment {overflow: visible;}');
         }
 
         this.Listeners();

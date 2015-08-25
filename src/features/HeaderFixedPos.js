@@ -51,7 +51,17 @@ AVE.Modules['HeaderFixedPos'] = {
         AVE.Utils.ListHeaderHeight = $('#sr-header-area').height(); //23
 
         var bg, border;
+        //Subverse list bg
         bg = $("#sr-header-area").css("background-color");
+        if (bg == "transparent") {
+            //general header background
+            bg = $("div#header[role='banner']").css("background-color");
+            if (bg == "transparent") {
+                //If there is no colour nor any image set, we set it by default
+                bg = AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
+            }
+        }
+
         border = $("#sr-header-area").css("borderBottomWidth") + " " +
                  $("#sr-header-area").css("borderBottomStyle") + " " +
                  $("#sr-header-area").css("borderBottomColor");
