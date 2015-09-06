@@ -39,21 +39,21 @@ AVE.Modules['SubmissionFilter'] = {
 
         $.each(POST, function (k, v) {
             tV = k.split("-");
-            if (tV.length == 2) {
+            if (tV.length === 2) {
                 id = parseInt(tV[0], 10);
             } else { return true; } //if this isn't a filter value: continue
 
-            if (tV[1] == "kw") {
-                if (v.length == 0) { return true; } //If no kw were specified: continue
+            if (tV[1] === "kw") {
+                if (v.length === 0) { return true; } //If no kw were specified: continue
                 else {
-                    _this.Options.Filters.Value.push(new _this.Filter(id, v.toLowerCase().split(","), []))
+                    _this.Options.Filters.Value.push(new _this.Filter(id, v.toLowerCase().split(","), []));
                 }
-            } else if (tV[1] == "sub") {
-                var inArr = $.grep(_this.Options.Filters.Value, function (e) { return e.Id == id; });
-                if (inArr.length == 0) {
+            } else if (tV[1] === "sub") {
+                var inArr = $.grep(_this.Options.Filters.Value, function (e) { return e.Id === id; });
+                if (inArr.length === 0) {
                     //if there is no filter with this ID: continue
                     return true;
-                } else if (v.length != 0) {
+                } else if (v.length !== 0) {
                     var idx = $.inArray(inArr[0], _this.Options.Filters.Value);
                     _this.Options.Filters.Value[idx].ApplyToSub = v.toLowerCase().split(",");
                 }
@@ -91,7 +91,7 @@ AVE.Modules['SubmissionFilter'] = {
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
 
-        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "search", "domain"]) == -1) {
+        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "search", "domain"]) === -1) {
             this.Enabled = false;
         }
 
@@ -110,9 +110,9 @@ AVE.Modules['SubmissionFilter'] = {
             var titleRef = $(this);
             $.each(_this.Options.Filters.Value, function () {
                 found = false;
-                if (this.ApplyToSub.length == 0 || $.inArray(AVE.Utils.subverseName, this.ApplyToSub) != -1) {
+                if (this.ApplyToSub.length === 0 || $.inArray(AVE.Utils.subverseName, this.ApplyToSub) !== -1) {
                     $.each(this.Keywords, function () {
-                        if (this.length == 0) { return true;}//Just in case
+                        if (this.length === 0) { return true;}//Just in case
                         re = new RegExp(this);
                         if (re.test(titleStr)) {
                             print("AVE: removed submission with title \"" + titleStr + "\" (kw: \"" + this + "\")");
@@ -144,17 +144,17 @@ AVE.Modules['SubmissionFilter'] = {
 
             this.htmlNewFilter = '<span class="AVE_Submission_Filter" id="{@id}">\
                                 Keyword(s) \
-                                    <input id="{@id}-kw" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@keywords}"></input>\
+                                    <input id="{@id}-kw" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@keywords}"></input>\
                                     Subverse(s) \
-                                    <input id="{@id}-sub" style="width:29%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@subverses}"></input>\
+                                    <input id="{@id}-sub" style="width:29%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@subverses}"></input>\
                                 </span>\
                                 <a href="javascript:void(0)" title="Remove filter" style="font-size: 16px;font-weight: bold;" class="RemoveFilter" id="{@id}">-</a>';
 
             htmlStr += '<span style="font-weight:bold;"> Example: "ex" matches "rex", "example" and "bexter".<br />Separate keywords and subverse names by a comma.</span><br />';
 
             $.each(_this.Options.Filters.Value, function () {
-                var filter = Pref_this.htmlNewFilter + "<br />"
-                filter = filter.replace(/{@id}/ig, this.Id);
+                var filter = Pref_this.htmlNewFilter + "<br />";
+                filter = filter.replace(/\{@id\}/ig, this.Id);
                 filter = filter.replace("{@keywords}", this.Keywords.join(","));
                 filter = filter.replace("{@subverses}", this.ApplyToSub.join(","));
 
@@ -169,8 +169,8 @@ AVE.Modules['SubmissionFilter'] = {
         callback: function () {
             var Pref_this = this;
             $("div#SubmissionFilter > div.AVE_ModuleCustomInput > a#AddNewFilter").on("click", function () {
-                var html = Pref_this.htmlNewFilter + "<br />"
-                html = html.replace(/{@id}/ig, $("div#SubmissionFilter > div.AVE_ModuleCustomInput > span.AVE_Submission_Filter").length);
+                var html = Pref_this.htmlNewFilter + "<br />";
+                html = html.replace(/\{@id\}/ig, $("div#SubmissionFilter > div.AVE_ModuleCustomInput > span.AVE_Submission_Filter").length);
                 html = html.replace("{@keywords}", "");
                 html = html.replace("{@subverses}", "");
 

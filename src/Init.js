@@ -3,23 +3,24 @@ AVE.Modules = {};
 
 AVE.Init = {
     Start: function () {
-        var _this = this;
+        var ModLoad, _this;
 
-        AVE.Utils.EarlySet();
-
+        _this = this;
         ModLoad = {
             Start: [],
             HeadReady: [],
             ContainerReady: [],
             DocReady: [],
-            WinLoaded: [],
-        }
-        
-        if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) == -1) {
+            WinLoaded: []
+        };
+
+        AVE.Utils.EarlySet();
+
+        if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) === -1) {
 
             $.each(AVE.Modules, function () {
                 if (!this.RunAt || this.RunAt === "ready") {
-                    ModLoad.DocReady.push(this.ID)
+                    ModLoad.DocReady.push(this.ID);
                 } else if (this.RunAt === "start") {
                     ModLoad.Start.push(this.ID);
                 } else if (this.RunAt === "head") {
@@ -57,13 +58,12 @@ AVE.Init = {
                 print("AVE: Current page > " + AVE.Utils.currentPageType);
                 //print("AVE: Current style > " + AVE.Utils.CSSstyle);
 
-                title = document.title.toLowerCase();
-
                 //By /u/Jammi: voat.co/v/AVE/comments/421861
-                if (~title.indexOf('checking your bits') || ~title.indexOf('play pen improvements')) {
+                print(document.title);
+                if (document.title === 'Checking your bits' || document.title === 'Play Pen Improvements') {
                     if (~document.cookie.indexOf('theme=dark')) {
                         $.each(["body background #333", "body color #dfdfdf", "#header background #333", "#header-container background #333", "#header-container borderBottomColor #555", "#header-container borderTopColor #555", ".panel-info background #222", ".panel-heading background #222", ".panel-heading borderColor #444", ".panel-title background #222", ".panel-title color #dfdfdf", ".panel-body background #222", ".panel-body borderColor #444"],
-                               function () { var _this = this.split(" "); $(_this[0]).css(_this[1], _this[2]) });
+                               function () { var _this = this.split(" "); $(_this[0]).css(_this[1], _this[2]); });
                     }
                     return;
                 }//Error pages that are empty
@@ -74,15 +74,15 @@ AVE.Init = {
             });
 
             //On window loaded
-            var LoadModuleOnLoadComplete = function () {
+            var loadModuleOnLoadComplete = function () {
                 $.each(ModLoad.WinLoaded, function () {
                     _this.LoadModules(this);
                 });
             };
 
             //$(window).load's callback isn't triggered if it is processed as the page's readystate already is "complete"
-            if (document.readyState == "complete") { LoadModuleOnLoadComplete(); }
-            else { $(window).load(function () { LoadModuleOnLoadComplete(); }); }
+            if (document.readyState === "complete") { loadModuleOnLoadComplete(); }
+            else { $(window).load(function () { loadModuleOnLoadComplete(); }); }
         }
     },
 
@@ -91,7 +91,7 @@ AVE.Init = {
         //print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")");
 
         try { AVE.Modules[ID].Load(); }
-        catch (e) { print("AVE: Error loading " + ID); }
+        catch (e) {print("AVE: Error loading " + ID);}
     },
 
     UpdateModules: function () {
@@ -106,5 +106,5 @@ AVE.Init = {
                 //time = ntime;
             }
         });
-    },
+    }
 };

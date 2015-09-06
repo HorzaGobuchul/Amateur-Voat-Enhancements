@@ -47,7 +47,7 @@ AVE.Modules['FixExpandImage'] = {
 
         if ($.inArray(AVE.Utils.currentPageType,
             ["frontpage", "set", "subverse", "thread",
-             "domain", "search", "saved", "user-submissions", "user-comments"]) == -1) {
+             "domain", "search", "saved", "user-submissions", "user-comments"]) === -1) {
             this.Enabled = false;
         }
 
@@ -60,7 +60,7 @@ AVE.Modules['FixExpandImage'] = {
 
     Start: function () {
         if (this.Options.OverSidebar.Value &&
-            $.inArray(AVE.Utils.currentPageType, ["saved", "user-submissions", "user-comments"]) == -1) {
+            $.inArray(AVE.Utils.currentPageType, ["saved", "user-submissions", "user-comments"]) === -1) {
             /*
             !! THIS CSS FIX IS BORROWED FROM /V/SCRIBBLE 1.5 !!
             */
@@ -79,7 +79,8 @@ AVE.Modules['FixExpandImage'] = {
                 }\
                 .submission > .entry {margin-left: 59px;}\
                 .entry {overflow: visible;}\
-                .comment {overflow: visible;}');
+                .comment {overflow: visible;}\
+                form > div.row {overflow:hidden;}');
         }
 
         this.Listeners();
@@ -100,7 +101,7 @@ AVE.Modules['FixExpandImage'] = {
         else {
             this.obsImgExp = new OnNodeChange($("div.expando, " + this.ImgMedia), function (e) {
                 var img = $(e.target).find("img:first"); //In sub
-                if (img.length == 0) { img = $(this).next("div.link-expando").find("img"); } //In thread
+                if (img.length === 0) { img = $(this).next("div.link-expando").find("img"); } //In thread
 
                 if (img.length > 0) {
                     img.OnAttrChange(function () { window.getSelection().removeAllRanges(); });

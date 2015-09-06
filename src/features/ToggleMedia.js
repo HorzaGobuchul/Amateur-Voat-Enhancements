@@ -25,18 +25,16 @@ AVE.Modules['ToggleMedia'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var _this = this;
-        POST = POST[_this.ID];
+        POST = POST[this.ID];
         var opt = {};
         opt.Enabled = POST.Enabled;
-        opt.MediaTypes = (POST.Images ? "1" : "0") + (POST.Videos ? "1" : "0") + (POST["self-texts"] ? "1" : "0")
+        opt.MediaTypes = (POST.Images ? "1" : "0") + (POST.Videos ? "1" : "0") + (POST["self-texts"] ? "1" : "0");
 
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(opt));
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(opt));
     },
 
     ResetPref: function () {
-        var _this = this;
-        _this.Options = JSON.parse(_this.OriginalOptions);
+        this.Options = JSON.parse(this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
@@ -72,18 +70,18 @@ AVE.Modules['ToggleMedia'] = {
 
     Start: function () {
         var AcceptedTypes = this.Options.MediaTypes.Value;
-        if (AcceptedTypes != "000" && $.inArray(AVE.Utils.currentPageType, ["subverses", "sets", "mysets", "user", "user-manage", "about"]) == -1) {
+        if (AcceptedTypes !== "000" && $.inArray(AVE.Utils.currentPageType, ["subverses", "sets", "mysets", "user", "user-manage", "about"]) === -1) {
 
-            var strSel = (AcceptedTypes[0] == true ? this.ImgMedia + "," : "") +
-                         (AcceptedTypes[1] == true ? this.VidMedia + "," : "") +
-                         (AcceptedTypes[2] == true ? this.SelfText : "");
+            var strSel = (AcceptedTypes[0] === "1" ? this.ImgMedia + "," : "") +
+                         (AcceptedTypes[1] === "1" ? this.VidMedia + "," : "") +
+                         (AcceptedTypes[2] === "1" ? this.SelfText : "");
 
-            if (strSel[strSel.length - 1] == ",")
+            if (strSel[strSel.length - 1] === ",")
             { strSel = strSel.slice(0, -1); }
 
             this.sel = $(strSel).filter(':parents(.titlebox)') //Remove from selection all media in the subverse's bar.
-                                .filter(function (idx) {
-                                    if ($(this).parents("div.submission[class*='id-']:first").css("opacity") == 1) {
+                                .filter(function () {
+                                    if ($(this).parents("div.submission[class*='id-']:first").css("opacity") === 1) {
                                         //Is this element a link to a media in a self-post?
                                         if ($(this).find("span.link-expando-type").length > 0) { return true; }
                                         //Is this element in a submission post and not a duplicate inserted by NeverEndingVoat?
@@ -111,7 +109,7 @@ AVE.Modules['ToggleMedia'] = {
     },
 
     AppendToPage: function () {
-        if (this.sel.length == 0) { return; }
+        if (this.sel.length === 0) { return; }
 
         if ($("a#GM_ExpandAllImages").length > 0) {
             $("a#GM_ExpandAllImages").text($("a#GM_ExpandAllImages").text().replace(/\([0-9]*\)/, "(" + this.sel.length + ")"));
@@ -129,11 +127,11 @@ AVE.Modules['ToggleMedia'] = {
         $("[id='GM_ExpandAllImages']").on("click", function () {
             if ($(this).hasClass("expanded")) {
                 $(this).text('View Media (' + _this.sel.length + ')');
-                $(this).removeClass("expanded")
+                $(this).removeClass("expanded");
                 isExpanded = false;
             } else {
                 $(this).text('Hide Media (' + _this.sel.length + ')');
-                $(this).addClass("expanded")
+                $(this).addClass("expanded");
                 isExpanded = true;
             }
             _this.ToggleMedia(isExpanded);

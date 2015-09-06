@@ -3,8 +3,10 @@ AVE.Modules['HeaderFixedPos'] = {
     Name: 'Fix header position',
     Desc: 'Set the subverse list header position as fixed.',
     Category: 'Fixes',
-    Index: 100,
+    Index: 99,
     Enabled: false,
+
+    RunAt: 'load',
 
     Store: {},
 
@@ -53,12 +55,12 @@ AVE.Modules['HeaderFixedPos'] = {
         var bg, border;
         //Subverse list bg
         bg = $("#sr-header-area").css("background-color");
-        if (bg == "transparent") {
+        if (bg === "transparent") {
             //general header background
             bg = $("div#header[role='banner']").css("background-color");
-            if (bg == "transparent") {
+            if (bg === "transparent") {
                 //If there is no colour nor any image set, we set it by default
-                bg = AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
+                bg = AVE.Utils.CSSstyle === "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
             }
         }
 
@@ -70,7 +72,7 @@ AVE.Modules['HeaderFixedPos'] = {
             .css("z-index", "1000")
             .css('border-bottom', border)//'1px solid ' + (AVE.Utils.CSSstyle == "dark" ? "#222" : "#DCDCDC"))
             .css("height", AVE.Utils.ListHeaderHeight + "px")
-            .css("background-color", bg)//AVE.Utils.CSSstyle == "dark" ? "#333" : "#FFF");
+            .css("background-color", bg);//AVE.Utils.CSSstyle == "dark" ? "#333" : "#FFF");
 
         $('.width-clip').find("br:last").remove();//Chrome
 
@@ -78,7 +80,7 @@ AVE.Modules['HeaderFixedPos'] = {
         var li_Height = $("ul.whoaSubscriptionMenu > li > ul:first").find("li > a").outerHeight();
         if (($(window).height() - AVE.Utils.ListHeaderHeight - li_Height) < $("ul.whoaSubscriptionMenu > li > ul:first").height()) {
             var li_Width = $("ul.whoaSubscriptionMenu > li > ul:first").find("li > a").outerWidth();
-            var elPerCol = parseInt(($(window).height() - AVE.Utils.ListHeaderHeight) / li_Height) - 1;
+            var elPerCol = parseInt(($(window).height() - AVE.Utils.ListHeaderHeight) / li_Height, 10) - 1;
             var columns = $("ul.whoaSubscriptionMenu > li > ul:first").find("li").length / elPerCol - 1;
 
             for (var col = 0; col < columns; col++) {

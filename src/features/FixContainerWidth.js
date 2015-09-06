@@ -31,8 +31,8 @@ AVE.Modules['FixContainerWidth'] = {
         var _this = this;
         POST = POST[_this.ID];
 
-        POST.Width = parseInt(POST.Width);
-        if (typeof POST.Width != "number" || isNaN(POST.Width)) {
+        POST.Width = parseInt(POST.Width, 10);
+        if (typeof POST.Width !== "number" || isNaN(POST.Width)) {
             POST.Width = _this.Options.Width.Value;
         }
 

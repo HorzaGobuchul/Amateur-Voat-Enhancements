@@ -17,9 +17,7 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
     },
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['UpdateAfterLoadingMore'];
-
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST[this.ID]));
     },
 
     SetOptionsFromPref: function () {
@@ -55,7 +53,7 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
         //More Comments
         if (this.obsComm) { this.obsComm.disconnect(); }
         this.obsComm = new OnNodeChange($("div.sitetable#siteTable"), function (e) {
-            if (e.addedNodes.length > 0 && e.removedNodes.length == 0) {
+            if (e.addedNodes.length > 0 && e.removedNodes.length === 0) {
                 if ($("div[class*='id-']").length > _this.CommentLen) {
                     _this.CommentLen = $("div[class*='id-']").length;
 
@@ -71,8 +69,8 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
         //More Replies
         if (this.obsReplies) { this.obsReplies.disconnect(); }
         this.obsReplies = new OnNodeChange($("a[id*='loadmore-']").parents("div[class*='id-']:visible"), function (e) {
-            if (e.removedNodes.length == 1) {
-                if (e.removedNodes[0].tagName == "DIV" && e.removedNodes[0].id == "") {
+            if (e.removedNodes.length === 1) {
+                if (e.removedNodes[0].tagName === "DIV" && e.removedNodes[0].id === "") {
                     setTimeout(AVE.Init.UpdateModules, 500);
                 }
             }

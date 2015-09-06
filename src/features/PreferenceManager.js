@@ -58,8 +58,8 @@ AVE.Modules['PreferenceManager'] = {
             }\
             div.MngrWin{\
                 z-index: 1000 !important;\
-                background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "292929" : "F4F4F4") + ';\
-                color: #' + (AVE.Utils.CSSstyle == "dark" ? "5452A8" : "404040") + ';\
+                background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "292929" : "F4F4F4") + ';\
+                color: #' + (AVE.Utils.CSSstyle === "dark" ? "5452A8" : "404040") + ';\
                 left:0;\
                 right:0;\
                 margin-left:auto;\
@@ -74,8 +74,8 @@ AVE.Modules['PreferenceManager'] = {
                 margin: 0px 0px;\
                 padding: 4px 2px;\
                 font-size: 16px;\
-                background: #' + (AVE.Utils.CSSstyle == "dark" ? "333" : "FFF") + ';\
-                border: 2px solid #' + (AVE.Utils.CSSstyle == "dark" ? "292929" : "F4F4F4") + ';\
+                background: #' + (AVE.Utils.CSSstyle === "dark" ? "333" : "FFF") + ';\
+                border: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "292929" : "F4F4F4") + ';\
                 border-bottom:0px;\
             }\
             span.MngrWinTitle{\
@@ -113,20 +113,20 @@ AVE.Modules['PreferenceManager'] = {
             \
             div.ModuleToggle{\
                 margin: 5px 0px 0px 5px;\
-                border: 2px solid #' + (AVE.Utils.CSSstyle == "dark" ? "292929" : "F4F4F4") + ';\
+                border: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "292929" : "F4F4F4") + ';\
                 padding-left:5px;\
                 text-align:left;\
-                color: #' + (AVE.Utils.CSSstyle == "dark" ? "DFDFDF" : "404040") + ';\
-                background: #' + (AVE.Utils.CSSstyle == "dark" ? "333" : "FFF") + ';\
+                color: #' + (AVE.Utils.CSSstyle === "dark" ? "DFDFDF" : "404040") + ';\
+                background: #' + (AVE.Utils.CSSstyle === "dark" ? "333" : "FFF") + ';\
                 border-radius: 5px;\
             }\
             div.ModuleToggle:hover {\
                 background: #b0dbf4;\
-                background: linear-gradient(to right,  #' + (AVE.Utils.CSSstyle == "dark" ? "292929" : "F4F4F4") + ' 0%, #' + (AVE.Utils.CSSstyle == "dark" ? "333" : "FFF") + ' 100%);\
+                background: linear-gradient(to right,  #' + (AVE.Utils.CSSstyle === "dark" ? "292929" : "F4F4F4") + ' 0%, #' + (AVE.Utils.CSSstyle === "dark" ? "333" : "FFF") + ' 100%);\
             }\
             div.ModuleToggle:active {\
                 background: #91c3e0;\
-                background: linear-gradient(to right,  #' + (AVE.Utils.CSSstyle == "dark" ? "202020" : "ededed") + ' 0%, #' + (AVE.Utils.CSSstyle == "dark" ? "333" : "FFF") + ' 100%);\
+                background: linear-gradient(to right,  #' + (AVE.Utils.CSSstyle === "dark" ? "202020" : "ededed") + ' 0%, #' + (AVE.Utils.CSSstyle === "dark" ? "333" : "FFF") + ' 100%);\
             }\
             \
             section.ModulePref{\
@@ -141,8 +141,8 @@ AVE.Modules['PreferenceManager'] = {
                 padding-top: 10px;\
                 width:625px;\
                 height:552px;\
-                background: #' + (AVE.Utils.CSSstyle == "dark" ? "333" : "FFF") + ';\
-                color: #' + (AVE.Utils.CSSstyle == "dark" ? "AAA" : "404040") + ';\
+                background: #' + (AVE.Utils.CSSstyle === "dark" ? "333" : "FFF") + ';\
+                color: #' + (AVE.Utils.CSSstyle === "dark" ? "AAA" : "404040") + ';\
                 border-radius: 5px;\
                 overflow-y:auto;\
             }\
@@ -151,7 +151,7 @@ AVE.Modules['PreferenceManager'] = {
             }\
             div.ModuleTitleBlock{\
                 font-size:12px;\
-                border-bottom: 2px solid #' + (AVE.Utils.CSSstyle == "dark" ? "222" : "DDD") + ';\
+                border-bottom: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "222" : "DDD") + ';\
             }\
             span.ModuleTitle{\
                 font-size:14px;\
@@ -172,7 +172,7 @@ AVE.Modules['PreferenceManager'] = {
                 font-size:11px;\
             }\
             div.AVE_ModuleCustomInput{\
-                border-left:2px solid #' + (AVE.Utils.CSSstyle == "dark" ? "3F3F3F" : "DDD") + ';\
+                border-left:2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "3F3F3F" : "DDD") + ';\
                 margin-top: 5px;\
                 margin-left: 10px;\
                 padding-left: 4px;\
@@ -193,7 +193,7 @@ AVE.Modules['PreferenceManager'] = {
                     <section id="ModuleSectionToggles">\
                     </section>\
                 </div>\
-            </div>',
+            </div>';
 
         $.each(AVE.Modules, function () {
             if ($.inArray(this.ID, _this.Modules) === -1) {
@@ -216,12 +216,13 @@ AVE.Modules['PreferenceManager'] = {
 
     AppendToPage: function () {
         AVE.Utils.AddStyle(this.MngWinStyle);
+        var LinkHTML;
 
         if ($("span.user:contains('Manage')").length > 0) {
-            var LinkHTML = '<span class="user"><a style="font-weight:bold;" id="AVE_PrefMngr" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span> <span class="separator">|</span> ';
+            LinkHTML = '<span class="user"><a style="font-weight:bold;" id="AVE_PrefMngr" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span> <span class="separator">|</span> ';
             $(LinkHTML).insertBefore("span.user:contains('Manage')");
         } else { //If the user isn't logged in
-            var LinkHTML = '<span class="user"> - <a style="font-weight:bold;" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span>';
+            LinkHTML = '<span class="user"> - <a style="font-weight:bold;" href="javascript:void(0)" id="" title="AVE Preference Manager">AVE</a></span>';
             $(LinkHTML).insertAfter("span.user:first");
         }
     },
@@ -253,12 +254,10 @@ AVE.Modules['PreferenceManager'] = {
             $("form[cat='" + cat + "']").hide();
             //And populate them
             var module;
-            var enabled;
-            var alwaysEnabled;
 
             $.each(_this.Modules, function () {
                 module = AVE.Modules[this];
-                if (module.Category != cat) { return; }
+                if (module.Category !== cat) { return; }
 
                 _this.AddModule(module, cat);
             });
@@ -308,7 +307,7 @@ AVE.Modules['PreferenceManager'] = {
 
         //Close the pref Manager with a click outside of it.
         $(".overlay").on("click", function (e) {
-            if ($(e.target).attr("class") == "overlay") {
+            if ($(e.target).attr("class") === "overlay") {
                 $("#CloseWinMngr").click();
             }
         });
@@ -336,7 +335,7 @@ AVE.Modules['PreferenceManager'] = {
         //if save btn has btn-sub class prompt confirmation
     },
     AddToModifiedModulesList: function (ID) {
-        if ($.inArray(ID, this.ModifiedModules) == -1) {
+        if ($.inArray(ID, this.ModifiedModules) === -1) {
             this.ModifiedModules.push(ID);
         }
     },
@@ -349,7 +348,7 @@ AVE.Modules['PreferenceManager'] = {
 
         if (!ModKey) { return;}
 
-        if ($.inArray(ModKey, this.ModifiedModules) != -1) {
+        if ($.inArray(ModKey, this.ModifiedModules) !== -1) {
 
             $("div.TopButtons > a#SaveData").text("Saving " + ModKey);
             var POST = {};
@@ -357,8 +356,8 @@ AVE.Modules['PreferenceManager'] = {
 
             $(module).find(":input").each(function () {
                 var key = $(this).prop("id");
-                if (key == "") { return true; }
-                if ($(this).attr("type") && $(this).attr("type").toLowerCase() == "checkbox") {
+                if (key === "") { return true; }
+                if ($(this).attr("type") && $(this).attr("type").toLowerCase() === "checkbox") {
                     POST[ModKey][key] = $(this).is(":checked");
                 } else {
                     POST[ModKey][key] = $(this).val();
@@ -372,7 +371,7 @@ AVE.Modules['PreferenceManager'] = {
 
         idx++;
         if (idx < ModuleFormsList.length) {
-            if ($.inArray(ModKey, this.ModifiedModules) != -1) {
+            if ($.inArray(ModKey, this.ModifiedModules) !== -1) {
                 //Just enough delay to notice the saving process
                 setTimeout(function () { _this.SaveModule(ModuleFormsList, idx); }, 50);
             } else {
@@ -390,8 +389,9 @@ AVE.Modules['PreferenceManager'] = {
 
     AddModule: function (module, cat, pos) {
         var _this = this;
+        var enabled, alwaysEnabled;
 
-        if (module.Options.Enabled != undefined) {
+        if (module.Options.Enabled) {
             enabled = module.Options.Enabled.Value;
             alwaysEnabled = false;
         }
@@ -411,7 +411,7 @@ AVE.Modules['PreferenceManager'] = {
                 ' + (typeof module.ResetPref === "function" ? '<a href="javascript:void(0)" id="ResetModule" style="float:right">reset</a>' : '') + '\
             </div>';
 
-        if (pos == undefined) {
+        if (pos === undefined) {
             $("form[cat='" + cat + "']").append(html);
         } else {
             if (pos > 0) { //if the position isn't first of its category
@@ -439,7 +439,7 @@ AVE.Modules['PreferenceManager'] = {
         if (typeof module.ResetPref === "function") {
             //Event listener to reset the module's data
             $("div.ModuleBlock[id='" + module.ID + "'] > a#ResetModule").on("click", function () {
-                var ID = $(this).parent().attr('id')
+                var ID = $(this).parent().attr('id');
                 var position = $(this).parents(".ModuleBlock:first").index();
                 var category = $(this).parents("form:first").attr("cat");
 
@@ -495,7 +495,7 @@ AVE.Modules['PreferenceManager'] = {
 
                 if (!f) {
                     return true;
-                } else if (f.name.substr(f.name.length - 4, 4) != "json") {//Only plain text/JSON
+                } else if (f.name.substr(f.name.length - 4, 4) !== "json") {//Only plain text/JSON
                     _this.ShowInfo("The selected file\'s format isn\'t JSON", "failed");
                     return true;
                 }
@@ -507,11 +507,11 @@ AVE.Modules['PreferenceManager'] = {
                     var c = 0;
                     $.each(Data, function (k, v) {
                         c++;
-                        if (k.substr(0, 3) != "AVE") {
+                        if (k.substr(0, 3) !== "AVE") {
                             print("Failed: " + k);
                             return true;
                         }
-                        _this.Store.SetValue(k, v)
+                        _this.Store.SetValue(k, v);
                     });
                     _this.ShowInfo(c + " values copied!", "success");
                 });

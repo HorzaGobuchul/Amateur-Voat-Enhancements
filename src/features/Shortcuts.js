@@ -18,7 +18,7 @@ AVE.Modules['Shortcuts'] = {
     },
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['Shortcuts'];
+        var _this = this;
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
@@ -52,11 +52,11 @@ AVE.Modules['Shortcuts'] = {
         this.DisplayCustomSubversesList();
         if (AVE.Utils.isPageSubverse) {
             this.AppendShortcutButton();
-        } else if (AVE.Utils.currentPageType == "subverses") {
+        } else if (AVE.Utils.currentPageType === "subverses") {
             this.AddShortcutsButtonInSubversesPage();
         } else if ($.inArray(AVE.Utils.currentPageType, ["mysets", "sets"]) >= 0) {
             this.AddShortcutsButtonInSetsPage();
-        } else if (AVE.Utils.currentPageType == "set") {
+        } else if (AVE.Utils.currentPageType === "set") {
             this.AddShortcutsButtonInSetPage();
         }
     },
@@ -68,6 +68,7 @@ AVE.Modules['Shortcuts'] = {
     },
 
     AddShortcutsButtonInSetsPage: function () {
+        var _this = this;
         var inShortcut = false;
         var tempSetName = "";
         var tempSetId = "";
@@ -87,20 +88,20 @@ AVE.Modules['Shortcuts'] = {
             var setName = $(this).attr("setName");
             var setId = $(this).attr("setId");
 
-            if (setName == null || setName == undefined || setName == "undefined" ||
-                setId == null || setId == undefined) {
+            if (setName === null || setName === undefined || setName === "undefined" ||
+                setId === null || setId === undefined) {
                 alert("AVE: Error adding set " + setName + ", id: " + setId);
                 return;
             }
 
             var set = setName + ":" + setId;
-            if (this.isSubInShortcuts(set)) {
-                this.RemoveFromShortcuts(set);
-                this.ToggleShortcutButton(true, this);
+            if (_this.isSubInShortcuts(set)) {
+                _this.RemoveFromShortcuts(set);
+                _this.ToggleShortcutButton(true, this);
             }
             else {
-                this.AddToShortcuts(set);
-                this.ToggleShortcutButton(false, this);
+                _this.AddToShortcuts(set);
+                _this.ToggleShortcutButton(false, this);
             }
 
             this.DisplayCustomSubversesList();
@@ -109,7 +110,7 @@ AVE.Modules['Shortcuts'] = {
 
     // Special to voat.co/subverses: adds a "shortcut" button for each subverse////
     AddShortcutsButtonInSubversesPage: function () {
-        var _this = AVE.Modules['Shortcuts'];
+        var _this = this;
         var inShortcut = false;
         var tempSubName = "";
 
@@ -138,7 +139,6 @@ AVE.Modules['Shortcuts'] = {
 
     /// Common to voat.co: modifies the subverses header list with custom subverses ////
     DisplayCustomSubversesList: function () {
-        _this = AVE.Modules['Shortcuts'];
         var SubString = '';
         var subArr = this.GetSubversesList();
         var setInfo = [];
@@ -146,7 +146,7 @@ AVE.Modules['Shortcuts'] = {
         for (var idx in subArr) {
             if (subArr[idx] == "") { continue; }
             if (AVE.Utils.regExpSet.test(subArr[idx])) { //ex: name:12
-                setInfo = _this.GetSetParam(subArr[idx]);
+                setInfo = this.GetSetParam(subArr[idx]);
                 SubString += '<li><span class="separator">-</span><a href="/set/' + setInfo[1] + '/" style="font-weight:bold;font-style: italic;">' + setInfo[0] + '</a></li>';
             }
             else {
@@ -190,8 +190,7 @@ AVE.Modules['Shortcuts'] = {
     },
     /// Special methods related to shortcuts ///
     GetSubversesList: function () {
-        _this = AVE.Modules['Shortcuts'];
-        return _this.Store.GetValue(_this.StorageName, "newsubverses,introductions,news").split(',');
+        return this.Store.GetValue(_this.StorageName, "newsubverses,introductions,news").split(',');
     },
 
     GetSetParam: function (str) {
@@ -202,21 +201,19 @@ AVE.Modules['Shortcuts'] = {
     },
 
     AddToShortcuts: function (SubName) {
-        _this = AVE.Modules['Shortcuts'];
         var subversesArr = _this.GetSubversesList();
         var str = subversesArr.join(",") + "," + SubName;
 
-        _this.Store.SetValue(_this.StorageName, str);
+        this.Store.SetValue(_this.StorageName, str);
     },
 
     RemoveSetFromShortcut: function (id) {
-        _this = AVE.Modules['Shortcuts'];
-        var subversesArr = _this.GetSubversesList();
+        var subversesArr = this.GetSubversesList();
 
         for (var x in subversesArr) {
             if (AVE.Utils.regExpSet.test(subversesArr[x])) {
-                if (_this.GetSetParam(subversesArr[x])[1] == id) {
-                    _this.RemoveFromShortcuts(subversesArr[x]);
+                if (this.GetSetParam(subversesArr[x])[1] == id) {
+                    this.RemoveFromShortcuts(subversesArr[x]);
                     return true;
                 }
             }
@@ -225,8 +222,7 @@ AVE.Modules['Shortcuts'] = {
     },
 
     RemoveFromShortcuts: function (SubName) {
-        _this = AVE.Modules['Shortcuts'];
-        var subversesArr = _this.GetSubversesList();
+        var subversesArr = this.GetSubversesList();
         var idx = subversesArr.indexOf(SubName);
 
         if (idx < 0) {
@@ -235,7 +231,7 @@ AVE.Modules['Shortcuts'] = {
         }
 
         subversesArr.splice(idx, 1);
-        _this.Store.SetValue(_this.StorageName, subversesArr.join(","));
+        this.Store.SetValue(this.StorageName, subversesArr.join(","));
     },
 
     ToggleShortcutButton: function (state, sel) {
@@ -250,8 +246,7 @@ AVE.Modules['Shortcuts'] = {
     },
 
     isSubInShortcuts: function (Sub) {
-        _this = AVE.Modules['Shortcuts'];
-        var subversesArr = _this.GetSubversesList();
+        var subversesArr = this.GetSubversesList();
 
         for (var i in subversesArr) {
             if (subversesArr[i].toLowerCase() == Sub.toLowerCase()) {
@@ -262,9 +257,8 @@ AVE.Modules['Shortcuts'] = {
     },
 
     isPageInShortcuts: function () {
-        _this = AVE.Modules['Shortcuts'];
-        var subversesArr = _this.GetSubversesList();
+        var subversesArr = this.GetSubversesList();
 
-        return _this.isSubInShortcuts(AVE.Utils.subverseName);
+        return this.isSubInShortcuts(AVE.Utils.subverseName);
     },
 };

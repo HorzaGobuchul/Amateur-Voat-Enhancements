@@ -5,6 +5,7 @@ AVE.Modules['ShortKeys'] = {
     Category: 'Posts',
 
     Enabled: false,
+    Index: 20,
 
     Store: {},
 
@@ -67,19 +68,16 @@ AVE.Modules['ShortKeys'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['ShortKeys'];
-
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST[this.ID]));
     },
 
     ResetPref: function () {
-        var _this = AVE.Modules['ShortKeys'];
-        _this.Options = JSON.parse(_this.OriginalOptions);
+        this.Options = JSON.parse(_this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
         var _this = this;
-        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
+        var Opt = this.Store.GetValue(this.Store.Prefix + _this.ID, "{}");
 
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
@@ -87,7 +85,7 @@ AVE.Modules['ShortKeys'] = {
                 _this.Options[key].Value = value;
             });
         }
-        _this.Enabled = _this.Options.Enabled.Value;
+        this.Enabled = this.Options.Enabled.Value;
     },
 
     Load: function () {
@@ -124,38 +122,39 @@ AVE.Modules['ShortKeys'] = {
             if (event.ctrlKey || event.shiftKey) { return; }
 
             var sel = AVE.Utils.SelectedPost;
+            var key;
 
-            if (event.key == undefined) { //Chrome
-                var key = String.fromCharCode(event.keyCode).toUpperCase();
+            if (event.key === undefined) { //Chrome
+                key = String.fromCharCode(event.keyCode).toUpperCase();
             } else {
-                var key = event.key.toUpperCase();
+                key = event.key.toUpperCase();
             }
 
             if (event.which === 13) { key = ""; } //Enter/Return key
 
-            if (key == NavTop.toUpperCase()) { // Navigate to the top of the page
+            if (key === NavTop.toUpperCase()) { // Navigate to the top of the page
                 //Scroll to top
                 //Set first post as selected
                 var obj = $("div.submission[class*='id']:first,div.comment[class*='id']:first").first();
                 if (AVE.Modules['SelectPost']) { AVE.Modules['SelectPost'].ToggleSelectedState(obj.find(".entry:first")); }
                 $(window).scrollTop(0);
-            } else if (key == NavBottom.toUpperCase()) { // Navigate to the bottom of the page
+            } else if (key === NavBottom.toUpperCase()) { // Navigate to the bottom of the page
                 //Scroll to bottom
                 $(window).scrollTop($(document).height());
                 //Set last post as selected
                 var obj = $("div.comment[class*='id']:last");
-                if (obj.length == 0) { var obj = $("div.submission[class*='id']:last"); }
+                if (obj.length === 0) { obj = $("div.submission[class*='id']:last"); }
                 if (AVE.Modules['SelectPost']) { AVE.Modules['SelectPost'].ToggleSelectedState(obj.find(".entry:first")); }
             }
 
             //All following keys need a post selected to work
             if (!AVE.Utils.SelectedPost) {  return; }
 
-            if (key == up.toUpperCase()) { // upvote
+            if (key === up.toUpperCase()) { // upvote
                 sel.parent().find(".midcol").find("div[aria-label='upvote']").first().click();
-            } else if (key == down.toUpperCase()) { // downvote
+            } else if (key === down.toUpperCase()) { // downvote
                 sel.parent().find(".midcol").find("div[aria-label='downvote']").first().click();
-            } else if (key == next.toUpperCase()) { // next post
+            } else if (key === next.toUpperCase()) { // next post
                 if (sel.parent().hasClass("submission")) {
                     //Submissions
                     var _next = sel.parent().nextAll("div.submission[class*='id-']:first");
@@ -180,12 +179,12 @@ AVE.Modules['ShortKeys'] = {
                         while (!a) {
                             tempSel = $(tempSel.parent("div[class*='id-']").get(0) ||
                                       $("div." + tempID + " ~ div[class*='id-']:visible").get(0));
-                            if (tempSel.length == 0) { break; }
+                            if (tempSel.length === 0) { break; }
 
                             if (tempSel.nextAll("div[class*='id-']:visible:last").length > 0) {
                                 tempID = tempSel.nextAll("div[class*='id-']:visible:last").attr("class").split(" ")[1];
                             }
-                            if (tempID != id) {
+                            if (tempID !== id) {
                                 a = $("div." + tempSel.nextAll("div[class*='id-']:visible:first").attr("class").split(" ")[1]);
                                 break;
                             }
@@ -200,7 +199,7 @@ AVE.Modules['ShortKeys'] = {
                     } else { $("a#loadmorebutton").click(); }
                 }
 
-            } else if (key == previous.toUpperCase()) { // previous post
+            } else if (key === previous.toUpperCase()) { // previous post
                 if (sel.parent().hasClass("submission")) { // select by page type not class
                     //Submissions
                     var prev = sel.parent().prevAll("div.submission[class*='id-']:first");
@@ -210,7 +209,7 @@ AVE.Modules['ShortKeys'] = {
                     }
                 } else {
                     //Comment
-                    var id = sel.parent().prop("class").split(" ")[1];
+                    //var id = sel.parent().prop("class").split(" ")[1];
 
                     var a = sel.parent().prevAll("div[class*='id-']:visible:first").find("div[class*='id-']:visible:last").get(0) || //Parent's child
                             sel.parent().prevAll("div[class*='id-']:visible:first").get(0) || //Sibling
@@ -223,14 +222,14 @@ AVE.Modules['ShortKeys'] = {
                     //if (!a) No previous comment
                 }
 
-            } else if (key == OpenC.toUpperCase()) { // Open comment page
+            } else if (key === OpenC.toUpperCase()) { // Open comment page
                 if (!sel.parent().hasClass("submission")) { return; }
                 if (_this.Options.OpenInNewTab.Value) {
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: "https://" + window.location.hostname + sel.find("a.comments").attr("href") });
                 } else {
                     window.location.href = "https://" + window.location.hostname + sel.find("a.comments").attr("href");
                 }
-            } else if (key == OpenL.toUpperCase()) { // Open link page
+            } else if (key === OpenL.toUpperCase()) { // Open link page
                 if (!sel.parent().hasClass("submission")) { return; }
                 var url = sel.find("a.title").attr("href");
 
@@ -241,7 +240,7 @@ AVE.Modules['ShortKeys'] = {
                 } else {
                     window.location.href = url;
                 }
-            } else if (key == OpenLC.toUpperCase()) { // Open comment and link pages
+            } else if (key === OpenLC.toUpperCase()) { // Open comment and link pages
                 if (!sel.parent().hasClass("submission")) { return; }
                 var url = [];
 
@@ -250,13 +249,13 @@ AVE.Modules['ShortKeys'] = {
 
                 if (!/^http/.test(url[0])) { url[0] = "https://" + window.location.hostname + url[0]; }
 
-                if (url[0] && url[0] == url[1]) {
+                if (url[0] && url[0] === url[1]) {
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[0] });
                 } else {
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[0] });
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[1] });
                 }
-            } else if (key == Expand.toUpperCase()) { // Expand media/self-text
+            } else if (key === Expand.toUpperCase()) { // Expand media/self-text
                 if (sel.parent().hasClass("submission")) {
                     //In submission
                     sel.find("div.expando-button").click();
@@ -277,7 +276,7 @@ AVE.Modules['ShortKeys'] = {
                         { this.click(); }
                     });
                 }
-            } else if (key == TCC.toUpperCase()) { // Toggle comment chain or load more replies
+            } else if (key === TCC.toUpperCase()) { // Toggle comment chain or load more replies
                 if (sel.parent().hasClass("submission")) { return; }
 
                 if (sel.find("a.inline-loadcomments-btn:first").length > 0) {

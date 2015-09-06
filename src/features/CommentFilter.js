@@ -12,18 +12,18 @@ AVE.Modules['CommentFilter'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         Filters: {
             Type: 'array',
             Desc: "Example of filter",
-            Value: [],
+            Value: []
         },
         RemoveFiltered: {
             Type: 'boolean',
             Desc: "Remove altogether the comment and child comments.",
-            Value: false,
-        },
+            Value: false
+        }
     },
 
     Filter: function (id, keyword, sub) {
@@ -46,21 +46,20 @@ AVE.Modules['CommentFilter'] = {
 
         $.each(POST, function (k, v) {
             tV = k.split("-");
-            if (tV.length == 2) {
+            if (tV.length === 2) {
                 id = parseInt(tV[0], 10);
             } else { return true; } //if this isn't a filter value: continue
 
-            if (tV[1] == "kw") {
-                if (v.length == 0) { return true; } //If no kw were specified: continue
-                else {
-                    _this.Options.Filters.Value.push(new _this.Filter(id, v.toLowerCase().split(","), []))
-                }
-            } else if (tV[1] == "sub") {
-                var inArr = $.grep(_this.Options.Filters.Value, function (e) { return e.Id == id; });
-                if (inArr.length == 0) {
+            if (tV[1] === "kw") {
+                if (v.length === 0) { return true; } //If no kw were specified: continue
+                //else
+                _this.Options.Filters.Value.push(new _this.Filter(id, v.toLowerCase().split(","), []));
+            } else if (tV[1] === "sub") {
+                var inArr = $.grep(_this.Options.Filters.Value, function (e) { return e.Id === id; });
+                if (inArr.length === 0) {
                     //if there is no filter with this ID: continue
                     return true;
-                } else if (v.length != 0) {
+                } else if (v.length !== 0) {
                     var idx = $.inArray(inArr[0], _this.Options.Filters.Value);
                     _this.Options.Filters.Value[idx].ApplyToSub = v.toLowerCase().split(",");
                 }
@@ -72,7 +71,7 @@ AVE.Modules['CommentFilter'] = {
                 {
                     Enabled: POST.Enabled,
                     RemoveFiltered: POST.RemoveFiltered,
-                    Filters: this.Options.Filters.Value,
+                    Filters: this.Options.Filters.Value
                 }
             )
         );
@@ -99,7 +98,7 @@ AVE.Modules['CommentFilter'] = {
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
 
-        if ($.inArray(AVE.Utils.currentPageType, ["thread"]) == -1) {
+        if ($.inArray(AVE.Utils.currentPageType, ["thread"]) === -1) {
             this.Enabled = false;
         }
 
@@ -118,17 +117,16 @@ AVE.Modules['CommentFilter'] = {
             var commentRef = $(this);
             var commentStr = commentRef.find("div.md:first").text().toLowerCase();
 
-            if ($.inArray($(this).find("input#CommentId").val(), _this.Processed) != -1) {
-                return true;
-            } else {
-                _this.Processed.push($(this).find("input#CommentId").val());
-            }
-
+            if ($.inArray($(this).find("input#CommentId").val(), _this.Processed) !== -1)
+            { return true; }
+            //else
+            this.Processed.push($(this).find("input#CommentId").val());
+            
             $.each(_this.Options.Filters.Value, function () {
                 found = false;
-                if (this.ApplyToSub.length == 0 || $.inArray(AVE.Utils.subverseName, this.ApplyToSub) != -1) {
+                if (this.ApplyToSub.length === 0 || $.inArray(AVE.Utils.subverseName, this.ApplyToSub) !== -1) {
                     $.each(this.Keywords, function () {
-                        if (this.length == 0) { return true; }//Just in case
+                        if (this.length === 0) { return true; }//Just in case
                         re = new RegExp(this);
                         if (re.test(commentStr)) {
                             if (_this.Options.RemoveFiltered.Value) {
@@ -184,9 +182,9 @@ AVE.Modules['CommentFilter'] = {
 
             this.htmlNewFilter = '<span class="AVE_Comment_Filter" id="{@id}">\
                                 Keyword(s) \
-                                    <input id="{@id}-kw" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="CommentFilter" value="{@keywords}"></input>\
+                                    <input id="{@id}-kw" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="CommentFilter" value="{@keywords}"></input>\
                                 Subverse(s) \
-                                    <input id="{@id}-sub" style="width:29%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="CommentFilter" value="{@subverses}"></input>\
+                                    <input id="{@id}-sub" style="width:29%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="CommentFilter" value="{@subverses}"></input>\
                                 </span>\
                                 <a href="javascript:void(0)" title="Remove filter" style="font-size: 16px;font-weight: bold;" class="RemoveFilter" id="{@id}">-</a>';
 
@@ -195,8 +193,8 @@ AVE.Modules['CommentFilter'] = {
             htmlStr += '<span style="font-weight:bold;"> Example: "ex" matches "rex", "example" and "bexter".<br />Separate keywords and subverse names by a comma.</span><br />';
 
             $.each(_this.Options.Filters.Value, function () {
-                var filter = Pref_this.htmlNewFilter + "<br />"
-                filter = filter.replace(/{@id}/ig, this.Id);
+                var filter = Pref_this.htmlNewFilter + "<br />";
+                filter = filter.replace(/\{@id\}/ig, this.Id);
                 filter = filter.replace("{@keywords}", this.Keywords.join(","));
                 filter = filter.replace("{@subverses}", this.ApplyToSub.join(","));
 
@@ -211,8 +209,8 @@ AVE.Modules['CommentFilter'] = {
         callback: function () {
             var Pref_this = this;
             $("div#CommentFilter > div.AVE_ModuleCustomInput > a#AddNewFilter").on("click", function () {
-                var html = Pref_this.htmlNewFilter + "<br />"
-                html = html.replace(/{@id}/ig, $("div#CommentFilter > div.AVE_ModuleCustomInput > span.AVE_Comment_Filter").length);
+                var html = Pref_this.htmlNewFilter + "<br />";
+                html = html.replace(/\{@id\}/ig, $("div#CommentFilter > div.AVE_ModuleCustomInput > span.AVE_Comment_Filter").length);
                 html = html.replace("{@keywords}", "");
                 html = html.replace("{@subverses}", "");
 

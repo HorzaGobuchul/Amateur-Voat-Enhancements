@@ -10,11 +10,11 @@ AVE.Modules['AppendQuote'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         Formatting: {
             Type: 'string',
-            Value: '[{@username}]({@permaLink}) wrote:{@n}{@n}{@comment}',
+            Value: '[{@username}]({@permaLink}) wrote:{@n}{@n}{@comment}'
         }
     },
 
@@ -80,20 +80,20 @@ AVE.Modules['AppendQuote'] = {
 
         $("a#AVE_QuotePost").off("click");
         $("a#AVE_QuotePost").on("click", function () {
-            var comment = AVE.Utils.ParseQuotedText($(this).parent().parent().parent().find('.md:first').html())
+            var comment = AVE.Utils.ParseQuotedText($(this).parent().parent().parent().find('.md:first').html());
             var permaLink = $(this).parents("ul[class*='flat-list']").first().find("a[class*='bylink']").attr("href");
             if (!permaLink) { permaLink = window.location.href; }
             var userpageLink = $(this).parents("ul[class*='flat-list']").first().parent().find("a[class*='author']").attr("href");
             var username = $(this).parents("ul[class*='flat-list']").first().parent().find("a[class*='author']").text();
             
-            var quote = _this.Options.Formatting.Value.replace(/{@username}/gi, username);
-            quote = quote.replace(/{@permaLink}/gi, permaLink);
-            quote = quote.replace(/{@userpage}/gi, userpageLink);
-            quote = quote.replace(/{@comment}/gi, comment);
-            quote = quote.replace(/{@n}/g, "\n");
+            var quote = _this.Options.Formatting.Value.replace(/\{@username\}/gi, username);
+            quote = quote.replace(/\{@permaLink\}/gi, permaLink);
+            quote = quote.replace(/\{@userpage\}/gi, userpageLink);
+            quote = quote.replace(/\{@comment\}/gi, comment);
+            quote = quote.replace(/\{@n\}/g, "\n");
 
             var NearestReplyBox = $(this).parents(":has(textarea[class*='commenttextarea'][id*='CommentContent']:visible)").first().find("textarea[class*='commenttextarea'][id*='CommentContent']:visible");
-            if (NearestReplyBox.val() != "") {
+            if (NearestReplyBox.val() !== "") {
                 NearestReplyBox.val(NearestReplyBox.val() + "\n\n" + quote);
             } else {
                 NearestReplyBox.val(quote);
@@ -106,8 +106,8 @@ AVE.Modules['AppendQuote'] = {
             var _this = AVE.Modules['AppendQuote'];
             var htmlStr = "";
             htmlStr += '<input style="display:inline;width:80%;padding:0px;letter-spacing:0.35px;" class="form-control" type="text" Module="'+ _this.ID +'" id="Formatting" value="' + _this.Options.Formatting.Value + '"></input>';
-            htmlStr += ' <button id="AutoQuoteFormatShowPreview" class="btn-whoaverse-paging" type="button">Show Preview</button>'
-            htmlStr += '<div class="md" id="AutoQuoteFormatPreview" style="height:150px; background-color: #' +(AVE.Utils.CSSstyle == "dark" ? "292929": "FFF") + '; position: fixed; width:430px;padding: 10px; border-radius: 6px; border: 2px solid black;display: none;overflow: auto;"></div>';
+            htmlStr += ' <button id="AutoQuoteFormatShowPreview" class="btn-whoaverse-paging" type="button">Show Preview</button>';
+            htmlStr += '<div class="md" id="AutoQuoteFormatPreview" style="height:150px; background-color: #' + ( AVE.Utils.CSSstyle === "dark" ? "292929": "FFF" ) + '; position: fixed; width:430px;padding: 10px; border-radius: 6px; border: 2px solid black;display: none;overflow: auto;"></div>';
             htmlStr += "<br /> {@username}: username of the comment's author,";
             htmlStr += '<br /> {@permaLink}: permaLink to the comment,';
             htmlStr += "<br /> {@userpage}: link to the username's page,";
@@ -118,18 +118,18 @@ AVE.Modules['AppendQuote'] = {
         callback: function () {
             var _this = AVE.Modules['AppendQuote'];
             $('button#AutoQuoteFormatShowPreview').on("click", function () {
-                if ($(this).text() == "Show Preview") {
+                if ($(this).text() === "Show Preview") {
                     $(this).text("Hide Preview");
                     $("div#AutoQuoteFormatPreview").show();
 
-                    var quote = $("input[id='Formatting'][Module='" + _this.ID + "']").val().replace(/{@username}/gi, "Username");
-                    quote = quote.replace(/{@permaLink}/gi, "/v/whatever/comments/111111/111111");
-                    quote = quote.replace(/{@userpage}/gi, "/user/atko");
-                    quote = quote.replace(/{@comment}/gi, "> This is a comment.\n\n> Another line.");
-                    quote = quote.replace(/{@n}/g, "\n");
+                    var quote = $("input[id='Formatting'][Module='" + _this.ID + "']").val().replace(/\{@username\}/gi, "Username");
+                    quote = quote.replace(/\{@permaLink\}/gi, "/v/whatever/comments/111111/111111");
+                    quote = quote.replace(/\{@userpage\}/gi, "/user/atko");
+                    quote = quote.replace(/\{@comment\}/gi, "> This is a comment.\n\n> Another line.");
+                    quote = quote.replace(/\{@n\}/g, "\n");
 
                     $("div#AutoQuoteFormatPreview").text("Loading...");
-                    var r = { MessageContent: quote }
+                    var r = { MessageContent: quote };
                     $.ajax({
                         url: "https://voat.co/ajaxhelpers/rendersubmission/",
                         type: "post",
@@ -144,6 +144,6 @@ AVE.Modules['AppendQuote'] = {
                     $("div#AutoQuoteFormatPreview").hide();
                 }
             });
-        },
-    },
+        }
+    }
 };

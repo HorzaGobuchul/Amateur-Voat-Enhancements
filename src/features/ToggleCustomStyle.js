@@ -58,7 +58,7 @@ AVE.Modules['ToggleCustomStyle'] = {
             $("style#custom_css:last").remove();
         }
 
-        this.DisabledCSS = $.inArray(AVE.Utils.subverseName, JSON.parse(this.Store.GetValue(this.StorageName, "[]"))) == -1;
+        this.DisabledCSS = $.inArray(AVE.Utils.subverseName, JSON.parse(this.Store.GetValue(this.StorageName, "[]"))) === -1;
 
         this.ToggleCSSPref(this.DisabledCSS);
 
@@ -85,7 +85,7 @@ AVE.Modules['ToggleCustomStyle'] = {
         var CSSlist = JSON.parse(this.Store.GetValue(this.StorageName, "[]"));
 
         if (status) { //Enable
-            if ($.inArray(AVE.Utils.subverseName, CSSlist) != -1) {
+            if ($.inArray(AVE.Utils.subverseName, CSSlist) !== -1) {
                 // If exists in stored list of disabled CSS
 
                 var idx = CSSlist.indexOf(AVE.Utils.subverseName);
@@ -94,11 +94,11 @@ AVE.Modules['ToggleCustomStyle'] = {
                 this.Store.SetValue(this.StorageName, JSON.stringify(CSSlist));
             }
             //Don't add the CSS if we didn't remove it previously
-            if ($.trim($("style#custom_css").text()).length == 0) {
+            if ($.trim($("style#custom_css").text()).length === 0) {
                 $("style#custom_css").append(this.CustomCSS);
             }
         } else { // Disable
-            if ($.inArray(AVE.Utils.subverseName, CSSlist) == -1) {
+            if ($.inArray(AVE.Utils.subverseName, CSSlist) === -1) {
                 // If doesn't exist in stored list of disabled CSSw
                 CSSlist.push(AVE.Utils.subverseName);
                 this.Store.SetValue(this.StorageName, JSON.stringify(CSSlist));

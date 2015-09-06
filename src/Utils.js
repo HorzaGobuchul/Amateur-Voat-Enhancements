@@ -12,7 +12,7 @@ AVE.Utils = {
 
     EarlySet: function () {
         this.subverseName = this.GetSubverseName();
-        this.isPageSubverse = this.isPageSubverse();
+        this.isPageSubverse = this.GetPageSubverse();
         this.currentPageType = this.Page();
     },
 
@@ -55,37 +55,37 @@ AVE.Utils = {
         var url = window.location.href;
 
         if (RegExpTypes.frontpage.test(url)) { return "frontpage"; }
-        else if (RegExpTypes.api.test(url)) { return "api"; }
-        else if (RegExpTypes.thread.test(url)) { return "thread"; }
-        else if (RegExpTypes.sub_new.test(url)) { return "subverse"; }
-        else if (RegExpTypes.sub_top.test(url)) { return "subverse"; }
-        else if (RegExpTypes.submit.test(url)) { return "submit"; }
-        else if (RegExpTypes.modlog.test(url)) { return "modlog"; }
-        else if (RegExpTypes.about.test(url)) { return "about"; }
-        else if (RegExpTypes.sub_rel.test(url)) { return "sub_related"; }
-        else if (RegExpTypes.subverse.test(url)) { return "subverse"; }
-        else if (RegExpTypes.subverses.test(url)) { return "subverses"; }
-        else if (RegExpTypes.domain.test(url)) { return "domain"; }
-        else if (RegExpTypes.set.test(url)) { return "set"; }
-        else if (RegExpTypes.search.test(url)) { return "search"; }
-        else if (RegExpTypes.mySet.test(url)) { return "mysets"; }
-        else if (RegExpTypes.sets.test(url)) { return "sets"; }
-        else if (RegExpTypes.user.test(url)) { return "user"; }
-        else if (RegExpTypes.userShort.test(url)) { return "user"; }
-        else if (RegExpTypes.comments.test(url)) { return "user-comments"; }
-        else if (RegExpTypes.submissions.test(url)) { return "user-submissions"; }
-        else if (RegExpTypes.messaging.test(url)) { return "user-messages"; }
-        else if (RegExpTypes.manage.test(url)) { return "user-manage"; }
-        else if (RegExpTypes.saved.test(url)) { return "saved"; }
-        else if (RegExpTypes.register.test(url)) { return "account-register"; }
-        else if (RegExpTypes.login.test(url)) { return "account-login"; }
-        else if (RegExpTypes.account_rel.test(url)) { return "account-related"; }
+        if (RegExpTypes.api.test(url)) { return "api"; }
+        if (RegExpTypes.thread.test(url)) { return "thread"; }
+        if (RegExpTypes.sub_new.test(url)) { return "subverse"; }
+        if (RegExpTypes.sub_top.test(url)) { return "subverse"; }
+        if (RegExpTypes.submit.test(url)) { return "submit"; }
+        if (RegExpTypes.modlog.test(url)) { return "modlog"; }
+        if (RegExpTypes.about.test(url)) { return "about"; }
+        if (RegExpTypes.sub_rel.test(url)) { return "sub_related"; }
+        if (RegExpTypes.subverse.test(url)) { return "subverse"; }
+        if (RegExpTypes.subverses.test(url)) { return "subverses"; }
+        if (RegExpTypes.domain.test(url)) { return "domain"; }
+        if (RegExpTypes.set.test(url)) { return "set"; }
+        if (RegExpTypes.search.test(url)) { return "search"; }
+        if (RegExpTypes.mySet.test(url)) { return "mysets"; }
+        if (RegExpTypes.sets.test(url)) { return "sets"; }
+        if (RegExpTypes.user.test(url)) { return "user"; }
+        if (RegExpTypes.userShort.test(url)) { return "user"; }
+        if (RegExpTypes.comments.test(url)) { return "user-comments"; }
+        if (RegExpTypes.submissions.test(url)) { return "user-submissions"; }
+        if (RegExpTypes.messaging.test(url)) { return "user-messages"; }
+        if (RegExpTypes.manage.test(url)) { return "user-manage"; }
+        if (RegExpTypes.saved.test(url)) { return "saved"; }
+        if (RegExpTypes.register.test(url)) { return "account-register"; }
+        if (RegExpTypes.login.test(url)) { return "account-login"; }
+        if (RegExpTypes.account_rel.test(url)) { return "account-related"; }
 
         return "none";
     },
 
-    isPageSubverse: function () {
-        if (this.subverseName != null)
+    GetPageSubverse: function () {
+        if (this.subverseName)
         { return true; }
 
         return false;
@@ -94,23 +94,23 @@ AVE.Utils = {
     GetSubverseName: function () {
         var m = new RegExp(/voat\.co\/v\/([\w\d]*)/).exec(window.location.href);
 
-        if (m == null) { return null; }
-        else { return m[1].toLowerCase(); }
+        if (!m) { return null; }
+        return m[1].toLowerCase();
     },
 
     ParseQuotedText: function (text) {
-        converter = { filter: 'span', replacement: function (innerHTML) { return ''; } };
+        var converter = { filter: 'span', replacement: function () { return ''; } };
         return toMarkdown(text, { converters: [converter] }).replace(/^(.)/img, "> $1");
     },
 
     GetBestFontColour: function (r,g,b) {
         //from http://www.nbdtech.com/Blog/archive/2008/04/27/Calculating-the-Perceived-Brightness-of-a-Color.aspx
-        var o = Math.round(((parseInt(r) * 299) + (parseInt(g) * 587) + (parseInt(b) * 114)) / 1000);
+        var o = Math.round(((parseInt(r, 10) * 299) + (parseInt(g, 10) * 587) + (parseInt(b, 10) * 114)) / 1000);
         return (o > 125) ? 'black' : 'white';
     },
 
     AddStyle: function (StyleStr) {
-        if ($("style[for='AVE']").length == 0) { $("head").append('<style for="AVE"></style>'); }
+        if ($("style[for='AVE']").length === 0) { $("head").append('<style for="AVE"></style>'); }
         $("style[for='AVE']").append("\n" + StyleStr);
     },
 };
@@ -127,7 +127,7 @@ AVE.Utils = {
             //https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationRecord
             var observer = new MutationObserver(function (mutations) {
                 mutations.forEach(function (e) {
-                    if (e.attributeName != null) {
+                    if (e.attributeName) {
                         callback.call(e.target, e);
                     }
                 });
@@ -137,8 +137,8 @@ AVE.Utils = {
                 observer.observe(this, options);
             });
         }
-    }
-})(jQuery);
+    };
+}($));
 (function ($) {
     //Thanks to Mr Br @ https://stackoverflow.com/questions/1950038/jquery-fire-event-if-css-class-changed#answer-24284069
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
@@ -153,7 +153,7 @@ AVE.Utils = {
             //https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationRecord
             var observer = new MutationObserver(function (mutations) {
                 mutations.forEach(function (e) {
-                    if (e.addedNodes != null) {
+                    if (e.addedNodes) {
                         callback.call(e.target);
                     }
                 });
@@ -163,8 +163,8 @@ AVE.Utils = {
                 observer.observe(this, options);
             });
         }
-    }
-})(jQuery);
+    };
+}($));
 function print(str) { console.log(str); }
 //Thanks to Paolo Bergantino https://stackoverflow.com/questions/965816/what-jquery-selector-excludes-items-with-a-parent-that-matches-a-given-selector#answer-965962
 jQuery.expr[':'].parents = function (a, i, m) { return jQuery(a).parents(m[3]).length < 1; };
@@ -183,7 +183,7 @@ var OnNodeChange = (function () {
 
         this.observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (e) {
-                if (e.addedNodes != null) {
+                if (e.addedNodes) {
                     c.call(e.target, e);
                 }
             });
@@ -192,7 +192,7 @@ var OnNodeChange = (function () {
         this.observe = function () {
             var _this = this;
             return this.targets.each(function () {
-                if ($.inArray(this, _this.observed) == -1) {
+                if ($.inArray(this, _this.observed) === -1) {
                     _this.observer.observe(this, _this.options);
                     _this.observed.push(this);
                 }
@@ -205,7 +205,7 @@ var OnNodeChange = (function () {
     };
 
     return cls;
-})();
+}());
 var OnAttrChange = (function () {
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
 
@@ -218,7 +218,7 @@ var OnAttrChange = (function () {
 
         this.observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (e) {
-                if (e.attributeName != null) {
+                if (e.attributeName) {
                     c.call(e.target, e);
                 }
             });
@@ -237,4 +237,4 @@ var OnAttrChange = (function () {
     };
 
     return cls;
-})();
+}());

@@ -67,13 +67,13 @@ AVE.Modules['NeverEndingVoat'] = {
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
 
-        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse"]) == -1 ||
-            $("div.pagination-container").find("li.btn-whoaverse-paging").length == 0) {
+        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse"]) === -1 ||
+            $("div.pagination-container").find("li.btn-whoaverse-paging").length === 0) {
             this.Enabled = false;
         }
 
         if (this.Enabled) {
-            this.SepStyle = 'background-color:#' + (AVE.Utils.CSSstyle == "dark" ? "5C5C5C" : "F6F6F6") + ';height:20px;text-align:center;border:1px dashed #' + (AVE.Utils.CSSstyle == "dark" ? "111" : "BCBCBC") + ';border-radius:3px;padding:2px 0px;margin:4px 0px;';
+            this.SepStyle = 'background-color:#' + (AVE.Utils.CSSstyle === "dark" ? "5C5C5C" : "F6F6F6") + ';height:20px;text-align:center;border:1px dashed #' + (AVE.Utils.CSSstyle === "dark" ? "111" : "BCBCBC") + ';border-radius:3px;padding:2px 0px;margin:4px 0px;';
             this.Start();
         }
     },
@@ -102,7 +102,7 @@ AVE.Modules['NeverEndingVoat'] = {
     },
 
     AppendToPage: function () {
-        if ($("a#AVE_loadmorebutton").length == 0 && $("div.pagination-container").find("li.btn-whoaverse-paging").length > 0) {
+        if ($("a#AVE_loadmorebutton").length === 0 && $("div.pagination-container").find("li.btn-whoaverse-paging").length > 0) {
             var LoadBtn = '<a href="javascript:void(0)" style="margin: 5px 0px;" class="btn-whoaverse btn-block" id="AVE_loadmorebutton">' + this.Labels[0] + '</a>';
             $("div.pagination-container").html(LoadBtn);
         }
@@ -124,13 +124,13 @@ AVE.Modules['NeverEndingVoat'] = {
 
     LoadMore: function () {
         //Don't load another page if one is already being loaded.
-        if ($("a#AVE_loadmorebutton").text() == this.Labels[1]) { return false; }
+        if ($("a#AVE_loadmorebutton").text() === this.Labels[1]) { return false; }
 
         var _this = this;
 
         $("a#AVE_loadmorebutton").text(this.Labels[1]);
         var nextPageURL = window.location.href;
-        if (nextPageURL.indexOf("?page=") != -1) {
+        if (nextPageURL.indexOf("?page=") !== -1) {
             nextPageURL = nextPageURL.replace(/\?page\=[0-9]*/, "?page=" + (this.currentPage + 1));
         } else {
             nextPageURL = "https://" + window.location.hostname + window.location.pathname + "?page=" + (this.currentPage + 1);
@@ -141,11 +141,11 @@ AVE.Modules['NeverEndingVoat'] = {
             cache: false,
         }).done(function (html) {
             var error = "sticky";
-            if ($(html).find("div.submission[class*='id-']").length == 0) { $("a#AVE_loadmorebutton").text(_this.Labels[2]); return false; } //catchall for error pages
+            if ($(html).find("div.submission[class*='id-']").length === 0) { $("a#AVE_loadmorebutton").text(_this.Labels[2]); return false; } //catchall for error pages
             _this.currentPage++;
             //print($(html).find("div.submission[class*='id-']").length);
 
-            if (_this.Options.ExpandSubmissionBlock.Value && $("div.content[role='main']").css("margin-right") != "0") {
+            if (_this.Options.ExpandSubmissionBlock.Value && $("div.content[role='main']").css("margin-right") !== "0") {
                 $("div.content[role='main']").css("margin", "0px 10px");
                 $("div.side").css("z-index", "100");
             }
@@ -154,7 +154,7 @@ AVE.Modules['NeverEndingVoat'] = {
 
             //$("div.sitetable.linklisting").append('<div class="AVE_postSeparator alert-singlethread">Page ' + (_this.currentPage) + '</div>');
             $(html).find("div.submission[class*='id-']").each(function () {
-                if ($.inArray($(this).attr("data-fullname"), _this.PostsIDs) == -1) {
+                if ($.inArray($(this).attr("data-fullname"), _this.PostsIDs) === -1) {
                     error = null;
                     _this.PostsIDs.push($(this).attr("data-fullname"));
                     $("div.sitetable").append($(this));
@@ -168,7 +168,7 @@ AVE.Modules['NeverEndingVoat'] = {
             
             if (!error) {
                 $("a#AVE_loadmorebutton").text(_this.Labels[0]);
-            } else if (error == "sticky") {
+            } else if (error === "sticky") {
                 //In a sub a page with no content will still show the sticky.
                 $("a#AVE_loadmorebutton").text(_this.Labels[2]);
                 $("div.AVE_postSeparator#AVE_page_" + (_this.currentPage)).remove();
@@ -194,7 +194,7 @@ AVE.Modules['NeverEndingVoat'] = {
             if (_this.Options.ExpandNewMedia.Value) {
                 if (AVE.Modules['ToggleMedia'] && AVE.Modules['ToggleMedia'].Enabled) {
                     if ($("[id='GM_ExpandAllImages']").hasClass("expanded")) {
-                        setTimeout(function () { AVE.Modules['ToggleMedia'].ToggleMedia(true) }, 1000);
+                        setTimeout(function () { AVE.Modules['ToggleMedia'].ToggleMedia(true); }, 1000);
                     }
                 }
             }
@@ -204,8 +204,8 @@ AVE.Modules['NeverEndingVoat'] = {
 
             //Next lines are needed because the front page (^voat.co$) is a bit different from subverses' pages. div.pagination-container isn't normally inside div.sitetable 
             if ($("div.sitetable").find("div.pagination-container").length > 0) {
-                $("div.pagination-container").appendTo($("div.sitetable"))
-                $("div.sitetable > a[href='/random']").appendTo($("div.sitetable"))
+                $("div.pagination-container").appendTo($("div.sitetable"));
+                $("div.sitetable > a[href='/random']").appendTo($("div.sitetable"));
             }
         }).fail(function () {
             $("a#AVE_loadmorebutton").text(_this.Labels[3]);

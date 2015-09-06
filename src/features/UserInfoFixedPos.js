@@ -7,6 +7,8 @@ AVE.Modules['UserInfoFixedPos'] = {
     Index: 100,
     Enabled: false,
 
+    RunAt: 'load',
+
     Store: {},
 
     Options: {
@@ -64,9 +66,9 @@ AVE.Modules['UserInfoFixedPos'] = {
 
         var headerAccountPos = $('#header-account').offset().top;
         $(window).scroll(function () {
-            _this.SetAccountHeaderPosAsFixed(headerAccountPos)
+            _this.SetAccountHeaderPosAsFixed(headerAccountPos);
         });
-        this.SetAccountHeaderPosAsFixed(headerAccountPos)
+        this.SetAccountHeaderPosAsFixed(headerAccountPos);
 
         if (this.Options.DivideBlock.Value && $("div#header-account > div.logged-in").length > 0) {
             //Align header-account's content
@@ -81,7 +83,7 @@ AVE.Modules['UserInfoFixedPos'] = {
 
         if (this.Options.ToggleBlock.Value && $('#header-account:has(div.logged-in)').length > 0) {
             //Add arrow icon element
-            $('#header-account').append('<div title="Hide user block" class="expanded" id="AVE_ToggleUserBlock"></div>')
+            $('#header-account').append('<div title="Hide user block" class="expanded" id="AVE_ToggleUserBlock"></div>');
 
             this.Listeners();
         }
@@ -98,21 +100,21 @@ AVE.Modules['UserInfoFixedPos'] = {
                   $("div#header-container").css("background-clip") + " " +
                   $("div#header-container").css("background-origin");
 
-        if ($("div#header-container").css("background-color") == "transparent" &&
-            $("div#header-container").css("background-image") == "none") {
+        if ($("div#header-container").css("background-color") === "transparent" &&
+            $("div#header-container").css("background-image") === "none") {
             this.bg = $("#logged-in").css("background-color");
 
-            if (this.bg == "transparent" && 
-                this.bg == $("[title='Profile']").css("color")) {
-                $("[title='Profile']").css("color")
+            if (this.bg === "transparent" && 
+                this.bg === $("[title='Profile']").css("color")) {
+                $("[title='Profile']").css("color");
                 this.bg = $("#header-account").css("background-color");
 
-                if (this.bg == "transparent") {
+                if (this.bg === "transparent") {
                     this.bg = $("div#header[role='banner']").css("background-color");
 
-                    if (this.bg == "transparent") {
+                    if (this.bg === "transparent") {
                         //If there is no colour nor any image set, we set a default value
-                        this.bg = AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
+                        this.bg = AVE.Utils.CSSstyle === "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
                     }
                 }
             }
@@ -123,7 +125,7 @@ AVE.Modules['UserInfoFixedPos'] = {
 div#AVE_ToggleUserBlock{\
     background-position: center center;\
     background-repeat: no-repeat;\
-    border: 1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "222" : "DCDCDC") + ';\
+    border: 1px solid #' + (AVE.Utils.CSSstyle === "dark" ? "222" : "DCDCDC") + ';\
     border-radius: 1em;\
     cursor:pointer;\
     float:right;\

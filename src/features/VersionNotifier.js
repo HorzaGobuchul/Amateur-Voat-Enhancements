@@ -43,7 +43,7 @@ AVE.Modules['VersionNotifier'] = {
         //this.Store.DeleteValue(this.Store.Prefix + this.ID + "_Version")
 
         if (this.Enabled) {
-            if (this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") != AVE.Utils.MetaData.version) {
+            if (this.Store.GetValue(this.Store.Prefix + this.ID + "_Version") !== AVE.Utils.MetaData.version) {
                 this.Start();
             }
         }
@@ -299,7 +299,7 @@ AVE.Modules['VersionNotifier'] = {
 
     AppendToPage: function () {
         var CSSstyle = 'div.VersionBox' +
-                      '{background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "292929" : "F6F6F6") + ';' +
+                      '{background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "292929" : "F6F6F6") + ';' +
                        'border:1px solid black;' +
                        'z-index: 1000 ! important;' +
                        'position:fixed;' +
@@ -309,23 +309,23 @@ AVE.Modules['VersionNotifier'] = {
                        'font-size:12px;' +
                        '}' +
                     'p.VersionBoxTitle' +
-                       '{background-color: ' + (AVE.Utils.CSSstyle == "dark" ? "#575757" : "#D5D5D5") + ';' +
-                       'color: ' + (AVE.Utils.CSSstyle == "dark" ? "#BFBFBF" : "535353") + ';' +
-                       'border-bottom:1px solid ' + (AVE.Utils.CSSstyle == "dark" ? "#6E6E6E" : "#939393") + ';' +
+                       '{background-color: ' + (AVE.Utils.CSSstyle === "dark" ? "#575757" : "#D5D5D5") + ';' +
+                       'color: ' + (AVE.Utils.CSSstyle === "dark" ? "#BFBFBF" : "535353") + ';' +
+                       'border-bottom:1px solid ' + (AVE.Utils.CSSstyle === "dark" ? "#6E6E6E" : "#939393") + ';' +
                        'text-align: center;' +
                        'font-weight: bold;' +
                        '}' +
                     'p.VersionBoxInfo' +
                        '{' +
-                       'color: ' + (AVE.Utils.CSSstyle == "dark" ? "#AAA" : "#565656") + ';' +
+                       'color: ' + (AVE.Utils.CSSstyle === "dark" ? "#AAA" : "#565656") + ';' +
                        'margin-top: 5px;' +
                        'padding: 5px;' +
                        '}' +
                     'p.VersionBoxToggle' +
                        '{padding: 5px;}' +
                     'div.VersionBoxClose{' +
-                       'border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "5452A8" : "D1D0FE") + ';' +
-                       'background-color:#' + (AVE.Utils.CSSstyle == "dark" ? "304757" : "F4FCFF") + ';' +
+                       'border:1px solid #' + (AVE.Utils.CSSstyle === "dark" ? "5452A8" : "D1D0FE") + ';' +
+                       'background-color:#' + (AVE.Utils.CSSstyle === "dark" ? "304757" : "F4FCFF") + ';' +
                        'font-size:12px;' +
                        'text-align: center;' +
                        'color:#6CA9E4;' +
@@ -337,8 +337,8 @@ AVE.Modules['VersionNotifier'] = {
                        '}' +
                     'textarea.VersionBoxText{' +
                        'resize:none;' +
-                       'border-bottom:1px solid ' + (AVE.Utils.CSSstyle == "dark" ? "#6E6E6E" : "#939393") + ';' +
-                       'color: ' + (AVE.Utils.CSSstyle == "dark" ? "#BFBFBF" : "535353") + ';' +
+                       'border-bottom:1px solid ' + (AVE.Utils.CSSstyle === "dark" ? "#6E6E6E" : "#939393") + ';' +
+                       'color: ' + (AVE.Utils.CSSstyle === "dark" ? "#BFBFBF" : "535353") + ';' +
                        'font-size:12px;' +
                        'font-weight:bold;' +
                        'width:100%;' +
@@ -347,7 +347,7 @@ AVE.Modules['VersionNotifier'] = {
                        '}';
         var notifierHTML = '<div class="VersionBox">' +
                                 '<p class="VersionBoxTitle">' + AVE.Utils.MetaData.name + '</p>' +
-                                '<p class="VersionBoxInfo">' + (this.Trigger == "new" ? this.LabelNew : this.LabelShow) + ' <strong style="font-size:14px">' + AVE.Utils.MetaData.version + '</strong></p>' +
+                                '<p class="VersionBoxInfo">' + (this.Trigger === "new" ? this.LabelNew : this.LabelShow) + ' <strong style="font-size:14px">' + AVE.Utils.MetaData.version + '</strong></p>' +
                                 '<p class="VersionBoxToggle"><a href="javascript:void(0)" id="ShowChangelog">See Changelog?</a><p>' +
                                 '<div class="VersionBoxClose">Close</div>' +
                             '</div>';
@@ -357,7 +357,6 @@ AVE.Modules['VersionNotifier'] = {
     },
 
     Listeners: function () {
-        var _this = AVE.Modules['VersionNotifier'];
         var ChangeLog = this.ChangeLog;
         var VersionBox = $(".VersionBox");
 

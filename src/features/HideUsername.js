@@ -15,22 +15,22 @@ AVE.Modules['HideUsername'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: false,
+            Value: false
         },
         NewName: {
             Type: 'string',
             Desc: "Replace with: ",
-            Value: "",
+            Value: ""
         },
         ReplaceEverywhere: {
             Type: 'boolean',
             Desc: 'Replace all references to your username.',
-            Value: false,
+            Value: false
         },
         RemoveInLoginBlock: {
             Type: 'boolean',
             Desc: 'Remove your username in the user info block.',
-            Value: false,
+            Value: false
         },
     },
 
@@ -101,7 +101,7 @@ AVE.Modules['HideUsername'] = {
 
             htmlStr += '<input id="RemoveInLoginBlock" ' + (_this.Options.RemoveInLoginBlock.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="RemoveInLoginBlock"> ' + _this.Options.RemoveInLoginBlock.Desc + '</label>';
             htmlStr += '<br /><input id="ReplaceEverywhere" ' + (_this.Options.ReplaceEverywhere.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ReplaceEverywhere"> ' + _this.Options.ReplaceEverywhere.Desc + '</label>';
-            htmlStr += '<br />' + _this.Options.NewName.Desc + '<input id="NewName" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.NewName.Value + '"></input>';
+            htmlStr += '<br />' + _this.Options.NewName.Desc + '<input id="NewName" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.NewName.Value + '"></input>';
 
             return htmlStr;
         },

@@ -16,7 +16,7 @@ AVE.Modules['ReplyWithQuote'] = {
     },
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['ReplyWithQuote'];
+        var _this = this;
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
@@ -70,7 +70,7 @@ AVE.Modules['ReplyWithQuote'] = {
         });
 
         $("div[class*='entry']").OnNodeChange(function () {
-            if (_this.Quote == "") { return; }
+            if (_this.Quote === "") { return; }
 
             var ReplyBox = $(this).find("textarea[class='commenttextarea'][id='CommentContent']");
             if (ReplyBox.length > 0) {
@@ -86,8 +86,8 @@ AVE.Modules['ReplyWithQuote'] = {
             return "";
         }
 
-        if ($(nodes[0]).parents(".usertext-body:first").attr("id") == undefined ||
-            $(nodes[0]).parents(".usertext-body:first").attr("id") != $(nodes[1]).parents(".usertext-body:first").attr("id")) {
+        if ($(nodes[0]).parents(".usertext-body:first").attr("id") === undefined ||
+            $(nodes[0]).parents(".usertext-body:first").attr("id") !== $(nodes[1]).parents(".usertext-body:first").attr("id")) {
             return "";
         }
 
@@ -98,7 +98,7 @@ AVE.Modules['ReplyWithQuote'] = {
         // Thanks to InvisibleBacon @ https://stackoverflow.com/questions/1335252/how-can-i-get-the-dom-element-which-contains-the-current-selection
         var selection = window.getSelection();
         if (selection.rangeCount > 0)
-            return [selection.getRangeAt(0).endContainer.parentNode, selection.getRangeAt(0).startContainer.parentNode];
+        { return [selection.getRangeAt(0).endContainer.parentNode, selection.getRangeAt(0).startContainer.parentNode]; }
     },
 
     getSelectedText: function () {

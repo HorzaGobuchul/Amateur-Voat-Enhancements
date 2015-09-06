@@ -65,7 +65,7 @@ AVE.Modules['InjectCustomStyle'] = {
         if (!this.Options.ApplyEverywhere.Value) {
             if ($.inArray(AVE.Utils.currentPageType,
                 ["frontpage", "set", "subverse", "thread",
-                 "domain", "search", "saved", "user-submissions", "user-comments"]) == -1) {
+                 "domain", "search", "saved", "user-submissions", "user-comments"]) === -1) {
                 this.Enabled = false;
             }
         }
@@ -95,7 +95,7 @@ AVE.Modules['InjectCustomStyle'] = {
             this.CustomStyles[this.Options.CustomStyleName.Value]) {
             URL = this.CustomStyles[this.Options.CustomStyleName.Value];
         } else if (this.Options.CustomStyleUrl.Value) {
-            URL = this.Options.CustomStyleUrl.Value
+            URL = this.Options.CustomStyleUrl.Value;
         }
 
         if (URL) {
@@ -139,7 +139,7 @@ AVE.Modules['InjectCustomStyle'] = {
 
         //Panic Mode
         $(document).on("keydown", function (e) {
-            if (e.shiftKey && e.ctrlKey && e.which == 45) {
+            if (e.shiftKey && e.ctrlKey && e.which === 45) {
                 _this.PanicMode();
                 $(document).off("keydown");
             }
@@ -158,11 +158,11 @@ AVE.Modules['InjectCustomStyle'] = {
             { htmlStr += '<option disabled selected value="">Choose a custom style</option>'; }
 
             $.each(Object.keys(_this.CustomStyles), function () {
-                htmlStr += '<option ' + (_this.Options.CustomStyleName.Value == this ? "selected" : "") + ' value="' + this + '">' + this + '</option>';
+                htmlStr += '<option ' + (_this.Options.CustomStyleName.Value === this ? "selected" : "") + ' value="' + this + '">' + this + '</option>';
             });
             htmlStr += '</select>';
 
-            htmlStr += '<br /><br />' + _this.Options.CustomStyleUrl.Desc + '<br /><input id="CustomStyleUrl" style="width:85%;background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.CustomStyleUrl.Value + '"></input>';
+            htmlStr += '<br /><br />' + _this.Options.CustomStyleUrl.Desc + '<br /><input id="CustomStyleUrl" style="width:85%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.CustomStyleUrl.Value + '"></input>';
             htmlStr += '&nbsp; <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-unsub" id="AVE_CheckCSSFile">Check</a>';
 
             htmlStr += '<br /> <a target="_blank" href="https://userstyles.org/styles/browse/voat">Try a usertstyle<a/>: add ".css" at the end of the userstyle\'s url and paste it above.';
@@ -184,21 +184,21 @@ AVE.Modules['InjectCustomStyle'] = {
                         url: URL,
                         cache: true,
                     }).done(function (data, status, request) {
-                        if (request.getResponseHeader('Content-type').split(";")[0] == "text/css") {
+                        if (request.getResponseHeader('Content-type').split(";")[0] === "text/css") {
                             _this.ShowInfo("It's Ok! The file can be loaded as CSS!", "#68c16b");
                         } else {
                             _this.ShowInfo("Not Ok! The file isn't sent as a CSS file (MIME type).", "#dd5454");
                         }
                     })
-                    .fail(function (jqXHR, textStatus) {
-                        _this.ShowInfo("Error while loading CSS file. Check the URL");
+                    .fail(function () {
+                        _this.ShowInfo("Error while loading CSS file. Check the URL", "#68c16b");
                     });
                 }
             });
         },
 
         ShowInfo: function (message, color) {
-            if ($("span#CustomStyleUrl_InfoStr").length == 0) {
+            if ($("span#CustomStyleUrl_InfoStr").length === 0) {
                 $('<br /><span id="CustomStyleUrl_InfoStr"></span>').insertAfter("a#AVE_CheckCSSFile");
             }
             $("span#CustomStyleUrl_InfoStr").text(message);

@@ -58,20 +58,20 @@ AVE.Modules['UserTag'] = {
         if (this.Enabled) {
             this.style = '\
 div#UserTagBox{\
-    background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "333" : "FFF") + ';\
-    ' + (AVE.Utils.CSSstyle == "dark" ? "" : "color: #707070;") + '\
+    background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "333" : "FFF") + ';\
+    ' + (AVE.Utils.CSSstyle === "dark" ? "" : "color: #707070;") + '\
     z-index: 1000 !important;\
     position:absolute;\
     left:0px;\
     top:0px;\
-    border: 2px solid #' + (AVE.Utils.CSSstyle == "dark" ? "000" : "D1D1D1") + ';\
+    border: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "000" : "D1D1D1") + ';\
     border-radius:3px;\
     width:280px;\
 }\
 div#UserTagHeader{\
     font-weight:bold;   \
     height:20px;\
-    border-bottom: 2px solid #' + (AVE.Utils.CSSstyle == "dark" ? "000" : "D1D1D1") + ';\
+    border-bottom: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "000" : "D1D1D1") + ';\
     padding-left:5px;\
 }\
 div#UserTagHeader > span#username{\
@@ -82,8 +82,8 @@ div#UserTagHeader > span#username{\
     text-overflow: ellipsis;\
 }\
 input.UserTagTextInput{\
-    background-color: #' + (AVE.Utils.CSSstyle == "dark" ? "333" : "FFF") + ';\
-    border: 1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "000" : "D1D1D1") + ';\
+    background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "333" : "FFF") + ';\
+    border: 1px solid #' + (AVE.Utils.CSSstyle === "dark" ? "000" : "D1D1D1") + ';\
     border-radius:2px;\
     height:20px;\
     padding-left:5px;\
@@ -95,7 +95,7 @@ tr#ShowPreview > td > span#PreviewBox {\
     white-space: nowrap;\
     text-overflow: ellipsis;\
     padding: 0px 4px;\
-    border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "484848") + ';\
+    border:1px solid #' + (AVE.Utils.CSSstyle === "dark" ? "FFF" : "484848") + ';\
     border-radius:3px;\
 }\
 span.AVE_UserTag{\
@@ -103,8 +103,8 @@ span.AVE_UserTag{\
     cursor:pointer;\
     margin-left:4px;\
     padding: 0px 4px;\
-    border:1px solid #' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "484848") + ';\
-    color:#' + (AVE.Utils.CSSstyle == "dark" ? "FFF" : "000") + ';\
+    border:1px solid #' + (AVE.Utils.CSSstyle === "dark" ? "FFF" : "484848") + ';\
+    color:#' + (AVE.Utils.CSSstyle === "dark" ? "FFF" : "000") + ';\
     border-radius:3px;font-size:10px;\
 }\
 span.AVE_UserTag:empty{\
@@ -113,7 +113,7 @@ span.AVE_UserTag:empty{\
     width: 14px;\
     margin: 0px 0px -3px 4px;\
     /* SVG from Jquery Mobile Icon Set */\
-    background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23' + (AVE.Utils.CSSstyle == "dark" ? "ABABAB" : "BBB") + '%22%20d%3D%22M5%2C0H0v5l9%2C9l5-5L5%2C0z%20M3%2C4C2.447%2C4%2C2%2C3.553%2C2%2C3s0.447-1%2C1-1s1%2C0.447%2C1%2C1S3.553%2C4%2C3%2C4z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E") !important;\
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + '%22%20d%3D%22M5%2C0H0v5l9%2C9l5-5L5%2C0z%20M3%2C4C2.447%2C4%2C2%2C3.553%2C2%2C3s0.447-1%2C1-1s1%2C0.447%2C1%2C1S3.553%2C4%2C3%2C4z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E") !important;\
     background-repeat: no-repeat;\
     display: inline-block;\
 }\
@@ -144,7 +144,7 @@ table#formTable{\
             <tr id="SetColour">\
                 <td>Colour</td>\
                 <td style="width:10px;"></td>\
-                <td><input name="color" type="color" title="Click me!" id="ChooseColor" style="width:60px;" />\</td>\
+                <td><input name="color" type="color" title="Click me!" id="ChooseColor" style="width:60px;" /></td>\
             </tr>\
             <tr id="ShowPreview">\
                 <td>Preview</td>\
@@ -203,13 +203,13 @@ table#formTable{\
 
             name = $(this).html().replace("@", "").replace("/u/", "").toLowerCase(); //Accepts: Username, @Username, /u/Username
 
-            if ($(this).attr('href').split("/")[2].toLowerCase() != name) { return true; } //don't add if this is a link whose label isn't the username
+            if ($(this).attr('href').split("/")[2].toLowerCase() !== name) { return true; } //don't add if this is a link whose label isn't the username
 
-            tag = _this.GetTag(name) || new _this.UserTagObj("",  (AVE.Utils.CSSstyle == "dark" ? "#d1d1d1" : "#e1fcff"), false, 0);
+            tag = _this.GetTag(name) || new _this.UserTagObj("",  (AVE.Utils.CSSstyle === "dark" ? "#d1d1d1" : "#e1fcff"), false, 0);
 
             Tag_html = '<span class="AVE_UserTag" id="' + name + '">' + (!tag.tag ? "" : tag.tag) + '</span>';
             if (_this.Options.VoteBalance.Value) {
-                if (tag.balance != 0) {
+                if (tag.balance !== 0) {
                     var sign = tag.balance > 0 ? "+" : "";
                     Tag_html += '<span class="AVE_UserBalance" id="' + name + '">[ ' + sign + tag.balance + ' ]</span>';
                 } else {
@@ -232,13 +232,13 @@ table#formTable{\
             }
 
             if (AVE.Modules['IgnoreUsers'] && tag.ignored) {
-                if ($.inArray(name, AVE.Modules['IgnoreUsers'].IgnoreList) == -1) {
+                if ($.inArray(name, AVE.Modules['IgnoreUsers'].IgnoreList) === -1) {
                     AVE.Modules['IgnoreUsers'].IgnoreList.push(name);
                 }
             }
         });
 
-        if ($("#UserTagBox").length == 0) {
+        if ($("#UserTagBox").length === 0) {
             AVE.Utils.AddStyle(_this.style);
             $(_this.html).appendTo("body");
             $("#UserTagBox").hide();
@@ -265,16 +265,16 @@ table#formTable{\
 
             $("div#UserTagHeader > span#username").text(username);
 
-            $("tr#SetTag > td > input.UserTagTextInput").val(oldTag == "+" ? "" : oldTag);
-            $("tr#ShowPreview > td > span#PreviewBox").text(oldTag == "+" ? "" : oldTag);
+            $("tr#SetTag > td > input.UserTagTextInput").val(oldTag === "+" ? "" : oldTag);
+            $("tr#ShowPreview > td > span#PreviewBox").text(oldTag === "+" ? "" : oldTag);
 
-            if (usertag != undefined) {
+            if (usertag !== undefined) {
                 $("tr#SetColour > td > input#ChooseColor").val(usertag.colour);
                 $("tr#SetColour > td > input#ChooseColor").change();
                 if (usertag.ignored) { $("tr#SetIgnore > td > input#ToggleIgnore").prop('checked', "true"); }
                 $("tr#SetBalance > td > input#voteBalance").val(usertag.balance);
             } else {
-                $("tr#SetColour > td > input#ChooseColor").val((AVE.Utils.CSSstyle == "dark" ? "#d1d1d1" : "#e1fcff"));
+                $("tr#SetColour > td > input#ChooseColor").val((AVE.Utils.CSSstyle === "dark" ? "#d1d1d1" : "#e1fcff"));
                 $("tr#SetColour > td > input#ChooseColor").change();
             }
             $("tr#SetTag > td > input.UserTagTextInput").focus();
@@ -285,7 +285,7 @@ table#formTable{\
         if (_this.Options.VoteBalance.Value) {
             if (_this.obsVoteChange) { _this.obsVoteChange.disconnect(); }
             _this.obsVoteChange = new OnAttrChange($("div[class*='midcol']"), function (e) {
-                if (!e.oldValue || e.oldValue.split(" ").length != 2) { return true; }
+                if (!e.oldValue || e.oldValue.split(" ").length !== 2) { return true; }
                 _this.ChangeVoteBalance(e.target, e.oldValue);
             });
             this.obsVoteChange.observe();
@@ -295,7 +295,7 @@ table#formTable{\
         $("div#UserTagHeader > span > a#CloseTagWin").off("click");
         $("div#UserTagHeader > span > a#CloseTagWin").on("click", function () {
             $("#UserTagBox").hide();
-        }),
+        });
         //Show in the preview box the tag
         $("tr#SetTag > td > input.UserTagTextInput").off('keyup');
         $("tr#SetTag > td > input.UserTagTextInput").on('keyup', function () {
@@ -315,7 +315,7 @@ table#formTable{\
             $("tr#ShowPreview > td > span#PreviewBox").css("color", AVE.Utils.GetBestFontColour(r, g, b));
         });
         //Saving tag
-        $("tr#SetBalance > td > a#SaveTag").off("click")
+        $("tr#SetBalance > td > a#SaveTag").off("click");
         $("tr#SetBalance > td > a#SaveTag").on("click", function () {
             var opt = {
                 username: $("div#UserTagHeader > span#username").text(),
@@ -327,7 +327,7 @@ table#formTable{\
 
             if (isNaN(opt.balance)) { opt.balance = 0; }
 
-            if (opt.tag.length == 0 && opt.ignore == false && opt.balance == 0) {
+            if (opt.tag.length === 0 && opt.ignore === false && opt.balance === 0) {
                 _this.RemoveTag(opt.username);
             } else {
                 _this.SetTag(opt);
@@ -341,12 +341,12 @@ table#formTable{\
         //If Enter/Return is pressed while the focus is on one of the two text input, we save the tag.
         $(document).off("keyup");
         $(document).on("keyup", function (e) {
-            if (e.which == 13) {
-                if ($(e.target).attr("class") == "UserTagTextInput") {
+            if (e.which === 13) {
+                if ($(e.target).attr("class") === "UserTagTextInput") {
                     $("tr#SetBalance > td > a#SaveTag").click();
                 }
             }
-            if (e.which == 27 && $("#UserTagBox").is(":visible")) {
+            if (e.which === 27 && $("#UserTagBox").is(":visible")) {
                 $("div#UserTagHeader > span > a#CloseTagWin").click();
                 $("#UserTagBox").hide();
             }
@@ -359,29 +359,29 @@ table#formTable{\
     ChangeVoteBalance: function (target, oldValue) {
         var _this = this;
 
-        //print("target: "+target);
+        //print("target: "+target); 
         //print("oldvalue: "+oldValue);
         //print("newvalue: "+$(target).attr('class'));
 
         var username = $(target).parent().find(".AVE_UserTag:first").attr("id").toLowerCase();
-        if (username == undefined) { return true; }
+        if (!username) { return true; }
 
         var tag = _this.GetTag(username);
         var opt = { username: username, tag: tag.tag || '', colour: tag.colour || "#d1d1d1", ignore: tag.ignore || false, balance: tag.balance || 0 };
 
         //If the previous status was "unvoted"
-        if (oldValue == "midcol unvoted") {
+        if (oldValue === "midcol unvoted") {
             if ($(target).hasClass('likes')) { opt.balance += 1; }
             else if ($(target).hasClass('dislikes')) { opt.balance -= 1; }
         }
         else {
             //If the previous status was "upvoted"
-            if (oldValue == "midcol likes") {
+            if (oldValue === "midcol likes") {
                 if ($(target).hasClass('unvoted')) { opt.balance -= 1; }
                 else if ($(target).hasClass('dislikes')) { opt.balance -= 2; }
             }
                 //If the previous status was "downvoted"
-            else if (oldValue == "midcol dislikes") {
+            else if (oldValue === "midcol dislikes") {
                 if ($(target).hasClass('likes')) { opt.balance += 2; }
                 else if ($(target).hasClass('unvoted')) { opt.balance += 1; }
             }
@@ -395,7 +395,7 @@ table#formTable{\
         var _this = this;
         $("span[class*='AVE_UserTag'][id*='" + tag.username + "']").each(function () {
 
-            if (tag.tag != "") {
+            if (tag.tag !== "") {
                 $(this).text(tag.tag);
 
                 var r, g, b;
@@ -414,13 +414,13 @@ table#formTable{\
             }
 
             if (_this.Options.VoteBalance.Value) {
-                if (tag.balance != 0) {
+                if (tag.balance !== 0) {
                     var sign = tag.balance > 0 ? "+" : "";
                     $(this).nextAll("span.AVE_UserBalance:first").text('[ ' + sign + tag.balance + ' ]');
                 } else {
                     $(this).nextAll("span.AVE_UserBalance:first").text("");
                 }
-            };
+            }
         });
     },
 
@@ -458,8 +458,8 @@ table#formTable{\
 
                 $.each(_this.usertags, function (key, value) {
                     if (value.tag.length > 0) { TagLen++; }
-                    if (value.balance != 0) { VoteLen++; }
-                    if (value.ignored == true) { IgnoreLen++; }
+                    if (value.balance !== 0) { VoteLen++; }
+                    if (value.ignored === true) { IgnoreLen++; }
                 });
 
                 htmlStr += '<ul style="list-style:inside circle;"><li>You have tagged ' + TagLen + ' users.</li>';

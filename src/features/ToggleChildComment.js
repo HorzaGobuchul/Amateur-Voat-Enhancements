@@ -20,14 +20,13 @@ AVE.Modules['ToggleChildComment'] = {
     LabelShow: "show child comments",
 
     SavePref: function (POST) {
-        var _this = AVE.Modules['ToggleChildComment'];
-        POST = POST[_this.ID];
+        POST = POST[this.ID];
 
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST));
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
     },
 
     SetOptionsFromPref: function () {
-        var _this = AVE.Modules['ToggleChildComment'];
+        var _this = this;
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
@@ -59,21 +58,21 @@ AVE.Modules['ToggleChildComment'] = {
     },
 
     AppendToPage: function () {
-        var _this = AVE.Modules['ToggleChildComment'];
+        var _this = this;
         $("ul[class*='flat-list']").each(function () {
             if ($(this).find("a#AVE_ToggleChildComment").length > 0) { return true; }
-            if ($(this).parents("div[class*='comment']:first").children("div[class*='child'][class*='comment']").length == 0) { return true; }
+            if ($(this).parents("div[class*='comment']:first").children("div[class*='child'][class*='comment']").length === 0) { return true; }
 
             $('<li><a id="AVE_ToggleChildComment" href="javascript:void(0)" style="font-weight:bold;">' + _this.LabelHide + '</a></li>').insertAfter($(this).find("li:contains(report spam)"));
         });
     },
 
     Listeners: function () {
-        var _this = AVE.Modules['ToggleChildComment'];
+        var _this = this;
         $("a#AVE_ToggleChildComment").off("click");
         $("a#AVE_ToggleChildComment").on("click", function () {
 
-            var NextLevelComments = $(this).parents("div[class*='comment']:first").children("div[class*='child'][class*='comment']")
+            var NextLevelComments = $(this).parents("div[class*='comment']:first").children("div[class*='child'][class*='comment']");
             if (NextLevelComments.is(":visible")) {
                 NextLevelComments.hide();
                 $(this).text(_this.LabelShow);

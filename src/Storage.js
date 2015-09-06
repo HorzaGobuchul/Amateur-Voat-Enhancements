@@ -8,8 +8,8 @@ AVE.Storage = {
         //AVE.Utils.SendMessage({ request: "Storage", type: "GetValue", key: key});
 
         var val = this.Data[key];
-        if (val == undefined) {
-            if (def == undefined) {
+        if (!val) {
+            if (!def) {
                 return null;
             } return def;
         } return val;

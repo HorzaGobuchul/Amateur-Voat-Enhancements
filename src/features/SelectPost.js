@@ -5,6 +5,7 @@ AVE.Modules['SelectPost'] = {
     Category: 'Posts',
 
     Enabled: false,
+    Index: 19, //Must be before ShortKeys
 
     Store: AVE.storage,
 
@@ -40,7 +41,7 @@ AVE.Modules['SelectPost'] = {
         POST = POST[_this.ID];
 
         $.each(colours, function (index, value) {
-            _this.Options[value].Value[AVE.Utils.CSSstyle == "dark" ? 0 : 1] = POST[value];
+            _this.Options[value].Value[AVE.Utils.CSSstyle === "dark" ? 0 : 1] = POST[value];
         });
         _this.Options.Enabled.Value = POST.Enabled;
 
@@ -94,14 +95,14 @@ AVE.Modules['SelectPost'] = {
     
     ToggleSelectedState: function (obj) {
         var _this = this;
-        var style = (AVE.Utils.CSSstyle == "dark" ? 0 : 1);
+        var style = (AVE.Utils.CSSstyle === "dark" ? 0 : 1);
 
-        if (AVE.Utils.SelectedPost != undefined) {
+        if (AVE.Utils.SelectedPost !== undefined) {
             AVE.Utils.SelectedPost.parents("div[class*=' id-']:first").css('background-color', '');
             AVE.Utils.SelectedPost.find("blockquote").css('background-color', '');
             AVE.Utils.SelectedPost.find("pre").css('background-color', '');
 
-            if (AVE.Utils.currentPageType == "user-submissions") {
+            if (AVE.Utils.currentPageType === "user-submissions") {
                 AVE.Utils.SelectedPost.parent().find(".submission.even.link._this").css('background-color', '');
                 AVE.Utils.SelectedPost.parent().css('background-color', '');
                 AVE.Utils.SelectedPost.prevAll(".midcol.unvoted").first().find(".submissionscore").css('background-color', '');
@@ -118,7 +119,7 @@ AVE.Modules['SelectPost'] = {
         obj.find("pre").css('background-color', _this.Options.QuoteCodeColour.Value[style]);
 
         //Special case: user/username/submissions
-        if (AVE.Utils.currentPageType == "user-submissions") {
+        if (AVE.Utils.currentPageType === "user-submissions") {
             obj.parent().find(".submission.even.link._this").css('background-color', _this.Options.ContentColour.Value[style]);
             obj.parent().css('background-color', _this.Options.ContentColour.Value[style]);
             obj.prevAll(".midcol.unvoted").first().find(".submissionscore").css('background-color', _this.Options.VoteCountBoxColour.Value[style]);
@@ -136,10 +137,10 @@ AVE.Modules['SelectPost'] = {
 
     AppendToPreferenceManager: {
         html: function () {
-            var style = AVE.Utils.CSSstyle == "dark" ? 0 : 1;
+            var style = AVE.Utils.CSSstyle === "dark" ? 0 : 1;
             var _this = AVE.Modules['SelectPost'];
             var htmlStr = "";
-            htmlStr += "<div>Background colours (" + AVE.Utils.CSSstyle + " theme):</div>"
+            htmlStr += "<div>Background colours (" + AVE.Utils.CSSstyle + " theme):</div>";
             htmlStr += '<div style="display:inline;padding-left:15x;padding-right:15px;margin-right:10px;" id="Demo_ContentColour"></div>';
             htmlStr += ' <input style="display:inline;width:60px;padding:0px;" class="form-control" type="text" Module="' + _this.ID + '" id="ContentColour" Value="' + _this.Options.ContentColour.Value[style] + '"/> - Post<br />';
             htmlStr += '<div style="display:inline;padding-left:15x;padding-right:15px;margin-right:10px;" id="Demo_QuoteCodeColour"></div>';
