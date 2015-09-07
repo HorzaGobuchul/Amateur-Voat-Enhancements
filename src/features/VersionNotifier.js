@@ -59,6 +59,19 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.24.6.6",
+        "   Updated source with JSlint recommendations",
+        "   InjectCustomStyle & ToggleCustomStyle:",
+        "       Thanks to a fix by /u/FuzzyWords these modules will now identify custom styles way faster",
+        "   FixExpandImage:",
+        "       Added back fix for reply box's buttons positioned below the sidebar",
+        "   Shortkeys:",
+        "       When collapsing a media, the page will scroll back to its post (submission, comment) if it was out of page while expanded",
+        "   Init:",
+        "       AVE will now stop loading modules only if the page's title is exactly that of error pages",
+        "       Beware: Choosing an error message as the title of a subverse would be a very efficient way of disabling AVE",
+        "   UserTag:",
+        "       Fixed bug where the vote balance would be updated for the first username found in the self-text when the submission is made in an anonymised subverse",
         "V2.24.2.3",
         "   New feature: Inject custom style",
         "       Apply a custom style everywhere on Voat. Choose from a list or input your own CSS from an URL",
@@ -295,7 +308,7 @@ AVE.Modules['VersionNotifier'] = {
         "AppendQuote: added \"quote\" link to self-text OP in thread pages",
         "Storage Module with GM_storage (localStorage later)",
         "Added an option to ToggleMedia: toggle media in the sidebar (default: false)",
-        "Light and Dark theme for the PrefMngr and Tag box", ],
+        "Light and Dark theme for the PrefMngr and Tag box"],
 
     AppendToPage: function () {
         var CSSstyle = 'div.VersionBox' +

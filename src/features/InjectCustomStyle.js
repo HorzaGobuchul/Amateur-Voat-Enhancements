@@ -4,7 +4,7 @@ AVE.Modules['InjectCustomStyle'] = {
     Desc: 'Apply your custom style of choice everywhere on Voat.<br />For the best result check "Disable custom subverse styles" in your preferences.',
     Category: 'Style',
 
-    Index: 100,
+    Index: 50,
     Enabled: false,
 
     Store: {},
@@ -35,14 +35,12 @@ AVE.Modules['InjectCustomStyle'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var _this = this;
         POST = POST[this.ID];
 
         this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
     },
 
     ResetPref: function () {
-        var _this = this;
         this.Options = JSON.parse(this.OriginalOptions);
     },
 
@@ -57,7 +55,6 @@ AVE.Modules['InjectCustomStyle'] = {
     },
 
     Load: function () {
-        var _this = this;
         this.Store = AVE.Storage;
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
@@ -68,6 +65,11 @@ AVE.Modules['InjectCustomStyle'] = {
                  "domain", "search", "saved", "user-submissions", "user-comments"]) === -1) {
                 this.Enabled = false;
             }
+        }
+        //No need to start if no external custom style was selected
+        if (this.Options.CustomStyleName.Value === "None" &&
+            this.Options.CustomStyleUrl.Value === "") {
+            this.Enabled = false;
         }
 
         if (this.Enabled) {
@@ -82,12 +84,36 @@ AVE.Modules['InjectCustomStyle'] = {
         Scribble: "https://cdn.rawgit.com/ScribbleForVoat/Scribble/master/base.min.css?AVE",
         Simplegoats: "https://cdn.rawgit.com/relaxedzombie/simplegoats/master/simplegoats.min.css?AVE",
         SlimDark: "https://cdn.rawgit.com/KinOfMany/SlimDark/master/style.css?AVE",
-        Typogra: "https://cdn.rawgit.com/Nurdoidz/Typogra-Voat/master/Typogra.min.css",
+        Typogra: "https://cdn.rawgit.com/Nurdoidz/Typogra-Voat/master/Typogra.min.css?AVE",
     },
+    
+    CustomCSSContainerCount: 0,
 
     Start: function () {
         var _this = this;
-        $("style#custom_css").ready(function () { $("style#custom_css").text(""); });
+        var theme = ~document.cookie.indexOf('theme=dark') ? "Dark" : "Light";
+    
+        var obsCustomCSS = new OnNodeChange($(document.documentElement), function (m) {
+            //By /u/FuzzyWords: voat.co/v/AVEbeta/comments/448708/2133227
+            if(m.addedNodes) {
+                for(var i = 0; i < m.addedNodes.length; i++) {
+                    var n = m.addedNodes[i];
+                    if ($(n).is("link[href^='/Content/" + theme + "?v=']")){$(n).remove();}
+                    if(n.parentNode && n.nodeName.toUpperCase() === "STYLE" && n.id === "custom_css") {
+                        n.parentNode.removeChild(n);
+                        
+                        //We want to disconnect the observer once it has done its job. But remember that a custom style is added twice in threads.
+                        _this.CustomCSSContainerCount+=1;
+                        if (AVE.Utils.currentPageType === "thread") {
+                            if (_this.CustomCSSContainerCount === 2)
+                            { obsCustomCSS.disconnect();}
+                        }
+                        else { obsCustomCSS.disconnect(); }
+                    }
+                }
+            }
+        });
+        obsCustomCSS.observe();
 
         var URL;
 
@@ -99,10 +125,8 @@ AVE.Modules['InjectCustomStyle'] = {
         }
 
         if (URL) {
-            var theme = ~document.cookie.indexOf('theme=dark') ? "Dark" : "Light";
             $("head").append('<link rel="stylesheet" href="/Content/' + theme + '?HiFromAVE" type="text/css">');
             $("head").append('<link rel="StyleSheet" href="' + URL + '" type="text/css">');
-            $("link[href^='/Content/" + theme + "?v=']").ready(function () { $("link[href^='/Content/" + theme + "?v=']").remove(); });
 
             //If I use the following method, someone could easily inject javascript code and mess with the user.
             //$.ajax({
@@ -158,7 +182,7 @@ AVE.Modules['InjectCustomStyle'] = {
             { htmlStr += '<option disabled selected value="">Choose a custom style</option>'; }
 
             $.each(Object.keys(_this.CustomStyles), function () {
-                htmlStr += '<option ' + (_this.Options.CustomStyleName.Value === this ? "selected" : "") + ' value="' + this + '">' + this + '</option>';
+                htmlStr += '<option ' + (_this.Options.CustomStyleName.Value == this ? "selected" : "") + ' value="' + this + '">' + this + '</option>';
             });
             htmlStr += '</select>';
 

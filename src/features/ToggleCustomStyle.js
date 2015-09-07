@@ -1,15 +1,15 @@
 AVE.Modules['ToggleCustomStyle'] = {
     ID: 'ToggleCustomStyle',
     Name: 'Toggle subverse custom style',
-    Desc: 'Adds a checkbox to enable/disable custom styles on a per subverse basis.',
+    Desc: 'Adds a checkbox to enable/disable custom styles on a per subverse basis.<br />This module is automatically disabled if "Inject custom style" is enabled',
     Category: 'Style',
 
-    Index: 10,
+    Index: 51,
     Enabled: false,
 
     Store: {},
 
-    RunAt: "ready",
+    RunAt: "start",
 
     Options: {
         Enabled: {
@@ -34,13 +34,47 @@ AVE.Modules['ToggleCustomStyle'] = {
         this.Enabled = this.Options.Enabled.Value;
     },
 
+    CustomCSSContainerCount: 0,
+
     Load: function () {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
-        if (this.Enabled && !AVE.Modules['InjectCustomStyle'].Enabled && $.trim($("style#custom_css:first").text()).length > 0) {
-            this.CustomCSS = $("style#custom_css:first").text();
-            this.Start();
+        if (this.Enabled && !AVE.Modules['InjectCustomStyle'].Enabled) {
+            
+            var _this = this;
+            var obsCustomCSS = new OnNodeChange($(document.documentElement), function (m) {
+                //By /u/FuzzyWords: voat.co/v/AVEbeta/comments/448708/2133227
+                if(m.addedNodes) {
+                    for(var i = 0; i < m.addedNodes.length; i++) {
+                        var n = m.addedNodes[i];
+                        if(n.parentNode && n.nodeName.toUpperCase() === "STYLE" && n.id === "custom_css") {
+                            if (!_this.CustomCSS){
+                                _this.CustomCSS = $(n).text();
+                            }                           
+                            
+                            //We want to disconnect the observer once it has done its job. But remember that a custom style is added twice in threads.
+                            _this.CustomCSSContainerCount+=1;
+                            if (AVE.Utils.currentPageType === "thread") {
+                                if (_this.CustomCSSContainerCount === 2)
+                                {
+                                    n.parentNode.removeChild(n);
+                                    obsCustomCSS.disconnect();
+                                }
+                            }
+                            else { obsCustomCSS.disconnect(); }
+                            
+                            if (_this.CustomCSSContainerCount === 1 && $.trim(_this.CustomCSS).length > 0){
+                                _this.Start();
+                            }
+                        }
+                    }
+                }
+            });
+            obsCustomCSS.observe();
+        
+            // && $.trim($("style#custom_css:first").text()).length > 0
+            //this.CustomCSS = $("style#custom_css:first").text();
         }
     },
 
@@ -49,14 +83,11 @@ AVE.Modules['ToggleCustomStyle'] = {
     DisabledCSS: false, //If present we disable the custom CSS
 
     Start: function () {
+        print("started");
         this.StorageName = this.Store.Prefix + this.ID + "_DisabledCSS";
 
         //print(this.Store.GetValue(this.StorageName, "[]"));
         //this.Store.DeleteValue(this.StorageName);
-
-        if ($("style#custom_css").length > 1) {
-            $("style#custom_css:last").remove();
-        }
 
         this.DisabledCSS = $.inArray(AVE.Utils.subverseName, JSON.parse(this.Store.GetValue(this.StorageName, "[]"))) === -1;
 

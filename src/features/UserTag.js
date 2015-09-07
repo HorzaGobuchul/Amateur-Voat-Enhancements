@@ -357,16 +357,16 @@ table#formTable{\
     //      we use a second function that keypresses in ShortKeys.js can invoke directly.
     // Ten mimutes later it works perfectly well. Maybe, voat's current instability was to blame. I'm not changing it back, anyway...
     ChangeVoteBalance: function (target, oldValue) {
-        var _this = this;
-
         //print("target: "+target); 
         //print("oldvalue: "+oldValue);
         //print("newvalue: "+$(target).attr('class'));
 
-        var username = $(target).parent().find(".AVE_UserTag:first").attr("id").toLowerCase();
+        var username = $(target).parent().find("p.tagline").find(".AVE_UserTag:first");
+        if (!username) { return true; } //If we couldn't find a username in the tagline that means this is
+        username = username.attr("id").toLowerCase();
         if (!username) { return true; }
 
-        var tag = _this.GetTag(username);
+        var tag = this.GetTag(username);
         var opt = { username: username, tag: tag.tag || '', colour: tag.colour || "#d1d1d1", ignore: tag.ignore || false, balance: tag.balance || 0 };
 
         //If the previous status was "unvoted"
@@ -387,8 +387,8 @@ table#formTable{\
             }
         }
         
-        _this.SetTag(opt);
-        _this.UpdateUserTag(opt);
+        this.SetTag(opt);
+        this.UpdateUserTag(opt);
     },
 
     UpdateUserTag: function (tag) {

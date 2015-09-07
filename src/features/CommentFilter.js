@@ -120,7 +120,7 @@ AVE.Modules['CommentFilter'] = {
             if ($.inArray($(this).find("input#CommentId").val(), _this.Processed) !== -1)
             { return true; }
             //else
-            this.Processed.push($(this).find("input#CommentId").val());
+            _this.Processed.push($(this).find("input#CommentId").val());
             
             $.each(_this.Options.Filters.Value, function () {
                 found = false;

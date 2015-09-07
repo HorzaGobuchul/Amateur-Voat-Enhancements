@@ -3,7 +3,7 @@ AVE.Modules = {};
 
 AVE.Init = {
     Start: function () {
-        var ModLoad, _this;
+        var ModLoad, _this, stopLoading;
 
         _this = this;
         ModLoad = {
@@ -13,6 +13,7 @@ AVE.Init = {
             DocReady: [],
             WinLoaded: []
         };
+        stopLoading = false;
 
         AVE.Utils.EarlySet();
 
@@ -59,22 +60,23 @@ AVE.Init = {
                 //print("AVE: Current style > " + AVE.Utils.CSSstyle);
 
                 //By /u/Jammi: voat.co/v/AVE/comments/421861
-                print(document.title);
                 if (document.title === 'Checking your bits' || document.title === 'Play Pen Improvements') {
+                    print("AVE: this is an error page, no more modules will be started");
                     if (~document.cookie.indexOf('theme=dark')) {
                         $.each(["body background #333", "body color #dfdfdf", "#header background #333", "#header-container background #333", "#header-container borderBottomColor #555", "#header-container borderTopColor #555", ".panel-info background #222", ".panel-heading background #222", ".panel-heading borderColor #444", ".panel-title background #222", ".panel-title color #dfdfdf", ".panel-body background #222", ".panel-body borderColor #444"],
                                function () { var _this = this.split(" "); $(_this[0]).css(_this[1], _this[2]); });
                     }
+                    stopLoading = true;
                     return;
                 }//Error pages that are empty
-
+                
                 $.each(ModLoad.DocReady, function () {
                     _this.LoadModules(this);
                 });
             });
-
             //On window loaded
             var loadModuleOnLoadComplete = function () {
+                if (stopLoading){return;}
                 $.each(ModLoad.WinLoaded, function () {
                     _this.LoadModules(this);
                 });
@@ -87,9 +89,11 @@ AVE.Init = {
     },
 
     LoadModules: function (ID) {
-        //var module = AVE.Modules[ID];
+        //var module = AVE.Modules[ID];s
         //print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")");
-
+        
+        //AVE.Modules[ID].Load();
+        
         try { AVE.Modules[ID].Load(); }
         catch (e) {print("AVE: Error loading " + ID);}
     },

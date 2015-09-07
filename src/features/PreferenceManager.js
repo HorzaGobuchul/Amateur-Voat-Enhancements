@@ -257,7 +257,8 @@ AVE.Modules['PreferenceManager'] = {
 
             $.each(_this.Modules, function () {
                 module = AVE.Modules[this];
-                if (module.Category !== cat) { return; }
+                
+                if (module.Category != cat) { return; }
 
                 _this.AddModule(module, cat);
             });
@@ -508,7 +509,7 @@ AVE.Modules['PreferenceManager'] = {
                     $.each(Data, function (k, v) {
                         c++;
                         if (k.substr(0, 3) !== "AVE") {
-                            print("Failed: " + k);
+                            print("AVE: importing preferences -> Failed: " + k);
                             return true;
                         }
                         _this.Store.SetValue(k, v);

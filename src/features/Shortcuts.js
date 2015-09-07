@@ -18,9 +18,7 @@ AVE.Modules['Shortcuts'] = {
     },
 
     SavePref: function (POST) {
-        var _this = this;
-
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST[this.ID]));
     },
 
     SetOptionsFromPref: function () {
@@ -158,7 +156,7 @@ AVE.Modules['Shortcuts'] = {
 
     //// Special to subverse: adds a "shortcut" button for this subverse////
     AppendShortcutButton: function () {
-        _this = AVE.Modules['Shortcuts'];
+        _this = this;
 
         if (!this.isPageInShortcuts()) {
             //style="display:inline" is a fix for the Scribble custom style that tries to hide the block button, but instead hides this shorcut button.
@@ -190,7 +188,7 @@ AVE.Modules['Shortcuts'] = {
     },
     /// Special methods related to shortcuts ///
     GetSubversesList: function () {
-        return this.Store.GetValue(_this.StorageName, "newsubverses,introductions,news").split(',');
+        return this.Store.GetValue(this.StorageName, "newsubverses,introductions,news").split(',');
     },
 
     GetSetParam: function (str) {
@@ -201,10 +199,10 @@ AVE.Modules['Shortcuts'] = {
     },
 
     AddToShortcuts: function (SubName) {
-        var subversesArr = _this.GetSubversesList();
+        var subversesArr = this.GetSubversesList();
         var str = subversesArr.join(",") + "," + SubName;
 
-        this.Store.SetValue(_this.StorageName, str);
+        this.Store.SetValue(this.StorageName, str);
     },
 
     RemoveSetFromShortcut: function (id) {
