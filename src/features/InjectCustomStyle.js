@@ -14,22 +14,32 @@ AVE.Modules['InjectCustomStyle'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: false,
+            Value: false
         },
         CustomStyleName: {
             Type: 'string',
-            Value: "",
+            Value: ""
         },
         CustomStyleUrl: {
             Type: 'string',
-            Desc: 'Enter URL of a custom CSS file: ',
-            Value: "",
+            Desc: 'Enter URL of a custom CSS file:',
+            Value: ""
         },
         ApplyEverywhere: {
             Type: 'boolean',
             Desc: 'Also insert the custom style in non-subverse pages (e.g. user page, moderator page, ...). The custom styles generaly aren\'t compatible with them.',
-            Value: false,
+            Value: false
         },
+        RemoveSubverseStyle: {
+            Type: 'boolean',
+            Desc: 'Remove the subverse\'s custom style if any is found.',
+            Value: true
+        },
+        InjectLate: {
+            Type: 'boolean',
+            Desc: 'Insert the new CSS file <strong>after</strong> the custom style.',
+            Value: false
+        }
     },
 
     OriginalOptions: "",
@@ -93,27 +103,29 @@ AVE.Modules['InjectCustomStyle'] = {
         var _this = this;
         var theme = ~document.cookie.indexOf('theme=dark') ? "Dark" : "Light";
     
-        var obsCustomCSS = new OnNodeChange($(document.documentElement), function (m) {
-            //By /u/FuzzyWords: voat.co/v/AVEbeta/comments/448708/2133227
-            if(m.addedNodes) {
-                for(var i = 0; i < m.addedNodes.length; i++) {
-                    var n = m.addedNodes[i];
-                    if ($(n).is("link[href^='/Content/" + theme + "?v=']")){$(n).remove();}
-                    if(n.parentNode && n.nodeName.toUpperCase() === "STYLE" && n.id === "custom_css") {
-                        n.parentNode.removeChild(n);
-                        
-                        //We want to disconnect the observer once it has done its job. But remember that a custom style is added twice in threads.
-                        _this.CustomCSSContainerCount+=1;
-                        if (AVE.Utils.currentPageType === "thread") {
-                            if (_this.CustomCSSContainerCount === 2)
-                            { obsCustomCSS.disconnect();}
+        if (this.Options.RemoveSubverseStyle.Value) {
+            var obsCustomCSS = new OnNodeChange($(document.documentElement), function (m) {
+                //By /u/FuzzyWords: voat.co/v/AVEbeta/comments/448708/2133227
+                if(m.addedNodes) {
+                    for(var i = 0; i < m.addedNodes.length; i++) {
+                        var n = m.addedNodes[i];
+                        if ($(n).is("link[href^='/Content/" + theme + "?v=']")){$(n).remove();}
+                        if(n.parentNode && n.nodeName.toUpperCase() === "STYLE" && n.id === "custom_css") {
+                            n.parentNode.removeChild(n);
+                            
+                            //We want to disconnect the observer once it has done its job. But remember that a custom style is added twice in threads.
+                            _this.CustomCSSContainerCount++;
+                            if (AVE.Utils.currentPageType === "thread") {
+                                if (_this.CustomCSSContainerCount === 2)
+                                { obsCustomCSS.disconnect();}
+                            }
+                            else { obsCustomCSS.disconnect(); }
                         }
-                        else { obsCustomCSS.disconnect(); }
                     }
                 }
-            }
-        });
-        obsCustomCSS.observe();
+            });
+            obsCustomCSS.observe();
+        }
 
         var URL;
 
@@ -124,9 +136,19 @@ AVE.Modules['InjectCustomStyle'] = {
             URL = this.Options.CustomStyleUrl.Value;
         }
 
+
         if (URL) {
-            $("head").append('<link rel="stylesheet" href="/Content/' + theme + '?HiFromAVE" type="text/css">');
-            $("head").append('<link rel="StyleSheet" href="' + URL + '" type="text/css">');
+            function Inject (){
+            }
+
+            if (this.Options.InjectLate.Value && !this.Options.RemoveSubverseStyle.Value) {
+                $(document).ready(function () {
+                    $("body").append('<link rel="StyleSheet" href="' + URL + '" type="text/css">');
+                });
+            } else {
+                $("head").append('<link rel="stylesheet" href="/Content/' + theme + '?HiFromAVE" type="text/css">');
+                $("head").append('<link rel="StyleSheet" href="' + URL + '" type="text/css">');
+            }
 
             //If I use the following method, someone could easily inject javascript code and mess with the user.
             //$.ajax({
@@ -152,9 +174,9 @@ AVE.Modules['InjectCustomStyle'] = {
                     case "Cashmere":
                         AVE.Utils.AddStyle("a#GM_ExpandAllImages{display: inline !important;}");
                         break;
-                        //case "Simplegoats":
-                        //case "Typogra":
-                        //    break;
+                    //case "Simplegoats":
+                    //case "Typogra":
+                    //    break;
                     default:
                         break;
                 }
@@ -191,6 +213,10 @@ AVE.Modules['InjectCustomStyle'] = {
 
             htmlStr += '<br /> <a target="_blank" href="https://userstyles.org/styles/browse/voat">Try a usertstyle<a/>: add ".css" at the end of the userstyle\'s url and paste it above.';
 
+            htmlStr += '<br /><input id="RemoveSubverseStyle" ' + (_this.Options.RemoveSubverseStyle.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="RemoveSubverseStyle"> ' + _this.Options.RemoveSubverseStyle.Desc + '</label>';
+
+            htmlStr += '<br /><input style="margin-left:15px;" id="InjectLate" ' + (_this.Options.InjectLate.Value ? 'checked="true"' : "") + ' '+ (_this.Options.RemoveSubverseStyle.Value ? 'disabled="true"' : "") +' type="checkbox"/><label style="display:inline;" for="InjectLate"> ' + _this.Options.InjectLate.Desc + '</label>';
+
             htmlStr += '<br /><br /><input id="ApplyEverywhere" ' + (_this.Options.ApplyEverywhere.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ApplyEverywhere"> ' + _this.Options.ApplyEverywhere.Desc + '</label>';
 
             htmlStr += '<br /><br /><h2><strong>Panic Mode</strong>: If you added a custom style that messes everything up and you cannot change back, do <strong>Ctrl+Shift+Insert</strong> to disable this module and reload the page.</h2>';
@@ -199,6 +225,10 @@ AVE.Modules['InjectCustomStyle'] = {
         },
         callback: function () {
             var _this = this;
+
+            $("input#RemoveSubverseStyle").change(function () {
+                $("input#InjectLate").attr("disabled", $("input#RemoveSubverseStyle").is(":checked"));
+            });
 
             $("a#AVE_CheckCSSFile").on("click", function () {
                 var URL = $("div.AVE_ModuleCustomInput > input#CustomStyleUrl").val();
@@ -222,11 +252,19 @@ AVE.Modules['InjectCustomStyle'] = {
         },
 
         ShowInfo: function (message, color) {
-            if ($("span#CustomStyleUrl_InfoStr").length === 0) {
+            var JqId = $("span#CustomStyleUrl_InfoStr");
+            if (JqId.length === 0) {
                 $('<br /><span id="CustomStyleUrl_InfoStr"></span>').insertAfter("a#AVE_CheckCSSFile");
+                JqId = $("span#CustomStyleUrl_InfoStr");
             }
-            $("span#CustomStyleUrl_InfoStr").text(message);
+            $(JqId).show();
+            $(JqId).text(message);
             if (color) { $("span#CustomStyleUrl_InfoStr").css("color", color); }
+
+            $(JqId).delay(3000).fadeOut(300);
+            setTimeout(function() { //Because "text" isn't a queued function
+                $(JqId).text("");
+            }, 3300);
 
         },
     },

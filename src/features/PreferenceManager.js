@@ -12,7 +12,7 @@ AVE.Modules['PreferenceManager'] = {
         LossChangeNotification: {
             Type: 'boolean',
             Desc: "Show a warning if you are trying to exit the Preference Manager after having modified one or more preferences.",
-            Value: true,
+            Value: true
         },
     },
 

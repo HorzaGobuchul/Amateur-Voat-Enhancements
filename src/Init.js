@@ -93,7 +93,7 @@ AVE.Init = {
         //print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")");
         
         //AVE.Modules[ID].Load();
-        
+
         try { AVE.Modules[ID].Load(); }
         catch (e) {print("AVE: Error loading " + ID);}
     },

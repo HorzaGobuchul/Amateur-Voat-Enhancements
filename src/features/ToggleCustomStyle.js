@@ -83,7 +83,6 @@ AVE.Modules['ToggleCustomStyle'] = {
     DisabledCSS: false, //If present we disable the custom CSS
 
     Start: function () {
-        print("started");
         this.StorageName = this.Store.Prefix + this.ID + "_DisabledCSS";
 
         //print(this.Store.GetValue(this.StorageName, "[]"));

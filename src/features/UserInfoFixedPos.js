@@ -61,13 +61,9 @@ AVE.Modules['UserInfoFixedPos'] = {
     bg: "",
 
     Start: function () {
-        var _this = this;
         if (!AVE.Utils.ListHeaderHeight) { AVE.Utils.ListHeaderHeight = $('#sr-header-area').height(); }
 
         var headerAccountPos = $('#header-account').offset().top;
-        $(window).scroll(function () {
-            _this.SetAccountHeaderPosAsFixed(headerAccountPos);
-        });
         this.SetAccountHeaderPosAsFixed(headerAccountPos);
 
         if (this.Options.DivideBlock.Value && $("div#header-account > div.logged-in").length > 0) {
@@ -76,9 +72,7 @@ AVE.Modules['UserInfoFixedPos'] = {
             //Add a line return before the icons
             $("<br />").insertAfter("div#header-account > div.logged-in > span.separator:first");
             //Remove the, now useless, separator
-            $("div#header-account > div.logged-in > span.separator:first").remove();
-            //Reset header-account's so that it is not a few pixels too high.
-            $('div#header-account').css('position', '');
+            $("div#header-account > div.logged-in > span.separator:first").remove();    
         }
 
         if (this.Options.ToggleBlock.Value && $('#header-account:has(div.logged-in)').length > 0) {
@@ -153,21 +147,13 @@ div#header-container {z-index: 2;}\
 .modal#linkFlairSelectModal{top: 140px;}');
     },
 
-    SetAccountHeaderPosAsFixed: function (headerAccountPos) {
-        if ($(window).scrollTop() + AVE.Utils.ListHeaderHeight > headerAccountPos) {
-            $('div#header-account').css('position', 'fixed')
-                                .css('top', AVE.Utils.ListHeaderHeight + "px")
-                                .css('right', '0')
-                                .css("text-align", "center")
-                                .css("bottom", "auto");
-            //$('div#header-account > div.logged-in').css("background", this.bg);
-        } else {
-            $('div#header-account').css('position', '')
-                                   .css('top', this.Options.DivideBlock.Value ? AVE.Utils.ListHeaderHeight + "px" : "")
-                                   .css("text-align", "")
-                                   .css("bottom", "");
-            //$('div#header-account > div.logged-in').css("background", "");
-        }
+    SetAccountHeaderPosAsFixed: function () {
+        $('div#header-account').css('position', 'fixed')
+                               .css('top', AVE.Utils.ListHeaderHeight + "px")
+                               .css('right', '0')
+                               .css("text-align", "center")
+                               .css("bottom", "auto");
+        //$('div#header-account > div.logged-in').css("background", this.bg);
     },
 
     Listeners: function () {

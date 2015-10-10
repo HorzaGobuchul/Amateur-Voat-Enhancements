@@ -81,13 +81,14 @@ AVE.Modules['ToggleMedia'] = {
 
             this.sel = $(strSel).filter(':parents(.titlebox)') //Remove from selection all media in the subverse's bar.
                                 .filter(function () {
-                                    if ($(this).parents("div.submission[class*='id-']:first").css("opacity") === 1) {
+                                    if ($(this).parents("div.submission[class*='id-']:first").css("opacity") === "1") {
                                         //Is this element a link to a media in a self-post?
                                         if ($(this).find("span.link-expando-type").length > 0) { return true; }
                                         //Is this element in a submission post and not a duplicate inserted by NeverEndingVoat?
                                         if (!$(this).hasClass("expando-button")) { return false; }
                                         return true;
-                                    } else if ($(this).parents("div.md").length > 0) {
+                                    }
+                                    if ($(this).parents("div.md").length > 0) {
                                         //Is this element in a comment?
                                         if ($(this).find("span.link-expando-type").length > 0) {
                                             //Does it contain an expando element?
@@ -96,6 +97,8 @@ AVE.Modules['ToggleMedia'] = {
                                     }
                                     return false;
                                 });
+                                
+            print("ToggleMedia "+this.sel.length);
 
             this.AppendToPage();
             this.Listeners();
@@ -142,11 +145,12 @@ AVE.Modules['ToggleMedia'] = {
         for (var el in this.sel.get()) {
             if (
                 (state && this.sel.eq(el).next(".expando,.link-expando").length == 0) ||
-                state === this.sel.eq(el).next(".expando,.link-expando").first().is(':hidden')
+                 state === this.sel.eq(el).next(".expando,.link-expando").first().is(':hidden')
                 )
             {
                 //A click on a media that failed (e.g. error 404) will redirect instead of toggling the expando.
                 if (this.sel.eq(el).find("span.link-expando-type").text() !== "Error") {
+                    print(el+ " - "+this.sel.eq(el).next(".expando,.link-expando").first().is(':hidden'));
                     this.sel[el].click();
                 }
             }

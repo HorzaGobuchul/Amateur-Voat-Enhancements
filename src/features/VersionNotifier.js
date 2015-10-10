@@ -59,8 +59,18 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.25.3.1",
+        "   New feature: Domain filter",
+        "       Use filters to remove submissions linking to particular domains.",
+        "   InjectCustomStyle:",
+        "       Added option to inject style without removing the original subverse's custom style",
+        "       Added option to inject the external style after the subverse's custom style",
+        "   UserInfoFixedPost:",
+        "       To reduce bugs and improve compatibility with custom styles the user block is now set once regardless of any scrolling by the user",
+        "   ShortKeys:",
+        "       Expand key:",
+        "           if the windows is scrolled below a submission title and its media is being collapsed the view will scroll up just above the title",
         "V2.24.6.6",
-        "   Updated source with JSlint recommendations",
         "   InjectCustomStyle & ToggleCustomStyle:",
         "       Thanks to a fix by /u/FuzzyWords these modules will now identify custom styles way faster",
         "   FixExpandImage:",
@@ -72,6 +82,7 @@ AVE.Modules['VersionNotifier'] = {
         "       Beware: Choosing an error message as the title of a subverse would be a very efficient way of disabling AVE",
         "   UserTag:",
         "       Fixed bug where the vote balance would be updated for the first username found in the self-text when the submission is made in an anonymised subverse",
+        "   Updated source with JSlint recommendations",
         "V2.24.2.3",
         "   New feature: Inject custom style",
         "       Apply a custom style everywhere on Voat. Choose from a list or input your own CSS from an URL",
@@ -370,6 +381,7 @@ AVE.Modules['VersionNotifier'] = {
     },
 
     Listeners: function () {
+        var _this = AVE.Modules['VersionNotifier'];
         var ChangeLog = this.ChangeLog;
         var VersionBox = $(".VersionBox");
 

@@ -268,13 +268,18 @@ AVE.Modules['ShortKeys'] = {
                         //Expand is false if at least one of the media is expanded
                         if ($(this).next(".link-expando:visible").length > 0)
                         { expand = false; return;}
-                    });
+                        });
 
                     media.each(function () {
                         if ($(this).find("span.link-expando-type").length > 0 
                             && expand !== $(this).next(".link-expando:visible").length > 0)
                         { this.click(); }
-                    });
+                        });
+                }
+
+                if (sel.offset().top < $(window).scrollTop() &&
+                    sel.find("div.expando-button").hasClass("collapsed")){// and if it was expanded
+                    $('html, body').animate({ scrollTop: AVE.Utils.SelectedPost.parent().offset().top - 50 }, 150);
                 }
             } else if (key === TCC.toUpperCase()) { // Toggle comment chain or load more replies
                 if (sel.parent().hasClass("submission")) { return; }

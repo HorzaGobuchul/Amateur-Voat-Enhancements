@@ -70,6 +70,7 @@ AVE.Modules['FixExpandImage'] = {
                     overflow: auto;\
                 }\
                 .md {overflow: visible;}\
+                /*.comment > .entry:has(ul.flat-list.buttons:nth-child(1):has(.first)) {margin-left:30px;}*/\
                 .comment > .entry {margin-left:30px;}\
                 .usertext {overflow: visible !important;}\
                 .link-expando {\
