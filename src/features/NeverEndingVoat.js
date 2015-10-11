@@ -14,27 +14,27 @@ AVE.Modules['NeverEndingVoat'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         AutoLoad: {
             Type: 'boolean',
             Desc: 'If checked, scroll to load more content. Click the "load more" button to load the next page otherwise.',
-            Value: true,
+            Value: true
         },
         ExpandSubmissionBlock: {
             Type: 'boolean',
             Desc: 'Expand the new submission posts over the empty sidebar\'s space',
-            Value: true,
+            Value: true
         },
         DisplayDuplicates: {
             Type: 'boolean',
             Desc: 'Display duplicate submissions (greyed).',
-            Value: true,
+            Value: true
         },
         ExpandNewMedia: {
             Type: 'boolean',
             Desc: 'Expand media in inserted pages, if you already clicked the \"View Media\" button.',
-            Value: false,
+            Value: false
         },
     },
 
@@ -183,7 +183,7 @@ AVE.Modules['NeverEndingVoat'] = {
             }
 
             // Add expando links to the new submissions
-            if (!window.wrappedJSObject) { //Chrome
+            if (!window.wrappedJSObject || !window.wrappedJSObject.UI) { //Chrome
                 location.assign("javascript:UI.ExpandoManager.execute();void(0)");
             } else {//firefox, because it stopped working with the location hack above
                 window.wrappedJSObject.UI.ExpandoManager.execute();

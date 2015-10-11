@@ -29,7 +29,7 @@ AVE.Modules['HideUsername'] = {
         },
         RemoveInLoginBlock: {
             Type: 'boolean',
-            Desc: 'Remove your username in the user info block.',
+            Desc: 'Remove your username from the user info block.',
             Value: false
         },
     },

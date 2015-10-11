@@ -59,6 +59,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.25.3.6",
+        "   NeverEndingVoat:",
+        "       Fixed a bug related to expando buttons not appearing in Chrome and preventing other modules from updating",
         "V2.25.3.5",
         "   New feature: Domain filter",
         "       Use filters to remove submissions linking to particular domains",
@@ -70,7 +73,7 @@ AVE.Modules['VersionNotifier'] = {
         "   UserInfoFixedPost:",
         "       To reduce bugs and improve compatibility with custom styles the user block is now set once regardless of any scrolling by the user",
         "   ToggleMedia & NeverEndingVoat:",
-        "       Fixed bug where media in new pages weren't expanded but those alrezady expanded were toggled off and on",
+        "       Fixed bug where media in new pages weren't expanded but those already expanded were toggled off and on",
         "   AppendQuote & ReplyWithQuote:",
         "       Didn't work anymore because a DOM id has changed and needed to be updated in the code",
         "   ShortKeys:",
@@ -83,8 +86,6 @@ AVE.Modules['VersionNotifier'] = {
         "       Thanks to a fix by /u/FuzzyWords these modules will now identify custom styles way faster",
         "   FixExpandImage:",
         "       Added back fix for reply box's buttons positioned below the sidebar",
-        "   Shortkeys:",
-        "       When collapsing a media, the page will scroll back to its post (submission, comment) if it was out of page while expanded",
         "   Init:",
         "       AVE will now stop loading modules only if the page's title is exactly that of error pages",
         "       Beware: Choosing an error message as the title of a subverse would be a very efficient way of disabling AVE",

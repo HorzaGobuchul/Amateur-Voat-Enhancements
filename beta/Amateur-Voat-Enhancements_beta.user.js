@@ -8,7 +8,7 @@
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.25.3.5
+// @version     2.25.3.6
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1041,6 +1041,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.25.3.6",
+        "   NeverEndingVoat:",
+        "       Fixed a bug related to expando buttons not appearing in Chrome and preventing other modules from updating",
         "V2.25.3.5",
         "   New feature: Domain filter",
         "       Use filters to remove submissions linking to particular domains",
@@ -1052,7 +1055,7 @@ AVE.Modules['VersionNotifier'] = {
         "   UserInfoFixedPost:",
         "       To reduce bugs and improve compatibility with custom styles the user block is now set once regardless of any scrolling by the user",
         "   ToggleMedia & NeverEndingVoat:",
-        "       Fixed bug where media in new pages weren't expanded but those alrezady expanded were toggled off and on",
+        "       Fixed bug where media in new pages weren't expanded but those already expanded were toggled off and on",
         "   AppendQuote & ReplyWithQuote:",
         "       Didn't work anymore because a DOM id has changed and needed to be updated in the code",
         "   ShortKeys:",
@@ -1065,8 +1068,6 @@ AVE.Modules['VersionNotifier'] = {
         "       Thanks to a fix by /u/FuzzyWords these modules will now identify custom styles way faster",
         "   FixExpandImage:",
         "       Added back fix for reply box's buttons positioned below the sidebar",
-        "   Shortkeys:",
-        "       When collapsing a media, the page will scroll back to its post (submission, comment) if it was out of page while expanded",
         "   Init:",
         "       AVE will now stop loading modules only if the page's title is exactly that of error pages",
         "       Beware: Choosing an error message as the title of a subverse would be a very efficient way of disabling AVE",
@@ -1843,7 +1844,7 @@ AVE.Modules['ToggleMedia'] = {
                                     return false;
                                 });
                                 
-            print("ToggleMedia "+this.sel.length);
+            //print("ToggleMedia "+this.sel.length);
 
             this.AppendToPage();
             this.Listeners();
@@ -3983,27 +3984,27 @@ AVE.Modules['NeverEndingVoat'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         AutoLoad: {
             Type: 'boolean',
             Desc: 'If checked, scroll to load more content. Click the "load more" button to load the next page otherwise.',
-            Value: true,
+            Value: true
         },
         ExpandSubmissionBlock: {
             Type: 'boolean',
             Desc: 'Expand the new submission posts over the empty sidebar\'s space',
-            Value: true,
+            Value: true
         },
         DisplayDuplicates: {
             Type: 'boolean',
             Desc: 'Display duplicate submissions (greyed).',
-            Value: true,
+            Value: true
         },
         ExpandNewMedia: {
             Type: 'boolean',
             Desc: 'Expand media in inserted pages, if you already clicked the \"View Media\" button.',
-            Value: false,
+            Value: false
         },
     },
 
@@ -4152,7 +4153,7 @@ AVE.Modules['NeverEndingVoat'] = {
             }
 
             // Add expando links to the new submissions
-            if (!window.wrappedJSObject) { //Chrome
+            if (!window.wrappedJSObject || !window.wrappedJSObject.UI) { //Chrome
                 location.assign("javascript:UI.ExpandoManager.execute();void(0)");
             } else {//firefox, because it stopped working with the location hack above
                 window.wrappedJSObject.UI.ExpandoManager.execute();
@@ -5294,7 +5295,7 @@ AVE.Modules['HideUsername'] = {
         },
         RemoveInLoginBlock: {
             Type: 'boolean',
-            Desc: 'Remove your username in the user info block.',
+            Desc: 'Remove your username from the user info block.',
             Value: false
         },
     },

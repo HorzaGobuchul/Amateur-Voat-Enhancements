@@ -98,7 +98,7 @@ AVE.Modules['ToggleMedia'] = {
                                     return false;
                                 });
                                 
-            print("ToggleMedia "+this.sel.length);
+            //print("ToggleMedia "+this.sel.length);
 
             this.AppendToPage();
             this.Listeners();
