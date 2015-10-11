@@ -102,17 +102,21 @@ AVE.Modules['InjectCustomStyle'] = {
     Start: function () {
         var _this = this;
         var theme = ~document.cookie.indexOf('theme=dark') ? "Dark" : "Light";
-    
-        if (this.Options.RemoveSubverseStyle.Value) {
-            var obsCustomCSS = new OnNodeChange($(document.documentElement), function (m) {
-                //By /u/FuzzyWords: voat.co/v/AVEbeta/comments/448708/2133227
-                if(m.addedNodes) {
-                    for(var i = 0; i < m.addedNodes.length; i++) {
-                        var n = m.addedNodes[i];
+
+        var obsCustomCSS = new OnNodeChange($(document.documentElement), function (m) {
+            //By /u/FuzzyWords: voat.co/v/AVEbeta/comments/448708/2133227
+            if(m.addedNodes) {
+                for(var i = 0; i < m.addedNodes.length; i++) {
+                    var n = m.addedNodes[i];
+
+                    if (_this.Options.RemoveSubverseStyle.Value || !_this.Options.InjectLate.Value) {
                         if ($(n).is("link[href^='/Content/" + theme + "?v=']")){$(n).remove();}
+                    }
+
+                    if (_this.Options.RemoveSubverseStyle.Value) {
                         if(n.parentNode && n.nodeName.toUpperCase() === "STYLE" && n.id === "custom_css") {
                             n.parentNode.removeChild(n);
-                            
+
                             //We want to disconnect the observer once it has done its job. But remember that a custom style is added twice in threads.
                             _this.CustomCSSContainerCount++;
                             if (AVE.Utils.currentPageType === "thread") {
@@ -123,9 +127,9 @@ AVE.Modules['InjectCustomStyle'] = {
                         }
                     }
                 }
-            });
-            obsCustomCSS.observe();
-        }
+            }
+        });
+        obsCustomCSS.observe();
 
         var URL;
 

@@ -92,7 +92,9 @@ AVE.Modules['AppendQuote'] = {
             quote = quote.replace(/\{@comment\}/gi, comment);
             quote = quote.replace(/\{@n\}/g, "\n");
 
-            var NearestReplyBox = $(this).parents(":has(textarea[class*='commenttextarea'][id*='CommentContent']:visible)").first().find("textarea[class*='commenttextarea'][id*='CommentContent']:visible");
+            var NearestReplyBox = $(this).parents(":has(textarea[class*='commenttextarea'][id*='Content']:visible)").first()
+                                         .find("textarea[class*='commenttextarea'][id*='Content']:visible");
+            print(NearestReplyBox.length);
             if (NearestReplyBox.val() !== "") {
                 NearestReplyBox.val(NearestReplyBox.val() + "\n\n" + quote);
             } else {

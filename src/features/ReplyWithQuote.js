@@ -72,7 +72,7 @@ AVE.Modules['ReplyWithQuote'] = {
         $("div[class*='entry']").OnNodeChange(function () {
             if (_this.Quote === "") { return; }
 
-            var ReplyBox = $(this).find("textarea[class='commenttextarea'][id='CommentContent']");
+            var ReplyBox = $(this).find("textarea[class='commenttextarea'][id='Content']");
             if (ReplyBox.length > 0) {
                 ReplyBox.val(_this.Quote + "\n\n");
             }

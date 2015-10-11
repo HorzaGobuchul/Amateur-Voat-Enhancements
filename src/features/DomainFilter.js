@@ -113,7 +113,7 @@ AVE.Modules['DomainFilter'] = {
                 if (this.ApplyToSub.length === 0 || $.inArray(AVE.Utils.subverseName, this.ApplyToSub) !== -1) {
                     $.each(this.Keywords, function () {
                         if (this.length === 0) { return true;}//Just in case
-                        // ((start of string OR preceded by a period) OR (End of line OR followed by a period))
+                        // ((Start of string OR preceded by a period) OR (End of line OR followed by a period))
                         re = new RegExp("(^|\\.)"+this+"($|\\.)");
                         // An issue could arise if a filter matches a subdomain's name. Unfortunately, I cannot check to see if an TLD always follows.
                         if (re.test(DomainStr)) {

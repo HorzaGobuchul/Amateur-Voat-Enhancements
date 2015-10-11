@@ -144,13 +144,12 @@ AVE.Modules['ToggleMedia'] = {
     ToggleMedia: function (state) {
         for (var el in this.sel.get()) {
             if (
-                (state && this.sel.eq(el).next(".expando,.link-expando").length == 0) ||
-                 state === this.sel.eq(el).next(".expando,.link-expando").first().is(':hidden')
+                (state && this.sel.eq(el).parent().find(".expando,.link-expando").length == 0) ||
+                 state === this.sel.eq(el).parent().find(".expando,.link-expando").first().is(':hidden')
                 )
             {
                 //A click on a media that failed (e.g. error 404) will redirect instead of toggling the expando.
                 if (this.sel.eq(el).find("span.link-expando-type").text() !== "Error") {
-                    print(el+ " - "+this.sel.eq(el).next(".expando,.link-expando").first().is(':hidden'));
                     this.sel[el].click();
                 }
             }

@@ -1,7 +1,7 @@
 AVE.Modules['ToggleCustomStyle'] = {
     ID: 'ToggleCustomStyle',
     Name: 'Toggle subverse custom style',
-    Desc: 'Adds a checkbox to enable/disable custom styles on a per subverse basis.<br />This module is automatically disabled if "Inject custom style" is enabled',
+    Desc: 'Adds a checkbox to enable/disable custom styles on a per subverse basis.<br />This module is automatically disabled if "Inject custom style" is enabled or set to remove custom styles.',
     Category: 'Style',
 
     Index: 51,
@@ -40,7 +40,7 @@ AVE.Modules['ToggleCustomStyle'] = {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
-        if (this.Enabled && !AVE.Modules['InjectCustomStyle'].Enabled) {
+        if (this.Enabled && (!AVE.Modules['InjectCustomStyle'].Enabled || !AVE.Modules['InjectCustomStyle'].Options.RemoveSubverseStyle.Value)) {
             
             var _this = this;
             var obsCustomCSS = new OnNodeChange($(document.documentElement), function (m) {
@@ -63,7 +63,7 @@ AVE.Modules['ToggleCustomStyle'] = {
                                 }
                             }
                             else { obsCustomCSS.disconnect(); }
-                            
+
                             if (_this.CustomCSSContainerCount === 1 && $.trim(_this.CustomCSS).length > 0){
                                 _this.Start();
                             }
