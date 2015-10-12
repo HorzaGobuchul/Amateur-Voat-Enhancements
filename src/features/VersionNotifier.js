@@ -59,9 +59,15 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.26.0.0",
+        "   New feature: ContributionDeltas",
+        "       Show the difference in contribution points between now and X ago",
+        "   IgnoreUsers:",
+        "       Small optimizations",
+        "       Corrected a CSS value",
         "V2.25.3.6",
         "   NeverEndingVoat:",
-        "       Fixed a bug related to expando buttons not appearing in Chrome and preventing other modules from updating",
+        "       Fixed a bug related to expando buttons not appearing in Chrome and preventing more modules from updating",
         "V2.25.3.5",
         "   New feature: Domain filter",
         "       Use filters to remove submissions linking to particular domains",

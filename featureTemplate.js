@@ -16,13 +16,13 @@ AVE.Modules['ID'] = {
     //   "load"      => On DOMload
     // "ready" by default if RunAt is undefined
     // "load" by default if RunAt is not one of these values above
-    RunAt: "load", 
+    RunAt: "load",
 
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
-        },
+            Value: true
+        }
     },
 
     OriginalOptions: "", //If ResetPref is used
