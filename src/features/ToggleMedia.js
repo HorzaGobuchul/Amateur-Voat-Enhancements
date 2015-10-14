@@ -14,12 +14,12 @@ AVE.Modules['ToggleMedia'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         MediaTypes: {
             Type: 'string',
-            Value: "110", // Images, Videos, self-Texts
-        },
+            Value: "110" // Images, Videos, self-Texts
+        }
     },
 
     OriginalOptions: "",
@@ -83,19 +83,14 @@ AVE.Modules['ToggleMedia'] = {
                                 .filter(function () {
                                     if ($(this).parents("div.submission[class*='id-']:first").css("opacity") === "1") {
                                         //Is this element a link to a media in a self-post?
-                                        if ($(this).find("span.link-expando-type").length > 0) { return true; }
+                                        return ($(this).find("span.link-expando-type").length > 0)
                                         //Is this element in a submission post and not a duplicate inserted by NeverEndingVoat?
-                                        if (!$(this).hasClass("expando-button")) { return false; }
-                                        return true;
+                                           &&  ($(this).hasClass("expando-button"));
                                     }
-                                    if ($(this).parents("div.md").length > 0) {
-                                        //Is this element in a comment?
-                                        if ($(this).find("span.link-expando-type").length > 0) {
-                                            //Does it contain an expando element?
-                                            return true;
-                                        }
-                                    }
-                                    return false;
+                                    //Is this element in a comment?
+                                    return ($(this).parents("div.md").length > 0)
+                                    //Does it contain an expando element?
+                                        && ($(this).find("span.link-expando-type").length > 0);
                                 });
                                 
             //print("ToggleMedia "+this.sel.length);
@@ -114,8 +109,9 @@ AVE.Modules['ToggleMedia'] = {
     AppendToPage: function () {
         if (this.sel.length === 0) { return; }
 
-        if ($("a#GM_ExpandAllImages").length > 0) {
-            $("a#GM_ExpandAllImages").text($("a#GM_ExpandAllImages").text().replace(/\([0-9]*\)/, "(" + this.sel.length + ")"));
+        var JqId = $("a#GM_ExpandAllImages");
+        if (JqId.length > 0) {
+            JqId.text(JqId.text().replace(/\([0-9]*\)/, "(" + this.sel.length + ")"));
         }
         else {
             var btnHTML = '<li class="disabled"><a style="cursor:pointer;" id="GM_ExpandAllImages" class="contribute submit-text">View Media (' + this.sel.length + ')</a></li>';
@@ -126,8 +122,9 @@ AVE.Modules['ToggleMedia'] = {
     Listeners: function () {
         var _this = this;
         var isExpanded = false;
-        $("[id='GM_ExpandAllImages']").off("click");
-        $("[id='GM_ExpandAllImages']").on("click", function () {
+        var JqId = $("a#GM_ExpandAllImages");
+        JqId.off("click");
+        JqId.on("click", function () {
             if ($(this).hasClass("expanded")) {
                 $(this).text('View Media (' + _this.sel.length + ')');
                 $(this).removeClass("expanded");
@@ -158,7 +155,7 @@ AVE.Modules['ToggleMedia'] = {
 
     AppendToPreferenceManager: {
         html: function () {
-            var _this = AVE.Modules['ToggleMedia']
+            var _this = AVE.Modules['ToggleMedia'];
             var mediaTypes = ["Images", "Videos", "self-texts"];
             var value = _this.Options.MediaTypes.Value;
             var htmlString = '<div>';

@@ -1,7 +1,7 @@
 AVE.Modules['FixContainerWidth'] = {
     ID: 'FixContainerWidth',
     Name: 'Set Voat container\'s width',
-    Desc: 'By default, Voat shows a margin at both sides of the container. You can modify this by setting the new width as a percentage of the available horizontal space.',
+    Desc: 'By default, Voat shows a margin on both sides of the container. You can modify this by setting a custom width as a percentage of the available horizontal space.',
     Category: 'Fixes',
 
     Index: 100,
@@ -21,7 +21,7 @@ AVE.Modules['FixContainerWidth'] = {
         },
         Justify: {
             Type: 'boolean',
-            Value: false,
+            Value: false
         },
     },
 
@@ -85,9 +85,8 @@ AVE.Modules['FixContainerWidth'] = {
             var _this = AVE.Modules['FixContainerWidth'];
             $("input#Width[type='range']").on("change", function () {
                 $("span#FixContainerWidth_Value").text($(this).val());
-                $("div#container").css("max-width", $(this).val() + "%");
+                $("div#container").get(0).style.setProperty("max-width", $(this).val() + "%", 'important');
             });
-
         },
     },
 };
