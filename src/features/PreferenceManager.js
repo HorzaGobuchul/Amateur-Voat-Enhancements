@@ -60,13 +60,11 @@ AVE.Modules['PreferenceManager'] = {
                 z-index: 1000 !important;\
                 background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "292929" : "F4F4F4") + ';\
                 color: #' + (AVE.Utils.CSSstyle === "dark" ? "5452A8" : "404040") + ';\
-                left:0;\
+                margin: 10px;\
                 right:0;\
-                margin-left:auto;\
-                margin-right:auto;\
-                width:750px;\
-                height:600px;\
-                top: 5%;\
+                left: 0px;\
+                bottom: 0px;\
+                top: 0px;\
                 position:fixed;\
                 font-size: 14px;\
             }\
@@ -133,18 +131,20 @@ AVE.Modules['PreferenceManager'] = {
                 font-size:12px;\
                 position:absolute;\
                 right:5px;\
-                float:right;\
+                float:left;\
                 margin-top:10px;\
                 margin-left: 10px;\
                 padding-left: 10px;\
                 padding-right: 10px;\
                 padding-top: 10px;\
-                width:625px;\
-                height:552px;\
                 background: #' + (AVE.Utils.CSSstyle === "dark" ? "333" : "FFF") + ';\
                 color: #' + (AVE.Utils.CSSstyle === "dark" ? "AAA" : "404040") + ';\
                 border-radius: 5px;\
                 overflow-y:auto;\
+                left: 115px;\
+                bottom: 10px;\
+                top: 40px;\
+                right: 10px;\
             }\
             div.ModuleBlock{\
                 margin-bottom: 10px;\
@@ -235,6 +235,17 @@ AVE.Modules['PreferenceManager'] = {
             }
             else { _this.BuildManager(); }
             $(".overlay").show();
+
+            $("body").css("overflow", "hidden");
+        });
+
+        $(window).on("keyup", function (e) {
+            if (e.which === 27 && $(".MngrWin#MngWin").is(":visible")) {
+                var val = $(e.target).attr("value");
+                if (!($(e.target).is(":button") && (val))) {
+                    $("#CloseWinMngr").click();
+                }
+            }
         });
     },
 
@@ -296,6 +307,7 @@ AVE.Modules['PreferenceManager'] = {
             }
             $(".MngrWin").hide();
             $(".overlay").hide();
+            $("body").css("overflow", "");
 
             event.stopPropagation();
         });
@@ -313,16 +325,17 @@ AVE.Modules['PreferenceManager'] = {
             }
         });
 
-        $("section.ModulePref").find(":input").on("change", function () {
+        var JqId = $("section.ModulePref");
+        JqId.find(":input").on("change", function () {
             _this.AddToModifiedModulesList($(this).parents("div.ModuleBlock:first").attr("id"));
             _this.ToggleSaveButtonActive();
         });
 
-        $("section.ModulePref").find("input").on("input", function () {
+        JqId.find("input").on("input", function () {
             _this.AddToModifiedModulesList($(this).parents("div.ModuleBlock:first").attr("id"));
             _this.ToggleSaveButtonActive();
         });
-        $("section.ModulePref").find("a").on('click', function () {
+        JqId.find("a").on('click', function () {
             _this.AddToModifiedModulesList($(this).parents("div.ModuleBlock:first").attr("id"));
             _this.ToggleSaveButtonActive();
         });
@@ -331,8 +344,8 @@ AVE.Modules['PreferenceManager'] = {
     ToggleSaveButtonActive: function () {
         if ($("div.TopButtons > a#SaveData").hasClass("btn-sub")) { return; }
         //$("section.ModulePref").find("input").off("change"); //Can't use off here because it removes custom event listeners
-        $("div.TopButtons > a#SaveData").addClass("btn-sub");
-        $("div.TopButtons > a#SaveData").removeClass("btn-unsub");
+        $("div.TopButtons > a#SaveData").addClass("btn-sub")
+                                        .removeClass("btn-unsub");
         //if save btn has btn-sub class prompt confirmation
     },
     AddToModifiedModulesList: function (ID) {
@@ -381,9 +394,9 @@ AVE.Modules['PreferenceManager'] = {
             }
         } else {
             this.ModifiedModules = [];
-            $("div.TopButtons > a#SaveData").text("Save Changes");
-            $("div.TopButtons > a#SaveData").removeClass("btn-sub");
-            $("div.TopButtons > a#SaveData").addClass("btn-unsub");
+            $("div.TopButtons > a#SaveData").text("Save Changes")
+                                            .removeClass("btn-sub")
+                                            .addClass("btn-unsub");
             $("#CloseWinMngr").click();
         }
     },
@@ -469,10 +482,10 @@ AVE.Modules['PreferenceManager'] = {
 
             htmlStr += '<input ' + (_this.Options.LossChangeNotification.Value ? 'checked="true"' : "") + ' id="LossChangeNotification" type="checkbox"/><label style="display: inline;" for="LossChangeNotification"> ' + _this.Options.LossChangeNotification.Desc + '</label><br />';
 
-            htmlStr += '<br />Export all stored data as a JSON file: <input style="font-weight:bold;" value="Export" id="AVE_ExportToJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON"></input>';
-            htmlStr += '<br />Import settings/data from a JSON file: <input style="font-weight:bold;" value="Import" id="AVE_ImportFromJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON"></input> \
-                        <input style="display:none;"value="file_Import" id="AVE_file_ImportFromJSON" type="file"></input><br /><br /><br />';
-            htmlStr += 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="AVE_ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
+            htmlStr += '<br />Export all stored data as a JSON file: <input style="font-weight:bold;" value="Export" id="AVE_ExportToJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON">';
+            htmlStr += '<br />Import settings/data from a JSON file: <input style="font-weight:bold;" value="Import" id="AVE_ImportFromJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON">\
+                        <input style="display:none;"value="file_Import" id="AVE_file_ImportFromJSON" type="file"><br /><br /><br />';
+            htmlStr += 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="AVE_ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Warning: this will delete your preferences, shortcut list and all usertags!">';
             htmlStr += '<br/><span style="font-weight:bold;" id="AVE_Mng_Info"></span>';
 
             return htmlStr;
@@ -533,11 +546,12 @@ AVE.Modules['PreferenceManager'] = {
     },
 
     ShowInfo: function (text, status) {
-        $("span#AVE_Mng_Info").finish();
-        $("span#AVE_Mng_Info").show();
-        $("span#AVE_Mng_Info").text(text);
-        $("span#AVE_Mng_Info").css("color", status == "success" ? "#68C16B" : "#DD5454");
-        $("span#AVE_Mng_Info").delay(5000).fadeOut(300);
+        var JqId = $("span#AVE_Mng_Info");
+        JqId.finish();
+        JqId.show();
+        JqId.text(text);
+        JqId.css("color", status == "success" ? "#68C16B" : "#DD5454");
+        JqId.delay(5000).fadeOut(300);
     },
 
     ImportFromJSON: function () {
@@ -554,6 +568,7 @@ AVE.Modules['PreferenceManager'] = {
             var isFileSaverSupported = !!new Blob;
         } catch (e) { alert("AVE: Saving settings and data to JSON is not supported by your browser."); return; }
 
+        var _this = AVE.Modules['PreferenceManager'];
         var data = {};
         $.each(_this.Store.Data, function (k, v) { data[k] = v; });
         var blob = new Blob([JSON.stringify(data)], { type: "application/json;charset=utf-8" });

@@ -9,7 +9,7 @@ AVE.Modules['ContributionDeltas'] = {
 
     Store: {},
 
-    RunAt: "load",
+    RunAt: "ready",
 
     Options: {
         Enabled: {
@@ -29,48 +29,12 @@ AVE.Modules['ContributionDeltas'] = {
         ShowSinceLast: {
             Type: 'string',
             Desc: 'Show contribution points deltas for the last: ',
-            Value: 'week'
+            Value: 'day'
         }
     },
 
-    SinceLast: ["reset", "connection", "30 minutes",
-                "hour", "2 hours", "6 hours", "12 hours",
-                "day", "2 days", "4 days", "week", "2 weeks",
-                "month", "2 months", "5 months", "year"],
-    /*
-        Do we need to keep all intermediary timestamps?
-    Number of TimeStamps sampled (","):
-        30min ,,, (every ten minutes)
-        1h ,,, (every ten minutes)
-        2h ,,,, (every fifteen minutes)
-        6h ,,,, (every hour)
-        12h ,,,,,, (every hour)
-            Don't log automatically the previous values unless the users as selected one of them
-        1d , (every day) After this point it will basically show "since last connection" for users who log in daily or less frequently
-        2d , (evey day)
-        4d ,, (every day)
-        1w ,,, (every day)
-        2w ,,,,,,, (every day)
-        1m ,, (every week)
-        2m ,,,, (every week)
-        5m ,,, (every month)
-        1y ,,,,,,, (every month)
-
-        Total:
-            49 TimeStamps.
-            1 updated every ten minutes
-            2 updated every fifteen minutes
-
-            3 updated every hour
-
-            24 updated every day.
-
-            If we use a trickle down system, the updates are simpler
-
-       With this solution all need to be checked and updated often. Not just the one selected.
-    */
-    // Since last visit? How can I do this with a GM script? With Voat's cookies (NotFirstTime)?
-    // Don't add this option, this can be done by selecting the SinceLast value corresponding the frequency at which the users logs-in.
+    SinceLast: ["reset", "page", "hour", "6 hours",
+                "12 hours", "day", "week"],
 
     OriginalOptions: "",
 
@@ -118,22 +82,85 @@ AVE.Modules['ContributionDeltas'] = {
 
     Start: function () {
         var _this = this;
+        var _now = Date.now();
         this.CCP = $("a.userkarma#ccp").text();
         this.SCP = $("a.userkarma#scp").text();
 
+
+        //this.Store.SetValue(this.Store.Prefix + this.ID + "_Deltas", "{}");
+
         this.StoredDeltas = JSON.parse(this.Store.GetValue(this.Store.Prefix + this.ID + "_Deltas", "{}"));
         if (this.StoredDeltas[this.Username] === undefined) {
+            var tempVal = {ts: new Date (0), S: _this.SCP, C: _this.CCP};
             this.StoredDeltas[this.Username] = {};
             $.each(_this.SinceLast, function () {
-                _this.StoredDeltas[_this.Username][this] = {ts: Date.now(), S: _this.SCP, C: _this.CCP};
+                _this.StoredDeltas[_this.Username][this] = tempVal;
             });
 
             this.Store.SetValue(this.Store.Prefix + this.ID + "_Deltas", JSON.stringify(this.StoredDeltas));
-        } else {
-            // Only check new value for the SinceLast selected
+        }
 
-            //save changes if any was made
-            //this.Store.SetValue(this.Store.Prefix + this.ID + "_Deltas", StoredDeltas);
+        var dateDiff, change, newTs, epsilon;
+        epsilon = 2000; //2 sec.
+        change = false;
+
+        if ((_now - _this.StoredDeltas[_this.Username]["page"].ts) > epsilon){//page
+            change = true;
+            print("AVE: ContribDelta -> Updated \"Page\"");
+            _this.StoredDeltas[_this.Username]["page"] = {ts: _now, S: _this.SCP, C: _this.CCP};
+
+            dateDiff = (_now - _this.StoredDeltas[_this.Username]["hour"].ts) /1000;
+            if (dateDiff > 3600) { //Hour
+                print("AVE: ContribDelta -> Updated \"hour\"");
+
+                newTs = new Date (_now).setMinutes(0, 0);
+                _this.StoredDeltas[_this.Username]["hour"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
+
+                dateDiff = (_now - _this.StoredDeltas[_this.Username]["6 hours"].ts) / 1000;
+                if (dateDiff > 21600) { //6 hours
+                    print("AVE: ContribDelta -> Updated \"6 hours\"");
+
+                    var newTsHour = new Date (newTs).getHours();
+                    newTs = new Date (newTs).setHours(
+                        (newTsHour < 4 ? 0 :
+                            (newTsHour < 10 ? 6 :
+                                (newTsHour < 16 ? 12 : 18)
+                                )
+                            )
+                        );
+                    _this.StoredDeltas[_this.Username]["6 hours"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
+
+                    dateDiff = (_now - _this.StoredDeltas[_this.Username]["12 hours"].ts) / 1000;
+                    if (dateDiff > 43200) { //12 hours
+                        print("AVE: ContribDelta -> Updated \"12 hours\"");
+
+                        newTs = new Date (newTs).setHours(newTsHour < 12 ? 0 : 12);
+                        _this.StoredDeltas[_this.Username]["12 hours"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
+
+                        dateDiff = (_now - _this.StoredDeltas[_this.Username]["day"].ts) / 1000;
+                        if (dateDiff > 86400) { //day
+                            print("AVE: ContribDelta -> Updated \"Day\"");
+
+                            newTs = new Date (newTs).setHours(8);
+
+                            _this.StoredDeltas[_this.Username]["day"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
+
+                            dateDiff = (_now - _this.StoredDeltas[_this.Username]["week"].ts) / 1000;
+                            if (dateDiff > 604800) { //week
+                                print("AVE: ContribDelta -> Updated \"Week\"");
+                                newTs -= 86400000 * ((new Date (newTs)).getDay() - 1);
+                                _this.StoredDeltas[_this.Username]["week"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //save changes if any was made
+        if (change) {
+            this.Store.SetValue(this.Store.Prefix + this.ID + "_Deltas", JSON.stringify(this.StoredDeltas));
         }
 
         this.AppendToPage();
@@ -177,7 +204,7 @@ AVE.Modules['ContributionDeltas'] = {
         }
     },
 
-    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+    AppendToPreferenceManager: {
         html: function () {
             var _this = AVE.Modules['ContributionDeltas'];
             var htmlStr = '';
@@ -222,7 +249,7 @@ AVE.Modules['ContributionDeltas'] = {
 
         GetParsedDate: function(timeStamp) {
             var r = new Date(timeStamp);
-            return r.getFullYear()+'-'+ (r.getMonth()+1)+'-'+ r.getDate()+' '+ r.getHours()+':'+ r.getMinutes()+':'+ r.getSeconds();
+            return r.toLocaleFormat();
         }
     }
 };

@@ -86,7 +86,8 @@ AVE.Modules['FixContainerWidth'] = {
             $("input#Width[type='range']").on("change", function () {
                 $("span#FixContainerWidth_Value").text($(this).val());
                 $("div#container").get(0).style.setProperty("max-width", $(this).val() + "%", 'important');
-            });
+            })
+                .trigger("change");
         },
     },
 };
