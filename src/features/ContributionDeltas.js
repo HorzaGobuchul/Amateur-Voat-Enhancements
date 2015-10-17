@@ -26,6 +26,11 @@ AVE.Modules['ContributionDeltas'] = {
             Desc: 'Show points in green (+) or red (-) according to the change.',
             Value: true
         },
+        ShowMultipleDeltas: {
+            Type: 'boolean',
+            Desc: 'Show multiple deltas in the tooltip (Hour, Day, Week).',
+            Value: false
+        },
         ShowSinceLast: {
             Type: 'string',
             Desc: 'Show contribution points deltas for the last: ',
@@ -44,7 +49,7 @@ AVE.Modules['ContributionDeltas'] = {
         this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
     },
 
-    ResetPref: function () {// will add the reset option in the pref manager. Can be deleted.
+    ResetPref: function () {// will add the reset option in the pref manager. Can be removed.
         this.Options = JSON.parse(this.OriginalOptions);
     },
 
@@ -85,7 +90,6 @@ AVE.Modules['ContributionDeltas'] = {
         var _now = Date.now();
         this.CCP = $("a.userkarma#ccp").text();
         this.SCP = $("a.userkarma#scp").text();
-
 
         //this.Store.SetValue(this.Store.Prefix + this.ID + "_Deltas", "{}");
 
@@ -167,17 +171,28 @@ AVE.Modules['ContributionDeltas'] = {
     },
 
     AppendToPage: function () {
-        var delta, JqId, data;
+        var _this = this;
+        var delta, JqId, data, multipleD;
 
+        multipleD = ["hour", "day", "week"];
+        if ($.inArray(multipleD, this.Options.ShowSinceLast.Value) == -1){
+            //Add selected SinceLast if it isn't already in the list
+            multipleD.splice(0, 0, this.Options.ShowSinceLast.Value);
+            print(multipleD);
+
+        }
         data = this.StoredDeltas[this.Username][this.Options.ShowSinceLast.Value];
+
 
         //SCP
         JqId = $("a.userkarma#scp");
         delta = JqId.text() - data.S;
         if (this.Options.AddAsToolTip.Value){
-            JqId.parent().attr("title", (delta > 0 ? "+": "") +delta);
-            if (this.Options.ShowColourDelta.Value && delta !== 0){
-                JqId.css("color", ( delta > 0 ?"#1BB61B": "#FF4B4B") );
+            if (this.Options.ShowMultipleDeltas.Value){
+                JqId.parent().attr("title", (delta > 0 ? "+": "") +delta);
+                if (this.Options.ShowColourDelta.Value && delta !== 0){
+                    JqId.css("color", ( delta > 0 ?"#1BB61B": "#FF4B4B") );
+                }
             }
         } else {
             $('<span title="SCP delta" id="AVE_SCP-delta"> ('+ (delta > 0 ? "+": "") +delta+')</span>')
@@ -187,19 +202,59 @@ AVE.Modules['ContributionDeltas'] = {
             }
         }
 
+        if (this.Options.ShowMultipleDeltas.Value){
+            let _str, _data, _delta;
+            _str = "";
+            $.each(multipleD, function (i, v) {
+                _data = _this.StoredDeltas[_this.Username][v];
+                _delta = JqId.text() - _data.S;
+                _str += v + ": "+   (_delta > 0 ? "+": "") +_delta;
+                if (i+1 != multipleD.length){
+                    _str += "\n";
+                }
+            });
+
+            if (this.Options.AddAsToolTip.Value){
+                JqId.parent().attr("title", _str);
+            } else {
+                $("#AVE_SCP-delta").attr("title", _str);
+            }
+        }
+
         //CCP
         JqId = $("a.userkarma#ccp");
         delta = JqId.text() - data.C;
         if (this.Options.AddAsToolTip.Value){
-            JqId.parent().attr("title", (delta > 0 ? "+": "") +delta);
-            if (this.Options.ShowColourDelta.Value && delta !== 0){
-                JqId.css("color", ( delta > 0 ?"#1BB61B" : "#FF4B4B") );
+            if (this.Options.ShowMultipleDeltas.Value) {
+                JqId.parent().attr("title", (delta > 0 ? "+" : "") + delta);
+                if (this.Options.ShowColourDelta.Value && delta !== 0) {
+                    JqId.css("color", ( delta > 0 ? "#1BB61B" : "#FF4B4B"));
+                }
             }
         } else {
             $('<span title="CCP delta" id="AVE_CCP-delta"> ('+ (delta > 0 ? "+": "") +delta+')</span>')
                 .insertAfter(JqId);
             if (this.Options.ShowColourDelta.Value && delta !== 0){
                 $("#AVE_CCP-delta").css("color", delta > 0 ?"#1BB61B" : "#FF4B4B");
+            }
+        }
+
+        if (this.Options.ShowMultipleDeltas.Value){
+            let _str, _data, _delta;
+            _str = "";
+            $.each(multipleD, function (i, v) {
+                _data = _this.StoredDeltas[_this.Username][v];
+                _delta = JqId.text() - _data.C;
+                _str += v + ": "+   (_delta > 0 ? "+": "") +_delta;
+                if (i+1 != multipleD.length){
+                    _str += "\n";
+                }
+            });
+
+            if (this.Options.AddAsToolTip.Value){
+                JqId.parent().attr("title", _str);
+            } else {
+                $("#AVE_CCP-delta").attr("title", _str);
             }
         }
     },
@@ -211,6 +266,7 @@ AVE.Modules['ContributionDeltas'] = {
 
             htmlStr += '<input id="AddAsToolTip" ' + (_this.Options.AddAsToolTip.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="AddAsToolTip"> ' + _this.Options.AddAsToolTip.Desc + '</label><br />';
             htmlStr += '<input id="ShowColourDelta" ' + (_this.Options.ShowColourDelta.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ShowColourDelta"> ' + _this.Options.ShowColourDelta.Desc + '</label><br />';
+            htmlStr += '<input id="ShowMultipleDeltas" ' + (_this.Options.ShowMultipleDeltas.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ShowMultipleDeltas"> ' + _this.Options.ShowMultipleDeltas.Desc + '</label><br />';
 
             htmlStr += "<br />"+_this.Options.ShowSinceLast.Desc;
             htmlStr += '<select id="ShowSinceLast">';
@@ -248,8 +304,7 @@ AVE.Modules['ContributionDeltas'] = {
         },
 
         GetParsedDate: function(timeStamp) {
-            var r = new Date(timeStamp);
-            return r.toLocaleFormat();
+            return new Date(timeStamp).toLocaleFormat();
         }
     }
 };
