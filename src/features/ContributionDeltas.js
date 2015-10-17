@@ -175,11 +175,9 @@ AVE.Modules['ContributionDeltas'] = {
         var delta, JqId, data, multipleD;
 
         multipleD = ["hour", "day", "week"];
-        if ($.inArray(multipleD, this.Options.ShowSinceLast.Value) == -1){
+        if ($.inArray(this.Options.ShowSinceLast.Value, multipleD) == -1){
             //Add selected SinceLast if it isn't already in the list
             multipleD.splice(0, 0, this.Options.ShowSinceLast.Value);
-            print(multipleD);
-
         }
         data = this.StoredDeltas[this.Username][this.Options.ShowSinceLast.Value];
 
