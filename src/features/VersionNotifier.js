@@ -59,6 +59,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.26.1.7",
+        "   UserTag:",
+        "       Quick fix",
         "V2.26.1.6",
         "   ContributionDeltas:",
         "       Added option to show mutliple delta in tooltip (hour, day, week)",

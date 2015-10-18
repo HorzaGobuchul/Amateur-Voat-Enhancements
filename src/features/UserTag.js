@@ -251,6 +251,8 @@ table#formTable{\
         var _this = this;
         var JqId1, JqId2;
 
+        JqId1 = $("tr#SetTag > td > input.UserTagTextInput");
+        JqId2 = $("tr#SetColour > td > input#ChooseColor");
         $(".AVE_UserTag").off("click")
                          .on("click", function () {
             var username = $(this).attr("id").toLowerCase();
@@ -266,11 +268,8 @@ table#formTable{\
 
             $("div#UserTagHeader > span#username").text(username);
 
-            JqId1 = ("tr#SetTag > td > input.UserTagTextInput");
             JqId1.val(oldTag === "+" ? "" : oldTag);
             $("tr#ShowPreview > td > span#PreviewBox").text(oldTag === "+" ? "" : oldTag);
-
-            JqId2 = $("tr#SetColour > td > input#ChooseColor");
             if (usertag !== undefined) {
                 JqId2.val(usertag.colour);
                 JqId2.change();

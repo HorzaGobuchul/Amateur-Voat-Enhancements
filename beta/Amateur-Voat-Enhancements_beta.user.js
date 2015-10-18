@@ -8,7 +8,7 @@
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.26.1.6
+// @version     2.26.1.7
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1059,6 +1059,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.26.1.7",
+        "   UserTag:",
+        "       Quick fix",
         "V2.26.1.6",
         "   ContributionDeltas:",
         "       Added option to show mutliple delta in tooltip (hour, day, week)",
@@ -1549,6 +1552,8 @@ table#formTable{\
         var _this = this;
         var JqId1, JqId2;
 
+        JqId1 = $("tr#SetTag > td > input.UserTagTextInput");
+        JqId2 = $("tr#SetColour > td > input#ChooseColor");
         $(".AVE_UserTag").off("click")
                          .on("click", function () {
             var username = $(this).attr("id").toLowerCase();
@@ -1564,11 +1569,8 @@ table#formTable{\
 
             $("div#UserTagHeader > span#username").text(username);
 
-            JqId1 = ("tr#SetTag > td > input.UserTagTextInput");
             JqId1.val(oldTag === "+" ? "" : oldTag);
             $("tr#ShowPreview > td > span#PreviewBox").text(oldTag === "+" ? "" : oldTag);
-
-            JqId2 = $("tr#SetColour > td > input#ChooseColor");
             if (usertag !== undefined) {
                 JqId2.val(usertag.colour);
                 JqId2.change();
