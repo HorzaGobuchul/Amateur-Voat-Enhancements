@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2015-10-11
+// @date        2015-10-18
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.25.3.6
+// @version     2.26.1.6
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -119,8 +119,11 @@ AVE.Init = {
         
         //AVE.Modules[ID].Load();
 
+        //var ntime = 0; var time = Date.now();
         try { AVE.Modules[ID].Load(); }
         catch (e) {print("AVE: Error loading " + ID);}
+        //ntime =  Date.now();
+        //print("updated > " + AVE.Modules[ID].ID + " (" + (ntime - time) + "ms)");
     },
 
     UpdateModules: function () {
@@ -410,7 +413,7 @@ AVE.Storage = {
         AVE.Utils.SendMessage({ request: "Storage", type: "DeleteValue", key: key });
 
         delete this.Data[key];
-    },
+    }
 };
 /// END Storage ///
 
@@ -477,13 +480,11 @@ AVE.Modules['PreferenceManager'] = {
                 z-index: 1000 !important;\
                 background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "292929" : "F4F4F4") + ';\
                 color: #' + (AVE.Utils.CSSstyle === "dark" ? "5452A8" : "404040") + ';\
-                left:0;\
+                margin: 10px;\
                 right:0;\
-                margin-left:auto;\
-                margin-right:auto;\
-                width:750px;\
-                height:600px;\
-                top: 5%;\
+                left: 0px;\
+                bottom: 0px;\
+                top: 0px;\
                 position:fixed;\
                 font-size: 14px;\
             }\
@@ -550,18 +551,20 @@ AVE.Modules['PreferenceManager'] = {
                 font-size:12px;\
                 position:absolute;\
                 right:5px;\
-                float:right;\
+                float:left;\
                 margin-top:10px;\
                 margin-left: 10px;\
                 padding-left: 10px;\
                 padding-right: 10px;\
                 padding-top: 10px;\
-                width:625px;\
-                height:552px;\
                 background: #' + (AVE.Utils.CSSstyle === "dark" ? "333" : "FFF") + ';\
                 color: #' + (AVE.Utils.CSSstyle === "dark" ? "AAA" : "404040") + ';\
                 border-radius: 5px;\
                 overflow-y:auto;\
+                left: 115px;\
+                bottom: 10px;\
+                top: 40px;\
+                right: 10px;\
             }\
             div.ModuleBlock{\
                 margin-bottom: 10px;\
@@ -652,6 +655,17 @@ AVE.Modules['PreferenceManager'] = {
             }
             else { _this.BuildManager(); }
             $(".overlay").show();
+
+            $("body").css("overflow", "hidden");
+        });
+
+        $(window).on("keyup", function (e) {
+            if (e.which === 27 && $(".MngrWin#MngWin").is(":visible")) {
+                var val = $(e.target).attr("value");
+                if (!($(e.target).is(":button") && (val))) {
+                    $("#CloseWinMngr").click();
+                }
+            }
         });
     },
 
@@ -713,6 +727,7 @@ AVE.Modules['PreferenceManager'] = {
             }
             $(".MngrWin").hide();
             $(".overlay").hide();
+            $("body").css("overflow", "");
 
             event.stopPropagation();
         });
@@ -730,16 +745,17 @@ AVE.Modules['PreferenceManager'] = {
             }
         });
 
-        $("section.ModulePref").find(":input").on("change", function () {
+        var JqId = $("section.ModulePref");
+        JqId.find(":input").on("change", function () {
             _this.AddToModifiedModulesList($(this).parents("div.ModuleBlock:first").attr("id"));
             _this.ToggleSaveButtonActive();
         });
 
-        $("section.ModulePref").find("input").on("input", function () {
+        JqId.find("input").on("input", function () {
             _this.AddToModifiedModulesList($(this).parents("div.ModuleBlock:first").attr("id"));
             _this.ToggleSaveButtonActive();
         });
-        $("section.ModulePref").find("a").on('click', function () {
+        JqId.find("a").on('click', function () {
             _this.AddToModifiedModulesList($(this).parents("div.ModuleBlock:first").attr("id"));
             _this.ToggleSaveButtonActive();
         });
@@ -748,8 +764,8 @@ AVE.Modules['PreferenceManager'] = {
     ToggleSaveButtonActive: function () {
         if ($("div.TopButtons > a#SaveData").hasClass("btn-sub")) { return; }
         //$("section.ModulePref").find("input").off("change"); //Can't use off here because it removes custom event listeners
-        $("div.TopButtons > a#SaveData").addClass("btn-sub");
-        $("div.TopButtons > a#SaveData").removeClass("btn-unsub");
+        $("div.TopButtons > a#SaveData").addClass("btn-sub")
+                                        .removeClass("btn-unsub");
         //if save btn has btn-sub class prompt confirmation
     },
     AddToModifiedModulesList: function (ID) {
@@ -798,9 +814,9 @@ AVE.Modules['PreferenceManager'] = {
             }
         } else {
             this.ModifiedModules = [];
-            $("div.TopButtons > a#SaveData").text("Save Changes");
-            $("div.TopButtons > a#SaveData").removeClass("btn-sub");
-            $("div.TopButtons > a#SaveData").addClass("btn-unsub");
+            $("div.TopButtons > a#SaveData").text("Save Changes")
+                                            .removeClass("btn-sub")
+                                            .addClass("btn-unsub");
             $("#CloseWinMngr").click();
         }
     },
@@ -886,10 +902,10 @@ AVE.Modules['PreferenceManager'] = {
 
             htmlStr += '<input ' + (_this.Options.LossChangeNotification.Value ? 'checked="true"' : "") + ' id="LossChangeNotification" type="checkbox"/><label style="display: inline;" for="LossChangeNotification"> ' + _this.Options.LossChangeNotification.Desc + '</label><br />';
 
-            htmlStr += '<br />Export all stored data as a JSON file: <input style="font-weight:bold;" value="Export" id="AVE_ExportToJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON"></input>';
-            htmlStr += '<br />Import settings/data from a JSON file: <input style="font-weight:bold;" value="Import" id="AVE_ImportFromJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON"></input> \
-                        <input style="display:none;"value="file_Import" id="AVE_file_ImportFromJSON" type="file"></input><br /><br /><br />';
-            htmlStr += 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="AVE_ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Warning: this will delete your preferences, shortcut list and all usertags!"></input>';
+            htmlStr += '<br />Export all stored data as a JSON file: <input style="font-weight:bold;" value="Export" id="AVE_ExportToJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON">';
+            htmlStr += '<br />Import settings/data from a JSON file: <input style="font-weight:bold;" value="Import" id="AVE_ImportFromJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON">\
+                        <input style="display:none;"value="file_Import" id="AVE_file_ImportFromJSON" type="file"><br /><br /><br />';
+            htmlStr += 'Reset all data stored: <input style="font-weight:bold;" value="Reset" id="AVE_ResetAllData" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Warning: this will delete your preferences, shortcut list and all usertags!">';
             htmlStr += '<br/><span style="font-weight:bold;" id="AVE_Mng_Info"></span>';
 
             return htmlStr;
@@ -950,11 +966,12 @@ AVE.Modules['PreferenceManager'] = {
     },
 
     ShowInfo: function (text, status) {
-        $("span#AVE_Mng_Info").finish();
-        $("span#AVE_Mng_Info").show();
-        $("span#AVE_Mng_Info").text(text);
-        $("span#AVE_Mng_Info").css("color", status == "success" ? "#68C16B" : "#DD5454");
-        $("span#AVE_Mng_Info").delay(5000).fadeOut(300);
+        var JqId = $("span#AVE_Mng_Info");
+        JqId.finish();
+        JqId.show();
+        JqId.text(text);
+        JqId.css("color", status == "success" ? "#68C16B" : "#DD5454");
+        JqId.delay(5000).fadeOut(300);
     },
 
     ImportFromJSON: function () {
@@ -971,6 +988,7 @@ AVE.Modules['PreferenceManager'] = {
             var isFileSaverSupported = !!new Blob;
         } catch (e) { alert("AVE: Saving settings and data to JSON is not supported by your browser."); return; }
 
+        var _this = AVE.Modules['PreferenceManager'];
         var data = {};
         $.each(_this.Store.Data, function (k, v) { data[k] = v; });
         var blob = new Blob([JSON.stringify(data)], { type: "application/json;charset=utf-8" });
@@ -1041,9 +1059,24 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.26.1.6",
+        "   ContributionDeltas:",
+        "       Added option to show mutliple delta in tooltip (hour, day, week)",
+        "V2.26.0.6",
+        "   New feature: ContributionDeltas",
+        "       Show the difference in contribution points between now and X ago",
+        "   Preference manager:",
+        "       The mngr will now be displayed with full width and height",
+        "       Scrolling is deactivated for the rest of the page while the manager is displayed",
+        "       Press Escape to close the mngr",
+        "   IgnoreUsers:",
+        "       Small optimizations",
+        "       Corrected a CSS value",
+        "   FixContainerWidth:",
+        "       Fixed bug in the setting that stopped the slider from updating the page's width live",
         "V2.25.3.6",
         "   NeverEndingVoat:",
-        "       Fixed a bug related to expando buttons not appearing in Chrome and preventing other modules from updating",
+        "       Fixed a bug related to expando buttons not appearing in Chrome and preventing more modules from updating",
         "V2.25.3.5",
         "   New feature: Domain filter",
         "       Use filters to remove submissions linking to particular domains",
@@ -1282,12 +1315,12 @@ AVE.Modules['UserTag'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         VoteBalance: {
             Type: 'boolean',
             Desc: 'Track votes and display the vote balance next to usernames.',
-            Value: true,
+            Value: true
         },
     },
     //Possible issues with the fact that the username in the profil overview is in lower case
@@ -1514,9 +1547,10 @@ table#formTable{\
 
     Listeners: function () {
         var _this = this;
+        var JqId1, JqId2;
 
-        $(".AVE_UserTag").off("click");
-        $(".AVE_UserTag").on("click", function () {
+        $(".AVE_UserTag").off("click")
+                         .on("click", function () {
             var username = $(this).attr("id").toLowerCase();
             var oldTag = $(this).text();
 
@@ -1525,25 +1559,27 @@ table#formTable{\
             var position = $(this).offset();
 
             position.top += 20;
-            $("#UserTagBox").css(position);
-            $("#UserTagBox").show();
+            $("#UserTagBox").css(position)
+                            .show();
 
             $("div#UserTagHeader > span#username").text(username);
 
-            $("tr#SetTag > td > input.UserTagTextInput").val(oldTag === "+" ? "" : oldTag);
+            JqId1 = ("tr#SetTag > td > input.UserTagTextInput");
+            JqId1.val(oldTag === "+" ? "" : oldTag);
             $("tr#ShowPreview > td > span#PreviewBox").text(oldTag === "+" ? "" : oldTag);
 
+            JqId2 = $("tr#SetColour > td > input#ChooseColor");
             if (usertag !== undefined) {
-                $("tr#SetColour > td > input#ChooseColor").val(usertag.colour);
-                $("tr#SetColour > td > input#ChooseColor").change();
+                JqId2.val(usertag.colour);
+                JqId2.change();
                 if (usertag.ignored) { $("tr#SetIgnore > td > input#ToggleIgnore").prop('checked', "true"); }
                 $("tr#SetBalance > td > input#voteBalance").val(usertag.balance);
             } else {
-                $("tr#SetColour > td > input#ChooseColor").val((AVE.Utils.CSSstyle === "dark" ? "#d1d1d1" : "#e1fcff"));
-                $("tr#SetColour > td > input#ChooseColor").change();
+                JqId2.val((AVE.Utils.CSSstyle === "dark" ? "#d1d1d1" : "#e1fcff"));
+                JqId2.change();
             }
-            $("tr#SetTag > td > input.UserTagTextInput").focus();
-            $("tr#SetTag > td > input.UserTagTextInput").select();
+            JqId1.focus();
+            JqId1.select();
         });
         
 
@@ -1557,18 +1593,20 @@ table#formTable{\
         }
 
         //Close button
-        $("div#UserTagHeader > span > a#CloseTagWin").off("click");
-        $("div#UserTagHeader > span > a#CloseTagWin").on("click", function () {
-            $("#UserTagBox").hide();
+        $("div#UserTagHeader > span > a#CloseTagWin")
+            .off("click")
+            .on("click",
+            function () {
+                $("#UserTagBox").hide();
         });
         //Show in the preview box the tag
-        $("tr#SetTag > td > input.UserTagTextInput").off('keyup');
-        $("tr#SetTag > td > input.UserTagTextInput").on('keyup', function () {
+        JqId1.off('keyup')
+             .on('keyup', function () {
             $("tr#ShowPreview > td > span#PreviewBox").text($(this).val());
         });
         //Show in the preview box the colour chosen and change the font-colour accordingly
-        $("tr#SetColour > td > input#ChooseColor").off('change');
-        $("tr#SetColour > td > input#ChooseColor").on('change', function () {
+        JqId2.off('change')
+             .on('change', function () {
             var r, g, b;
             var newColour = $(this).val();
             //from www.javascripter.net/faq/hextorgb.htm
@@ -1576,18 +1614,18 @@ table#formTable{\
             g = parseInt(newColour.substring(3, 5), 16);
             b = parseInt(newColour.substring(5, 7), 16);
 
-            $("tr#ShowPreview > td > span#PreviewBox").css("background-color", $(this).val());
-            $("tr#ShowPreview > td > span#PreviewBox").css("color", AVE.Utils.GetBestFontColour(r, g, b));
+            $("tr#ShowPreview > td > span#PreviewBox").css("background-color", $(this).val())
+                                                      .css("color", AVE.Utils.GetBestFontColour(r, g, b));
         });
         //Saving tag
-        $("tr#SetBalance > td > a#SaveTag").off("click");
-        $("tr#SetBalance > td > a#SaveTag").on("click", function () {
+        $("tr#SetBalance > td > a#SaveTag").off("click")
+                                           .on("click", function () {
             var opt = {
                 username: $("div#UserTagHeader > span#username").text(),
                 tag: $("tr#SetTag > td > input.UserTagTextInput").val(),//.replace(/[:,]/g, "-")
                 colour: $("tr#SetColour > td > input#ChooseColor").val(),
                 ignore: $("tr#SetIgnore > td > input#ToggleIgnore").get(0).checked,
-                balance: parseInt($("tr#SetBalance > td > input#voteBalance").val(), 10),
+                balance: parseInt($("tr#SetBalance > td > input#voteBalance").val(), 10)
             };
 
             if (isNaN(opt.balance)) { opt.balance = 0; }
@@ -1760,12 +1798,12 @@ AVE.Modules['ToggleMedia'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         MediaTypes: {
             Type: 'string',
-            Value: "110", // Images, Videos, self-Texts
-        },
+            Value: "110" // Images, Videos, self-Texts
+        }
     },
 
     OriginalOptions: "",
@@ -1829,19 +1867,14 @@ AVE.Modules['ToggleMedia'] = {
                                 .filter(function () {
                                     if ($(this).parents("div.submission[class*='id-']:first").css("opacity") === "1") {
                                         //Is this element a link to a media in a self-post?
-                                        if ($(this).find("span.link-expando-type").length > 0) { return true; }
+                                        return ($(this).find("span.link-expando-type").length > 0)
                                         //Is this element in a submission post and not a duplicate inserted by NeverEndingVoat?
-                                        if (!$(this).hasClass("expando-button")) { return false; }
-                                        return true;
+                                           &&  ($(this).hasClass("expando-button"));
                                     }
-                                    if ($(this).parents("div.md").length > 0) {
-                                        //Is this element in a comment?
-                                        if ($(this).find("span.link-expando-type").length > 0) {
-                                            //Does it contain an expando element?
-                                            return true;
-                                        }
-                                    }
-                                    return false;
+                                    //Is this element in a comment?
+                                    return ($(this).parents("div.md").length > 0)
+                                    //Does it contain an expando element?
+                                        && ($(this).find("span.link-expando-type").length > 0);
                                 });
                                 
             //print("ToggleMedia "+this.sel.length);
@@ -1860,8 +1893,9 @@ AVE.Modules['ToggleMedia'] = {
     AppendToPage: function () {
         if (this.sel.length === 0) { return; }
 
-        if ($("a#GM_ExpandAllImages").length > 0) {
-            $("a#GM_ExpandAllImages").text($("a#GM_ExpandAllImages").text().replace(/\([0-9]*\)/, "(" + this.sel.length + ")"));
+        var JqId = $("a#GM_ExpandAllImages");
+        if (JqId.length > 0) {
+            JqId.text(JqId.text().replace(/\([0-9]*\)/, "(" + this.sel.length + ")"));
         }
         else {
             var btnHTML = '<li class="disabled"><a style="cursor:pointer;" id="GM_ExpandAllImages" class="contribute submit-text">View Media (' + this.sel.length + ')</a></li>';
@@ -1872,8 +1906,9 @@ AVE.Modules['ToggleMedia'] = {
     Listeners: function () {
         var _this = this;
         var isExpanded = false;
-        $("[id='GM_ExpandAllImages']").off("click");
-        $("[id='GM_ExpandAllImages']").on("click", function () {
+        var JqId = $("a#GM_ExpandAllImages");
+        JqId.off("click");
+        JqId.on("click", function () {
             if ($(this).hasClass("expanded")) {
                 $(this).text('View Media (' + _this.sel.length + ')');
                 $(this).removeClass("expanded");
@@ -1904,7 +1939,7 @@ AVE.Modules['ToggleMedia'] = {
 
     AppendToPreferenceManager: {
         html: function () {
-            var _this = AVE.Modules['ToggleMedia']
+            var _this = AVE.Modules['ToggleMedia'];
             var mediaTypes = ["Images", "Videos", "self-texts"];
             var value = _this.Options.MediaTypes.Value;
             var htmlString = '<div>';
@@ -3695,11 +3730,11 @@ AVE.Modules['CommentFilter'] = {
 };
 /// END Comment Filter ///
 
-/// Set Voat container\'s width:  By default, Voat shows a margin at both sides of the container. You can modify this by setting the new width as a percentage of the available horizontal space. ///
+/// Set Voat container\'s width:  By default, Voat shows a margin on both sides of the container. You can modify this by setting a custom width as a percentage of the available horizontal space. ///
 AVE.Modules['FixContainerWidth'] = {
     ID: 'FixContainerWidth',
     Name: 'Set Voat container\'s width',
-    Desc: 'By default, Voat shows a margin at both sides of the container. You can modify this by setting the new width as a percentage of the available horizontal space.',
+    Desc: 'By default, Voat shows a margin on both sides of the container. You can modify this by setting a custom width as a percentage of the available horizontal space.',
     Category: 'Fixes',
 
     Index: 100,
@@ -3719,7 +3754,7 @@ AVE.Modules['FixContainerWidth'] = {
         },
         Justify: {
             Type: 'boolean',
-            Value: false,
+            Value: false
         },
     },
 
@@ -3783,9 +3818,9 @@ AVE.Modules['FixContainerWidth'] = {
             var _this = AVE.Modules['FixContainerWidth'];
             $("input#Width[type='range']").on("change", function () {
                 $("span#FixContainerWidth_Value").text($(this).val());
-                $("div#container").css("max-width", $(this).val() + "%");
-            });
-
+                $("div#container").get(0).style.setProperty("max-width", $(this).val() + "%", 'important');
+            })
+                .trigger("change");
         },
     },
 };
@@ -4339,6 +4374,317 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
 };
 /// END Show submission\'s actual vote balance ///
 
+/// CCP and SCP differences:  Show the difference in contribution points between now and X time ago. ///
+AVE.Modules['ContributionDeltas'] = {
+    ID: 'ContributionDeltas',
+    Name: 'CCP and SCP differences',
+    Desc: 'Show the difference in contribution points between now and X time ago.',
+    Category: 'General',
+
+    Index: 100,
+    Enabled: false,
+
+    Store: {},
+
+    RunAt: "ready",
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: false
+        },
+        AddAsToolTip: {
+            Type: 'boolean',
+            Desc: 'Show deltas in a tooltip instead of inline.',
+            Value: false
+        },
+        ShowColourDelta: {
+            Type: 'boolean',
+            Desc: 'Show points in green (+) or red (-) according to the change.',
+            Value: true
+        },
+        ShowMultipleDeltas: {
+            Type: 'boolean',
+            Desc: 'Show multiple deltas in the tooltip (Hour, Day, Week).',
+            Value: false
+        },
+        ShowSinceLast: {
+            Type: 'string',
+            Desc: 'Show contribution points deltas for the last: ',
+            Value: 'day'
+        }
+    },
+
+    SinceLast: ["reset", "page", "hour", "6 hours",
+                "12 hours", "day", "week"],
+
+    OriginalOptions: "",
+
+    SavePref: function (POST) {
+        POST = POST[this.ID];
+
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
+    },
+
+    ResetPref: function () {// will add the reset option in the pref manager. Can be removed.
+        this.Options = JSON.parse(this.OriginalOptions);
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = this;
+        var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
+
+        $.each(JSON.parse(Opt), function (key, value) {
+            _this.Options[key].Value = value;
+        });
+        this.Enabled = this.Options.Enabled.Value;
+    },
+
+    Username: "",
+    StoredDeltas: {},
+    CCP: 0,
+    SCP: 0,
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.OriginalOptions = JSON.stringify(this.Options);
+        this.SetOptionsFromPref();
+
+        this.Username = $(".logged-in > .user > a[title='Profile']");
+        if (this.Username.length > 0){
+            this.Username = this.Username.text();
+        } else {
+            this.Enabled = false;
+        }
+
+        if (this.Enabled) {
+            this.Start();
+        }
+    },
+
+    Start: function () {
+        var _this = this;
+        var _now = Date.now();
+        this.CCP = $("a.userkarma#ccp").text();
+        this.SCP = $("a.userkarma#scp").text();
+
+        //this.Store.SetValue(this.Store.Prefix + this.ID + "_Deltas", "{}");
+
+        this.StoredDeltas = JSON.parse(this.Store.GetValue(this.Store.Prefix + this.ID + "_Deltas", "{}"));
+        if (this.StoredDeltas[this.Username] === undefined) {
+            var tempVal = {ts: new Date (0), S: _this.SCP, C: _this.CCP};
+            this.StoredDeltas[this.Username] = {};
+            $.each(_this.SinceLast, function () {
+                _this.StoredDeltas[_this.Username][this] = tempVal;
+            });
+
+            this.Store.SetValue(this.Store.Prefix + this.ID + "_Deltas", JSON.stringify(this.StoredDeltas));
+        }
+
+        var dateDiff, change, newTs, epsilon;
+        epsilon = 2000; //2 sec.
+        change = false;
+
+        if ((_now - _this.StoredDeltas[_this.Username]["page"].ts) > epsilon){//page
+            change = true;
+            //print("AVE: ContribDelta -> Updated \"Page\"");
+            _this.StoredDeltas[_this.Username]["page"] = {ts: _now, S: _this.SCP, C: _this.CCP};
+
+            dateDiff = (_now - _this.StoredDeltas[_this.Username]["hour"].ts) /1000;
+            if (dateDiff > 3600) { //Hour
+                //print("AVE: ContribDelta -> Updated \"hour\"");
+
+                newTs = new Date (_now).setMinutes(0, 0);
+                _this.StoredDeltas[_this.Username]["hour"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
+
+                dateDiff = (_now - _this.StoredDeltas[_this.Username]["6 hours"].ts) / 1000;
+                if (dateDiff > 21600) { //6 hours
+                    //print("AVE: ContribDelta -> Updated \"6 hours\"");
+
+                    var newTsHour = new Date (newTs).getHours();
+                    newTs = new Date (newTs).setHours(
+                        (newTsHour < 4 ? 0 :
+                            (newTsHour < 10 ? 6 :
+                                (newTsHour < 16 ? 12 : 18)
+                                )
+                            )
+                        );
+                    _this.StoredDeltas[_this.Username]["6 hours"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
+
+                    dateDiff = (_now - _this.StoredDeltas[_this.Username]["12 hours"].ts) / 1000;
+                    if (dateDiff > 43200) { //12 hours
+                        //print("AVE: ContribDelta -> Updated \"12 hours\"");
+
+                        newTs = new Date (newTs).setHours(newTsHour < 12 ? 0 : 12);
+                        _this.StoredDeltas[_this.Username]["12 hours"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
+                    }
+                }
+                //Only check for days    once per hour (and only check for week once per day)
+                dateDiff = (_now - _this.StoredDeltas[_this.Username]["day"].ts) / 1000;
+                if (dateDiff > 86400) { //day
+                    //print("AVE: ContribDelta -> Updated \"Day\"");
+
+                    newTs = new Date (newTs).setHours(6);
+
+                    _this.StoredDeltas[_this.Username]["day"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
+
+                    dateDiff = (_now - _this.StoredDeltas[_this.Username]["week"].ts) / 1000;
+                    if (dateDiff > 604800) { //week
+                        //print("AVE: ContribDelta -> Updated \"Week\"");
+                        newTs -= 86400000 * ((new Date (newTs)).getDay() - 1);
+                        _this.StoredDeltas[_this.Username]["week"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
+
+                    }
+                }
+            }
+        }
+
+        //save changes if any was made
+        if (change) {
+            this.Store.SetValue(this.Store.Prefix + this.ID + "_Deltas", JSON.stringify(this.StoredDeltas));
+        }
+
+        this.AppendToPage();
+    },
+
+    AppendToPage: function () {
+        var _this = this;
+        var delta, JqId, data, multipleD;
+
+        multipleD = ["hour", "day", "week"];
+        if ($.inArray(this.Options.ShowSinceLast.Value, multipleD) == -1){
+            //Add selected SinceLast if it isn't already in the list
+            multipleD.splice(0, 0, this.Options.ShowSinceLast.Value);
+        }
+        data = this.StoredDeltas[this.Username][this.Options.ShowSinceLast.Value];
+
+
+        //SCP
+        JqId = $("a.userkarma#scp");
+        delta = JqId.text() - data.S;
+        if (this.Options.AddAsToolTip.Value){
+            if (this.Options.ShowMultipleDeltas.Value){
+                JqId.parent().attr("title", (delta > 0 ? "+": "") +delta);
+                if (this.Options.ShowColourDelta.Value && delta !== 0){
+                    JqId.css("color", ( delta > 0 ?"#1BB61B": "#FF4B4B") );
+                }
+            }
+        } else {
+            $('<span title="SCP delta" id="AVE_SCP-delta"> ('+ (delta > 0 ? "+": "") +delta+')</span>')
+                .insertAfter(JqId);
+            if (this.Options.ShowColourDelta.Value && delta !== 0){
+                $("#AVE_SCP-delta").css("color", delta > 0 ?"#1BB61B" : "#FF4B4B");
+            }
+        }
+
+        if (this.Options.ShowMultipleDeltas.Value){
+            let _str, _data, _delta;
+            _str = "";
+            $.each(multipleD, function (i, v) {
+                _data = _this.StoredDeltas[_this.Username][v];
+                _delta = JqId.text() - _data.S;
+                _str += v + ": "+   (_delta > 0 ? "+": "") +_delta;
+                if (i+1 != multipleD.length){
+                    _str += "\n";
+                }
+            });
+
+            if (this.Options.AddAsToolTip.Value){
+                JqId.parent().attr("title", _str);
+            } else {
+                $("#AVE_SCP-delta").attr("title", _str);
+            }
+        }
+
+        //CCP
+        JqId = $("a.userkarma#ccp");
+        delta = JqId.text() - data.C;
+        if (this.Options.AddAsToolTip.Value){
+            if (this.Options.ShowMultipleDeltas.Value) {
+                JqId.parent().attr("title", (delta > 0 ? "+" : "") + delta);
+                if (this.Options.ShowColourDelta.Value && delta !== 0) {
+                    JqId.css("color", ( delta > 0 ? "#1BB61B" : "#FF4B4B"));
+                }
+            }
+        } else {
+            $('<span title="CCP delta" id="AVE_CCP-delta"> ('+ (delta > 0 ? "+": "") +delta+')</span>')
+                .insertAfter(JqId);
+            if (this.Options.ShowColourDelta.Value && delta !== 0){
+                $("#AVE_CCP-delta").css("color", delta > 0 ?"#1BB61B" : "#FF4B4B");
+            }
+        }
+
+        if (this.Options.ShowMultipleDeltas.Value){
+            let _str, _data, _delta;
+            _str = "";
+            $.each(multipleD, function (i, v) {
+                _data = _this.StoredDeltas[_this.Username][v];
+                _delta = JqId.text() - _data.C;
+                _str += v + ": "+   (_delta > 0 ? "+": "") +_delta;
+                if (i+1 != multipleD.length){
+                    _str += "\n";
+                }
+            });
+
+            if (this.Options.AddAsToolTip.Value){
+                JqId.parent().attr("title", _str);
+            } else {
+                $("#AVE_CCP-delta").attr("title", _str);
+            }
+        }
+    },
+
+    AppendToPreferenceManager: {
+        html: function () {
+            var _this = AVE.Modules['ContributionDeltas'];
+            var htmlStr = '';
+
+            htmlStr += '<input id="AddAsToolTip" ' + (_this.Options.AddAsToolTip.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="AddAsToolTip"> ' + _this.Options.AddAsToolTip.Desc + '</label><br />';
+            htmlStr += '<input id="ShowColourDelta" ' + (_this.Options.ShowColourDelta.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ShowColourDelta"> ' + _this.Options.ShowColourDelta.Desc + '</label><br />';
+            htmlStr += '<input id="ShowMultipleDeltas" ' + (_this.Options.ShowMultipleDeltas.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ShowMultipleDeltas"> ' + _this.Options.ShowMultipleDeltas.Desc + '</label><br />';
+
+            htmlStr += "<br />"+_this.Options.ShowSinceLast.Desc;
+            htmlStr += '<select id="ShowSinceLast">';
+            $.each(_this.SinceLast, function () {
+                htmlStr += '<option ' + (_this.Options.ShowSinceLast.Value == this ? "selected" : "") + ' value="' + this + '">' + this + '</option>';
+            });
+            htmlStr += '</select>';
+
+            /*
+            Button to display all SinceLast: (in a table?)
+                SinceLast[]: CCP/SCP
+                e.g. In last week: #/#
+             */
+
+            if (_this.Username.length > 0) {
+                htmlStr += '<br /><br />Current user: ' + _this.Username + '.<br /> <a style="margin-top: 10px;" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub" id="AVE_Reset_SinceLast">Reset count</a> <span id="AVE_LastReset">Last reset on ' + this.GetParsedDate(_this.StoredDeltas[_this.Username]["reset"].ts) + '</span>';
+            }
+            return htmlStr;
+        },
+
+        callback: function () {
+            var _this = AVE.Modules['ContributionDeltas'];
+            var _Mngthis = this;
+            var JqId;
+
+            JqId = $("div#ContributionDeltas > div.AVE_ModuleCustomInput > a#AVE_Reset_SinceLast");
+
+            JqId.off("click");
+            JqId.on("click", function () {
+                $("span#AVE_LastReset").text('Last reset on '+ _Mngthis.GetParsedDate(Date.now()));
+
+                _this.StoredDeltas[_this.Username]["reset"] = {ts: Date.now(), S: $("a.userkarma#scp").text(), C: $("a.userkarma#ccp").text()};
+                _this.Store.SetValue(_this.Store.Prefix + _this.ID + "_Deltas", JSON.stringify(_this.StoredDeltas));
+            });
+        },
+
+        GetParsedDate: function(timeStamp) {
+            return new Date(timeStamp).toLocaleFormat();
+        }
+    }
+};
+/// END CCP and SCP differences ///
+
 /// Submission Filter:  Remove submissions which title matches one of the filters. Additionally, you can specify a subverse, where a filter will only be applied. ///
 AVE.Modules['SubmissionFilter'] = {
     ID: 'SubmissionFilter',
@@ -4554,12 +4900,12 @@ AVE.Modules['IgnoreUsers'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: false,
+            Value: false
         },
         HardIgnore: {
             Type: 'boolean',
             Desc: 'Remove entirely from the page posts and chain comments made by the ignored users.',
-            Value: false,
+            Value: false
         },
     },
 
@@ -4570,18 +4916,18 @@ AVE.Modules['IgnoreUsers'] = {
     OriginalOptions: "", //If ResetPref is used
 
     SavePref: function (POST) {
-        var _this = this
+        var _this = this;
 
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
     ResetPref: function () {// will add the reset option in the pref manager. Can be deleted.
-        var _this = this
+        var _this = this;
         _this.Options = JSON.parse(_this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
-        var _this = this
+        var _this = this;
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         Opt = JSON.parse(Opt);
@@ -4663,9 +5009,10 @@ AVE.Modules['IgnoreUsers'] = {
     },
 
     Listeners: function () {
-        if ($("a[AVE='IgnoredComment']").length > 0) {
-            $("a[AVE='IgnoredComment']").off("click"); //We don't want to multiply the eventListeners for the same elements when updating.
-            $("a[AVE='IgnoredComment']").on("click", function () {
+        var JqId = $("a[AVE='IgnoredComment']");
+        if (JqId.length > 0) {
+            JqId.off("click"); //We don't want to multiply the eventListeners for the same elements when updating.
+            JqId.on("click", function () {
                 $(this).parent().find("div.md").show();
                 $(this).remove();
             });
@@ -4681,14 +5028,14 @@ AVE.Modules['IgnoreUsers'] = {
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager
         html: function () {
             var htmlStr = "";
-            htmlStr += '<input ' + (AVE.Modules['IgnoreUsers'].Options.HardIgnore.Value ? 'checked="true"' : "") + ' id="HardIgnore" type="checkbox"/><label for="HardIgnore"> Hard ignore</label><br />If checked all submissions and (chain)-comments of ignored users will be hidden.';
+            htmlStr += '<input ' + (AVE.Modules['IgnoreUsers'].Options.HardIgnore.Value ? 'checked="true"' : "") + ' id="HardIgnore" type="checkbox"/><label for="HardIgnore"> Hard ignore</label><br />If checked all submissions and (chain-)comments of ignored users will be hidden.';
             if (!AVE.Modules['UserTag'] || !AVE.Modules['UserTag'].Enabled) {
-                htmlStr += '<br /><span style="font-weigth:bold;color:#D84C4C;">The User tagging module is not activated, this module cannot work without it.</span>';
+                htmlStr += '<br /><span style="font-weight:bold;color:#D84C4C;">The User tagging module is not activated, this module cannot work without it.</span>';
             }
             //show a warning if usertag is disabled
             return htmlStr;
-        },
-    },
+        }
+    }
 };
 /// END Ignore users ///
 
