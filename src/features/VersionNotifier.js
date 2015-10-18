@@ -59,13 +59,13 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.26.1.8",
+        "V2.26.1.9",
+        "   FixContainerWidth:",
+        "       Fixed bug that would set the container's width when opening the PrefMngr even when disabled",
         "   ContributionDeltas:",
         "       Fixed bug related to the PrefMngr trying to display values related to a user that didn't exist yet",
-        "V2.26.1.7",
         "   UserTag:",
         "       Quick fix",
-        "V2.26.1.6",
         "   ContributionDeltas:",
         "       Added option to show mutliple delta in tooltip (hour, day, week)",
         "V2.26.0.6",

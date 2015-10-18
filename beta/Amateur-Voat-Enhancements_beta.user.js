@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2015-10-18
+// @date        2015-10-19
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.26.1.8
+// @version     2.26.1.9
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1059,13 +1059,13 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.26.1.8",
+        "V2.26.1.9",
+        "   FixContainerWidth:",
+        "       Fixed bug that would set the container's width when opening the PrefMngr even when disabled",
         "   ContributionDeltas:",
         "       Fixed bug related to the PrefMngr trying to display values related to a user that didn't exist yet",
-        "V2.26.1.7",
         "   UserTag:",
         "       Quick fix",
-        "V2.26.1.6",
         "   ContributionDeltas:",
         "       Added option to show mutliple delta in tooltip (hour, day, week)",
         "V2.26.0.6",
@@ -3824,8 +3824,10 @@ AVE.Modules['FixContainerWidth'] = {
             $("input#Width[type='range']").on("change", function () {
                 $("span#FixContainerWidth_Value").text($(this).val());
                 $("div#container").get(0).style.setProperty("max-width", $(this).val() + "%", 'important');
-            })
-                .trigger("change");
+            });
+            if (_this.Enabled){
+                $("div#container").trigger("change");
+            }
         },
     },
 };
