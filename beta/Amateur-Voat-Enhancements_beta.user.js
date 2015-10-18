@@ -8,7 +8,7 @@
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.26.1.7
+// @version     2.26.1.8
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1059,6 +1059,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.26.1.8",
+        "   ContributionDeltas:",
+        "       Fixed bug related to the PrefMngr trying to display values related to a user that didn't exist yet",
         "V2.26.1.7",
         "   UserTag:",
         "       Quick fix",
@@ -1977,21 +1980,21 @@ AVE.Modules['SelectPost'] = {
         },
         ContentColour: {
             Type: 'array',
-            Value: ['#323E47', '#F4FCFF'],
+            Value: ['#323E47', '#F4FCFF']
         },
         QuoteCodeColour: {
             Type: 'array',
-            Value: ['#394856', '#EAFEFF'],
+            Value: ['#394856', '#EAFEFF']
         },
         VoteCountBoxColour: {
             Type: 'array',
-            Value: ['#2D4A60', '#E1F9FF'],
+            Value: ['#2D4A60', '#E1F9FF']
         },
         ContextColour: {
             Type: 'array',
             Value: ['background-color: #482C2C !important; border: 1px solid #A23E3E !important;',
                     'background-color: #D5F0FF !important; border: 1px solid #4B96C4 !important;'],
-        },
+        }
     },
 
     OriginalOptions: {}, //For reset function
@@ -2047,8 +2050,8 @@ AVE.Modules['SelectPost'] = {
 
     Listeners: function () {
         var _this = this;
-        $("div.submission[class*='id-'], div.comment[class*='id-']").off("click");
-        $("div.submission[class*='id-'], div.comment[class*='id-']").on("click", function (event) {
+        $("div.submission[class*='id-'], div.comment[class*='id-']").off("click")
+                                                                    .on("click", function (event) {
             _this.ToggleSelectedState($(this).find(".entry:first"));
             event.stopPropagation();
         });
@@ -2102,13 +2105,13 @@ AVE.Modules['SelectPost'] = {
             var _this = AVE.Modules['SelectPost'];
             var htmlStr = "";
             htmlStr += "<div>Background colours (" + AVE.Utils.CSSstyle + " theme):</div>";
-            htmlStr += '<div style="display:inline;padding-left:15x;padding-right:15px;margin-right:10px;" id="Demo_ContentColour"></div>';
+            htmlStr += '<div style="display:inline;padding-left:15px;padding-right:15px;margin-right:10px;" id="Demo_ContentColour"></div>';
             htmlStr += ' <input style="display:inline;width:60px;padding:0px;" class="form-control" type="text" Module="' + _this.ID + '" id="ContentColour" Value="' + _this.Options.ContentColour.Value[style] + '"/> - Post<br />';
-            htmlStr += '<div style="display:inline;padding-left:15x;padding-right:15px;margin-right:10px;" id="Demo_QuoteCodeColour"></div>';
+            htmlStr += '<div style="display:inline;padding-left:15px;padding-right:15px;margin-right:10px;" id="Demo_QuoteCodeColour"></div>';
             htmlStr += '<input style="display:inline;width:60px;padding:0px;" class="form-control" type="text" Module="' + _this.ID + '" id="QuoteCodeColour" Value="' + _this.Options.QuoteCodeColour.Value[style] + '"/> - Quote and Code<br />';
-            htmlStr += '<div style="display:inline;padding-left:15x;padding-right:15px;margin-right:10px;" id="Demo_VoteCountBoxColour"></div>';
+            htmlStr += '<div style="display:inline;padding-left:15px;padding-right:15px;margin-right:10px;" id="Demo_VoteCountBoxColour"></div>';
             htmlStr += '<input style="display:inline;width:60px;padding:0px;" class="form-control" type="text" Module="' + _this.ID + '" id="VoteCountBoxColour" Value="' + _this.Options.VoteCountBoxColour.Value[style] + '"/> - Vote box in submissions page<br />';
-            htmlStr += '<div style="display:inline;padding-left:15x;padding-right:15px;margin-right:10px;" id="Demo_ContextColour"></div>';
+            htmlStr += '<div style="display:inline;padding-left:15px;padding-right:15px;margin-right:10px;" id="Demo_ContextColour"></div>';
             htmlStr += '<input style="font-size:12px;display:inline;width:340px;padding:0px;" class="form-control" type="text" Module="' + _this.ID + '" id="ContextColour" Value="' + _this.Options.ContextColour.Value[style] + '"/> - Context comment<br />';
             return htmlStr;
         },
@@ -4521,7 +4524,7 @@ AVE.Modules['ContributionDeltas'] = {
                         _this.StoredDeltas[_this.Username]["12 hours"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
                     }
                 }
-                //Only check for days    once per hour (and only check for week once per day)
+                //Only check for days once per hour (and only check for week once per day)
                 dateDiff = (_now - _this.StoredDeltas[_this.Username]["day"].ts) / 1000;
                 if (dateDiff > 86400) { //day
                     //print("AVE: ContribDelta -> Updated \"Day\"");
@@ -4658,7 +4661,7 @@ AVE.Modules['ContributionDeltas'] = {
                 e.g. In last week: #/#
              */
 
-            if (_this.Username.length > 0) {
+            if (_this.StoredDeltas[_this.Username] && _this.Username.length > 0) {
                 htmlStr += '<br /><br />Current user: ' + _this.Username + '.<br /> <a style="margin-top: 10px;" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub" id="AVE_Reset_SinceLast">Reset count</a> <span id="AVE_LastReset">Last reset on ' + this.GetParsedDate(_this.StoredDeltas[_this.Username]["reset"].ts) + '</span>';
             }
             return htmlStr;

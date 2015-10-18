@@ -34,7 +34,7 @@ AVE.Modules['ID'] = {
         this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
     },
 
-    ResetPref: function () {// will add the reset option in the pref manager. Can be deleted.
+    ResetPref: function () {// will add the reset option in the pref manager. Can be removed.
         var _this = this;
         this.Options = JSON.parse(this.OriginalOptions);
     },
@@ -73,7 +73,7 @@ AVE.Modules['ID'] = {
     AppendToPage: function () { //To insert content into the page
     },
 
-    Listeners: function () { //To bind event listeneres to the content added in AppendToPage.
+    Listeners: function () { //To bind event listeners to the content added in AppendToPage.
     },
 
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager

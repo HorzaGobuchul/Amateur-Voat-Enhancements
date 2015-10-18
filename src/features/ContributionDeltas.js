@@ -142,7 +142,7 @@ AVE.Modules['ContributionDeltas'] = {
                         _this.StoredDeltas[_this.Username]["12 hours"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
                     }
                 }
-                //Only check for days    once per hour (and only check for week once per day)
+                //Only check for days once per hour (and only check for week once per day)
                 dateDiff = (_now - _this.StoredDeltas[_this.Username]["day"].ts) / 1000;
                 if (dateDiff > 86400) { //day
                     //print("AVE: ContribDelta -> Updated \"Day\"");
@@ -279,7 +279,7 @@ AVE.Modules['ContributionDeltas'] = {
                 e.g. In last week: #/#
              */
 
-            if (_this.Username.length > 0) {
+            if (_this.StoredDeltas[_this.Username] && _this.Username.length > 0) {
                 htmlStr += '<br /><br />Current user: ' + _this.Username + '.<br /> <a style="margin-top: 10px;" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub" id="AVE_Reset_SinceLast">Reset count</a> <span id="AVE_LastReset">Last reset on ' + this.GetParsedDate(_this.StoredDeltas[_this.Username]["reset"].ts) + '</span>';
             }
             return htmlStr;

@@ -59,6 +59,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.26.1.8",
+        "   ContributionDeltas:",
+        "       Fixed bug related to the PrefMngr trying to display values related to a user that didn't exist yet",
         "V2.26.1.7",
         "   UserTag:",
         "       Quick fix",
