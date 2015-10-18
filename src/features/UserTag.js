@@ -17,12 +17,12 @@ AVE.Modules['UserTag'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         VoteBalance: {
             Type: 'boolean',
             Desc: 'Track votes and display the vote balance next to usernames.',
-            Value: true,
+            Value: true
         },
     },
     //Possible issues with the fact that the username in the profil overview is in lower case
@@ -249,9 +249,10 @@ table#formTable{\
 
     Listeners: function () {
         var _this = this;
+        var JqId1, JqId2;
 
-        $(".AVE_UserTag").off("click");
-        $(".AVE_UserTag").on("click", function () {
+        $(".AVE_UserTag").off("click")
+                         .on("click", function () {
             var username = $(this).attr("id").toLowerCase();
             var oldTag = $(this).text();
 
@@ -260,25 +261,27 @@ table#formTable{\
             var position = $(this).offset();
 
             position.top += 20;
-            $("#UserTagBox").css(position);
-            $("#UserTagBox").show();
+            $("#UserTagBox").css(position)
+                            .show();
 
             $("div#UserTagHeader > span#username").text(username);
 
-            $("tr#SetTag > td > input.UserTagTextInput").val(oldTag === "+" ? "" : oldTag);
+            JqId1 = ("tr#SetTag > td > input.UserTagTextInput");
+            JqId1.val(oldTag === "+" ? "" : oldTag);
             $("tr#ShowPreview > td > span#PreviewBox").text(oldTag === "+" ? "" : oldTag);
 
+            JqId2 = $("tr#SetColour > td > input#ChooseColor");
             if (usertag !== undefined) {
-                $("tr#SetColour > td > input#ChooseColor").val(usertag.colour);
-                $("tr#SetColour > td > input#ChooseColor").change();
+                JqId2.val(usertag.colour);
+                JqId2.change();
                 if (usertag.ignored) { $("tr#SetIgnore > td > input#ToggleIgnore").prop('checked', "true"); }
                 $("tr#SetBalance > td > input#voteBalance").val(usertag.balance);
             } else {
-                $("tr#SetColour > td > input#ChooseColor").val((AVE.Utils.CSSstyle === "dark" ? "#d1d1d1" : "#e1fcff"));
-                $("tr#SetColour > td > input#ChooseColor").change();
+                JqId2.val((AVE.Utils.CSSstyle === "dark" ? "#d1d1d1" : "#e1fcff"));
+                JqId2.change();
             }
-            $("tr#SetTag > td > input.UserTagTextInput").focus();
-            $("tr#SetTag > td > input.UserTagTextInput").select();
+            JqId1.focus();
+            JqId1.select();
         });
         
 
@@ -292,18 +295,20 @@ table#formTable{\
         }
 
         //Close button
-        $("div#UserTagHeader > span > a#CloseTagWin").off("click");
-        $("div#UserTagHeader > span > a#CloseTagWin").on("click", function () {
-            $("#UserTagBox").hide();
+        $("div#UserTagHeader > span > a#CloseTagWin")
+            .off("click")
+            .on("click",
+            function () {
+                $("#UserTagBox").hide();
         });
         //Show in the preview box the tag
-        $("tr#SetTag > td > input.UserTagTextInput").off('keyup');
-        $("tr#SetTag > td > input.UserTagTextInput").on('keyup', function () {
+        JqId1.off('keyup')
+             .on('keyup', function () {
             $("tr#ShowPreview > td > span#PreviewBox").text($(this).val());
         });
         //Show in the preview box the colour chosen and change the font-colour accordingly
-        $("tr#SetColour > td > input#ChooseColor").off('change');
-        $("tr#SetColour > td > input#ChooseColor").on('change', function () {
+        JqId2.off('change')
+             .on('change', function () {
             var r, g, b;
             var newColour = $(this).val();
             //from www.javascripter.net/faq/hextorgb.htm
@@ -311,18 +316,18 @@ table#formTable{\
             g = parseInt(newColour.substring(3, 5), 16);
             b = parseInt(newColour.substring(5, 7), 16);
 
-            $("tr#ShowPreview > td > span#PreviewBox").css("background-color", $(this).val());
-            $("tr#ShowPreview > td > span#PreviewBox").css("color", AVE.Utils.GetBestFontColour(r, g, b));
+            $("tr#ShowPreview > td > span#PreviewBox").css("background-color", $(this).val())
+                                                      .css("color", AVE.Utils.GetBestFontColour(r, g, b));
         });
         //Saving tag
-        $("tr#SetBalance > td > a#SaveTag").off("click");
-        $("tr#SetBalance > td > a#SaveTag").on("click", function () {
+        $("tr#SetBalance > td > a#SaveTag").off("click")
+                                           .on("click", function () {
             var opt = {
                 username: $("div#UserTagHeader > span#username").text(),
                 tag: $("tr#SetTag > td > input.UserTagTextInput").val(),//.replace(/[:,]/g, "-")
                 colour: $("tr#SetColour > td > input#ChooseColor").val(),
                 ignore: $("tr#SetIgnore > td > input#ToggleIgnore").get(0).checked,
-                balance: parseInt($("tr#SetBalance > td > input#voteBalance").val(), 10),
+                balance: parseInt($("tr#SetBalance > td > input#voteBalance").val(), 10)
             };
 
             if (isNaN(opt.balance)) { opt.balance = 0; }

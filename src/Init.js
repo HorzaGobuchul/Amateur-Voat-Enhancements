@@ -94,8 +94,11 @@ AVE.Init = {
         
         //AVE.Modules[ID].Load();
 
+        //var ntime = 0; var time = Date.now();
         try { AVE.Modules[ID].Load(); }
         catch (e) {print("AVE: Error loading " + ID);}
+        //ntime =  Date.now();
+        //print("updated > " + AVE.Modules[ID].ID + " (" + (ntime - time) + "ms)");
     },
 
     UpdateModules: function () {
