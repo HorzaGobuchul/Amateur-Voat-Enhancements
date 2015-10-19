@@ -8,7 +8,7 @@
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.26.1.9
+// @version     2.26.1.10
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1059,6 +1059,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.26.1.10",
+        "   ContributionDelta:",
+        "       Fixed bug crashing AVE relative to the use of 'let'",
         "V2.26.1.9",
         "   FixContainerWidth:",
         "       Fixed bug that would set the container's width when opening the PrefMngr even when disabled",
@@ -4585,7 +4588,7 @@ AVE.Modules['ContributionDeltas'] = {
         }
 
         if (this.Options.ShowMultipleDeltas.Value){
-            let _str, _data, _delta;
+            var _str, _data, _delta;
             _str = "";
             $.each(multipleD, function (i, v) {
                 _data = _this.StoredDeltas[_this.Username][v];

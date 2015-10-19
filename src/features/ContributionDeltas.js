@@ -201,7 +201,7 @@ AVE.Modules['ContributionDeltas'] = {
         }
 
         if (this.Options.ShowMultipleDeltas.Value){
-            let _str, _data, _delta;
+            var _str, _data, _delta;
             _str = "";
             $.each(multipleD, function (i, v) {
                 _data = _this.StoredDeltas[_this.Username][v];

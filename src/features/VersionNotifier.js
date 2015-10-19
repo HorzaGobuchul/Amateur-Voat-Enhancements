@@ -59,6 +59,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.26.1.10",
+        "   ContributionDelta:",
+        "       Fixed bug crashing AVE relative to the use of 'let'",
         "V2.26.1.9",
         "   FixContainerWidth:",
         "       Fixed bug that would set the container's width when opening the PrefMngr even when disabled",
