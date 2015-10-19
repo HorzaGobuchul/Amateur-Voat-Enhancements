@@ -8,7 +8,7 @@
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.26.1.10
+// @version     2.26.1.10b
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -4625,7 +4625,7 @@ AVE.Modules['ContributionDeltas'] = {
         }
 
         if (this.Options.ShowMultipleDeltas.Value){
-            let _str, _data, _delta;
+            var _str, _data, _delta;
             _str = "";
             $.each(multipleD, function (i, v) {
                 _data = _this.StoredDeltas[_this.Username][v];
