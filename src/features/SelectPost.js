@@ -153,24 +153,19 @@ AVE.Modules['SelectPost'] = {
         },
         callback: function () {//ContentColour QuoteCodeColour VoteCountBoxColour ContextColour
             var _this = AVE.Modules['SelectPost'];
-            $("div#Demo_ContentColour").css("background-color", $("input[id='ContentColour'][Module='" + _this.ID + "']").val());
-            $("div#Demo_QuoteCodeColour").css("background-color", $("input[id='QuoteCodeColour'][Module='" + _this.ID + "']").val());
-            $("div#Demo_VoteCountBoxColour").css("background-color", $("input[id='VoteCountBoxColour'][Module='" + _this.ID + "']").val());
-            $("div#Demo_ContextColour").attr("style", $("div#Demo_ContextColour").attr("style") + $("input[id='ContextColour'][Module='" + _this.ID + "']").val());
 
             $("input[id='ContentColour'][Module='" + _this.ID + "']").on("keyup", function () {
                 $("div#Demo_ContentColour").css("background-color", $("input[id='ContentColour'][Module='" + _this.ID + "']").val());
-            });
+            }).trigger("keyup");
             $("input[id='QuoteCodeColour'][Module='" + _this.ID + "']").on("keyup", function () {
                 $("div#Demo_QuoteCodeColour").css("background-color", $("input[id='QuoteCodeColour'][Module='" + _this.ID + "']").val());
-            });
+            }).trigger("keyup");
             $("input[id='VoteCountBoxColour'][Module='" + _this.ID + "']").on("keyup", function () {
                 $("div#Demo_VoteCountBoxColour").css("background-color", $("input[id='VoteCountBoxColour'][Module='" + _this.ID + "']").val());
-            });
+            }).trigger("keyup");
             $("input[id='ContextColour'][Module='" + _this.ID + "']").on("keyup", function () {
                 $("div#Demo_ContextColour").attr("style", "display:inline;padding-left:15x;padding-right:15px;margin-right:10px;" + $("input[id='ContextColour'][Module='" + _this.ID + "']").val());
-            });
-
-        },
-    },
+            }).trigger("keyup");
+        }
+    }
 };
