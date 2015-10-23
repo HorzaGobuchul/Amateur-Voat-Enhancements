@@ -2,7 +2,7 @@ AVE.Modules['HideUsername'] = {
     ID: 'HideUsername',
     Name: 'Hide username',
     Desc: 'Options to hide or replace references to your username (not in posts).',
-    Category: 'General',
+    Category: 'Account',
 
     //Should be loaded after the usertag module 
     Index: 150,

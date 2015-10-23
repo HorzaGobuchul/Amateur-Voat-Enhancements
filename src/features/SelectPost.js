@@ -12,7 +12,7 @@ AVE.Modules['SelectPost'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         ContentColour: {
             Type: 'array',
@@ -29,7 +29,7 @@ AVE.Modules['SelectPost'] = {
         ContextColour: {
             Type: 'array',
             Value: ['background-color: #482C2C !important; border: 1px solid #A23E3E !important;',
-                    'background-color: #D5F0FF !important; border: 1px solid #4B96C4 !important;'],
+                    'background-color: #D5F0FF !important; border: 1px solid #4B96C4 !important;']
         }
     },
 

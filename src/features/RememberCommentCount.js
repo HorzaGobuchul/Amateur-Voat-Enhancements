@@ -195,6 +195,6 @@ AVE.Modules['RememberCommentCount'] = {
             $("input[id='HighlightStyle'][Module='" + _this.ID + "']").on("keyup", function () {
                 $("div#Demo_HighlightStyle").css("background-color", $("input[id='HighlightStyle'][Module='" + _this.ID + "']").val());
             }).trigger("keyup");
-        },
-    },
+        }
+    }
 };
