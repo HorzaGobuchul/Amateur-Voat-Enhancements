@@ -114,7 +114,7 @@ AVE.Modules['InjectCustomStyle'] = {
                     }
 
                     if (_this.Options.RemoveSubverseStyle.Value) {
-                        if(n.parentNode && n.nodeName.toUpperCase() === "STYLE" && n.id === "custom_css") {
+                        if(n.parentNode && n.nodeName.toUpperCase() === "STYLE" && n.id == "custom_css") {
                             n.parentNode.removeChild(n);
 
                             //We want to disconnect the observer once it has done its job. But remember that a custom style is added twice in threads.
@@ -130,6 +130,12 @@ AVE.Modules['InjectCustomStyle'] = {
             }
         });
         obsCustomCSS.observe();
+
+        if ($("style#custom_css").length > 0){
+            //If a custom style was added before our Observer could start, we delete it manually
+            //This will happen with slow computers or extensions (very rarely with userscripts)
+            $("style#custom_css").remove();
+        }
 
         var URL;
 

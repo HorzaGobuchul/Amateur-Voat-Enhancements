@@ -34,7 +34,6 @@ pageMod.PageMod({
     "./Core/Utils.js",
     "./Modules/PreferenceManager.js",
     "./Modules/VersionNotifier.js",
-    "./Modules/ToggleCustomStyle.js",
     "./Modules/HeaderFixedPos.js",
     "./Modules/UpdateAfterLoadingMore.js",
     "./Modules/UserInfoFixedPos.js",
@@ -56,6 +55,7 @@ pageMod.PageMod({
     "./Modules/ShowSubmissionVoatBalance.js",
     "./Modules/HideUsername.js",
     "./Modules/InjectCustomStyle.js",
+    "./Modules/ToggleCustomStyle.js",
     "./BuildDep.js",
     ],
     onAttach: function (worker) {

@@ -119,7 +119,7 @@ AVE.Modules['NeverEndingVoat'] = {
             });
         }
 
-        $("a#AVE_loadmorebutton").on("s", function () { _this.LoadMore(); });
+        $("a#AVE_loadmorebutton").on("click", function () { _this.LoadMore(); });
     },
 
     LoadMore: function () {

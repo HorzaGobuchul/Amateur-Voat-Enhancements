@@ -8,6 +8,12 @@ AVE.Utils.SendMessage = function (Obj) {
                 case "DeleteValue":
                     GM_deleteValue(Obj.key);
                     break;
+                case "Update":
+                    AVE.Storage.Data = {};
+                    $.each(GM_listValues(), function () {
+                        AVE.Storage.Data[this] = GM_getValue(this.toString());
+                    });
+                    break;
             }
             break;
         case 'OpenInTab':
@@ -16,8 +22,5 @@ AVE.Utils.SendMessage = function (Obj) {
     }
 };
 AVE.Utils.MetaData = { version: GM_info.script.version, name: GM_info.script.name };
-AVE.Storage.Data = {};
-$.each(GM_listValues(), function () {
-    AVE.Storage.Data[this] = GM_getValue(this.toString());
-});
+AVE.Utils.SendMessage({ request: "Storage", type: "Update"});
 AVE.Init.Start();

@@ -59,7 +59,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.26.1.10",
+        "V2.26.1.11",
+        "   NeverEndingVoat",
+        "       Fixed typo that would stop the Load more button from working",
         "   ContributionDelta:",
         "       Fixed bug crashing AVE, relative to the use of the 'let' keyword",
         "V2.26.1.9",

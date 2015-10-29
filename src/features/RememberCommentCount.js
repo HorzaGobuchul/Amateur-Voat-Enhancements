@@ -88,6 +88,11 @@ AVE.Modules['RememberCommentCount'] = {
         this.AppendToPage();
     },
 
+    /*TODO-> Add buffer when deleting so that it isn't pruning each time a new thread is opened
+    *   Delete 1/4 at once
+    *   Delete 1/10 at once
+    *   Delete 1/20
+    *       As a function of the max number*/
     Pruning: function(){
         var count, key;
         count = Object.keys(this.Data).length - this.Options.MaxStorage.Value;
