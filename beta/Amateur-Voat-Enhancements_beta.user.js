@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2015-10-19
+// @date        2015-10-30
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.26.1.10b
+// @version     2.27.0.0
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -630,7 +630,7 @@ AVE.Modules['PreferenceManager'] = {
     MngWinHTML: '',
     ModuleHTML: '',
 
-    Categories: ["General", "Subverse", "Thread", "Posts", "Manager", "Style", "Fixes"],//Available Categories to show
+    Categories: ["General", "Subverse", "Thread", "Posts", "Manager", "Account", "Style", "Fixes"],//Available Categories to show
     Modules: [],//List of modules
     ModifiedModules: [],
 
@@ -745,6 +745,11 @@ AVE.Modules['PreferenceManager'] = {
             }
         });
 
+        this.ChangeListeners();
+    },
+
+    ChangeListeners: function () {
+        var _this = this;
         var JqId = $("section.ModulePref");
         JqId.find(":input").on("change", function () {
             _this.AddToModifiedModulesList($(this).parents("div.ModuleBlock:first").attr("id"));
@@ -1059,9 +1064,17 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.26.1.10",
+        "V2.27.0.0",
+        "   New feature: RememberCommentCount",
+        "       For all visited threads show the number of new comments since the last time they were opened (and hilighted them)",
+        "V2.26.1.13",
+        "   Filter modules:",
+        "     Fixed bug where (starting with two filters) removing the first filter, reloading, adding a new one would have the now first one be erased.",
+        "     Fixed issues with new or modified filters not triggering the PrefMngr's save function",
+        "   NeverEndingVoat",
+        "       Fixed typo that would stop the Load more button from working",
         "   ContributionDelta:",
-        "       Fixed bug crashing AVE relative to the use of 'let'",
+        "       Fixed bug crashing AVE, relative to the use of the 'let' keyword",
         "V2.26.1.9",
         "   FixContainerWidth:",
         "       Fixed bug that would set the container's width when opening the PrefMngr even when disabled",
@@ -1126,7 +1139,16 @@ AVE.Modules['VersionNotifier'] = {
         "   ToggleMedia:",
         "       Fixed bug where, in threads, media that were expanded when the user loaded more content weren't detected by the module, thus couldn't be collapsed back.",
         "   FixContainerWidth:",
-        "       The module used to update the container's width when starting the prefMngr even if disabled."],
+        "       The module used to update the container's width when starting the prefMngr even if disabled.",
+                "V2.23.2.2",
+        "   New feature: Hide username",
+        "       Options to hide or replace references to your username (not in posts)",
+        "   PreferenceManager:",
+        "       Added \"style\" tab",
+        "       Added visual of the saving process",
+        "       In order to save processing time, instead of saving all modules, only those which pref have been modified will be saved now",
+        "   ToggleMedia",
+        "       Corrected fix that prevented module from detecting media in self-text posts"],
 
     AppendToPage: function () {
         var CSSstyle = 'div.VersionBox' +
@@ -1979,7 +2001,7 @@ AVE.Modules['SelectPost'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         ContentColour: {
             Type: 'array',
@@ -1996,7 +2018,7 @@ AVE.Modules['SelectPost'] = {
         ContextColour: {
             Type: 'array',
             Value: ['background-color: #482C2C !important; border: 1px solid #A23E3E !important;',
-                    'background-color: #D5F0FF !important; border: 1px solid #4B96C4 !important;'],
+                    'background-color: #D5F0FF !important; border: 1px solid #4B96C4 !important;']
         }
     },
 
@@ -2120,26 +2142,21 @@ AVE.Modules['SelectPost'] = {
         },
         callback: function () {//ContentColour QuoteCodeColour VoteCountBoxColour ContextColour
             var _this = AVE.Modules['SelectPost'];
-            $("div#Demo_ContentColour").css("background-color", $("input[id='ContentColour'][Module='" + _this.ID + "']").val());
-            $("div#Demo_QuoteCodeColour").css("background-color", $("input[id='QuoteCodeColour'][Module='" + _this.ID + "']").val());
-            $("div#Demo_VoteCountBoxColour").css("background-color", $("input[id='VoteCountBoxColour'][Module='" + _this.ID + "']").val());
-            $("div#Demo_ContextColour").attr("style", $("div#Demo_ContextColour").attr("style") + $("input[id='ContextColour'][Module='" + _this.ID + "']").val());
 
             $("input[id='ContentColour'][Module='" + _this.ID + "']").on("keyup", function () {
                 $("div#Demo_ContentColour").css("background-color", $("input[id='ContentColour'][Module='" + _this.ID + "']").val());
-            });
+            }).trigger("keyup");
             $("input[id='QuoteCodeColour'][Module='" + _this.ID + "']").on("keyup", function () {
                 $("div#Demo_QuoteCodeColour").css("background-color", $("input[id='QuoteCodeColour'][Module='" + _this.ID + "']").val());
-            });
+            }).trigger("keyup");
             $("input[id='VoteCountBoxColour'][Module='" + _this.ID + "']").on("keyup", function () {
                 $("div#Demo_VoteCountBoxColour").css("background-color", $("input[id='VoteCountBoxColour'][Module='" + _this.ID + "']").val());
-            });
+            }).trigger("keyup");
             $("input[id='ContextColour'][Module='" + _this.ID + "']").on("keyup", function () {
                 $("div#Demo_ContextColour").attr("style", "display:inline;padding-left:15x;padding-right:15px;margin-right:10px;" + $("input[id='ContextColour'][Module='" + _this.ID + "']").val());
-            });
-
-        },
-    },
+            }).trigger("keyup");
+        }
+    }
 };
 /// END Select posts ///
 
@@ -2616,7 +2633,7 @@ AVE.Modules['InjectCustomStyle'] = {
                     }
 
                     if (_this.Options.RemoveSubverseStyle.Value) {
-                        if(n.parentNode && n.nodeName.toUpperCase() === "STYLE" && n.id === "custom_css") {
+                        if(n.parentNode && n.nodeName.toUpperCase() === "STYLE" && n.id == "custom_css") {
                             n.parentNode.removeChild(n);
 
                             //We want to disconnect the observer once it has done its job. But remember that a custom style is added twice in threads.
@@ -2632,6 +2649,12 @@ AVE.Modules['InjectCustomStyle'] = {
             }
         });
         obsCustomCSS.observe();
+
+        if ($("style#custom_css").length > 0){
+            //If a custom style was added before our Observer could start, we delete it manually
+            //This will happen with slow computers or extensions (very rarely with userscripts)
+            $("style#custom_css").remove();
+        }
 
         var URL;
 
@@ -3299,6 +3322,214 @@ AVE.Modules['Shortcuts'] = {
 };
 /// END Subverse and Set shortcuts ///
 
+/// Remember comment count:  For all visited threads show the number of new comments since the last time they were opened ///
+AVE.Modules['RememberCommentCount'] = {
+    ID: 'RememberCommentCount',
+    Name: 'Remember comment count',
+    Desc: 'For all visited threads show the number of new comments since the last time they were opened',
+    Category: 'Thread',
+
+    Index: 100,
+    Enabled: false,
+
+    Store: {},
+    StorageName: "",
+    Data: {},
+    Processed: [],
+    TimeStamp: 0,
+
+    RunAt: "ready",
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: true
+        },
+        HighlightNewComments: {
+            Type: 'boolean',
+            Desc: "Highlight new comments.",
+            Value: false
+        },
+        HighlightStyle: {
+            Type: 'string',
+            Desc: "Highlight CSS value",
+            Value: ['#473232',
+                    '#473232']
+        },
+        MaxStorage: {
+            Type: 'int',
+            Range: [1,5000],
+            Desc: "Max number of threads to remember",
+            Value: 400
+        },
+    },
+
+    OriginalOptions: "",
+
+    SavePref: function (POST) {
+        var style = AVE.Utils.CSSstyle === "dark" ? 0 : 1;
+        POST = POST[this.ID];
+
+        //Clamping
+        if(POST.MaxStorage > 5000){POST.MaxStorage=5000;}
+        else if(POST.MaxStorage < 1){POST.MaxStorage=1;}
+
+        //Save style for both theme
+        this.Options.HighlightStyle.Value[style] = POST.HighlightStyle;
+        POST.HighlightStyle = this.Options.HighlightStyle.Value;
+
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
+    },
+
+    ResetPref: function () {
+        this.Options = JSON.parse(this.OriginalOptions);
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = this;
+        var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
+
+        $.each(JSON.parse(Opt), function (key, value) {
+            _this.Options[key].Value = value;
+        });
+        this.Enabled = this.Options.Enabled.Value;
+    },
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.OriginalOptions = JSON.stringify(this.Options);
+        this.SetOptionsFromPref();
+
+        if (this.Enabled) {
+            this.StorageName = this.Store.Prefix + this.ID + "_Data";
+            //this.Data = JSON.parse(this.Store.SetValue(this.StorageName, "{}"));
+            this.Data = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
+            this.Pruning();
+            this.Start();
+        }
+    },
+
+    Start: function () {
+        this.AppendToPage();
+    },
+
+    /*TODO-> Add buffer when deleting so that it isn't pruning each time a new thread is opened
+    *   Delete 1/4 at once
+    *   Delete 1/10 at once
+    *   Delete 1/20
+    *       As a function of the max number*/
+    Pruning: function(){
+        var count, key;
+        count = Object.keys(this.Data).length - this.Options.MaxStorage.Value;
+        if (count < 1) {return;}
+
+        for (key in this.Data){
+            delete(this.Data[key]);
+            count--;
+            if (count === 0){break;}
+        }
+        this.Store.SetValue(this.StorageName, JSON.stringify(this.Data));
+    },
+
+    Update: function () {
+        if (this.Enabled) {
+            this.Start();
+        }
+    },
+
+    AppendToPage: function () {
+        var _this = this;
+        var _style = AVE.Utils.CSSstyle === "dark" ? 0 : 1;
+        var _count, _id;
+        //this.Data = {448721: 2, 594824: 2, 592949: 1};
+
+        if (AVE.Utils.currentPageType === "thread") { // comments
+            var JqId = $("a.comments.may-blank:first");
+            var _new = JqId.find("span").length == 0;
+            _count = parseInt(JqId.text().split(" ")[0], 10) || 0;
+            if (_count > 0){
+                _id = $("div.submission[class*='id-']:first").attr("id").split("-")[1];
+                if (this.Data.hasOwnProperty(_id)){
+                    if (_new){
+                        _this.TimeStamp = _this.Data[_id][1];
+                        if (_count > this.Data[_id][0]){
+                            JqId.append('&nbsp;<span style="font-weight:bold;color:#4189B1;">(+'+(_count - this.Data[_id][0])+')</span>');
+                        }
+                    }
+
+                    if(_this.Options.HighlightNewComments.Value){
+                        var CommId, CommTimeStamp;
+                        $("div.noncollapsed").each(function () {
+                            CommId = $(this).attr("id");
+                            if ($.inArray(CommId, _this.Processed) === -1){
+                                CommTimeStamp = new Date($(this).find("time:first").attr("datetime")).getTime();
+                                if (CommTimeStamp > _this.TimeStamp){
+                                    $(this).parents("div[class*=' id-']:first").css('background-color', _this.Options.HighlightStyle.Value[_style]);
+                                }
+
+                                _this.Processed.push(CommId)
+                            }
+                        });
+                    }
+
+                    //print("AVE: RememberCommentCount > updating "+ _id);
+                } else {
+                    //print("AVE: RememberCommentCount > adding "+ _id);
+                }
+
+                if (this.Data.hasOwnProperty(_id) && _count === this.Data[_id][0]){
+                    //Pass
+                } else if (_new) {
+                    //print("AVE: RememberCommentCount > Writing");
+                    //Update Stored Data in case multiple threads were opened at the same time (we don't want them to overwrite each others).
+                    AVE.Utils.SendMessage({ request: "Storage", type: "Update"});
+                    this.Data = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
+
+                    this.Data[_id] = [_count, Date.now()];
+                    this.Store.SetValue(this.StorageName, JSON.stringify(this.Data));
+                }
+            }
+        } else if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "search", "domain", "user-submissions"]) !== -1) { // submissions
+            $("a.comments.may-blank").each(function () {
+                _id = $(this).parents("div.submission[class*='id-']:first").attr("data-fullname");
+                if ($.inArray(_id, _this.Processed) !== -1){return true;}
+
+                _count = parseInt($(this).text().split(" ")[0], 10) || 0;
+                if (_count > 0){
+                    if (_this.Data.hasOwnProperty(_id) && _count > _this.Data[_id][0]){
+                        $(this).append('&nbsp;<span style="font-weight:bold;color:#4189B1;">(+'+(_count - _this.Data[_id][0])+')</span>');
+                    }
+                }
+                _this.Processed.push(_id)
+            });
+        }
+    },
+
+    AppendToPreferenceManager: {
+        html: function () {
+            var style = AVE.Utils.CSSstyle === "dark" ? 0 : 1;
+            var _this = AVE.Modules['RememberCommentCount'];
+            var htmlStr = '';
+
+            htmlStr += '<label style="display:inline;" for="MaxStorage"> ' + _this.Options.MaxStorage.Desc + ': </label><input style="width: 60px;" id="MaxStorage" type="number" name="MaxStorage" value="'+_this.Options.MaxStorage.Value+'" min="1" max="5000"> (Currently: '+ Object.keys(_this.Data).length+')<br />'; //Max: '+_this.Options.MaxStorage.Range[1]+',
+            htmlStr += '<input id="HighlightNewComments" ' + (_this.Options.HighlightNewComments.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HighlightNewComments"> ' + _this.Options.HighlightNewComments.Desc + '</label><br />';
+
+            htmlStr += '<div style="display:inline;padding-left:15px;padding-right:15px;margin-right:10px;" id="Demo_HighlightStyle"></div>';
+            htmlStr += '<input style="font-size:12px;display:inline;width:60px;padding:0px;" class="form-control" type="text" Module="' + _this.ID + '" id="HighlightStyle" Value="'+_this.Options.HighlightStyle.Value[style]+'"/> - Highlight CSS value<br />';
+
+            return htmlStr;
+        },
+        callback: function () {
+            var _this = AVE.Modules['RememberCommentCount'];
+
+            $("input[id='HighlightStyle'][Module='" + _this.ID + "']").on("keyup", function () {
+                $("div#Demo_HighlightStyle").css("background-color", $("input[id='HighlightStyle'][Module='" + _this.ID + "']").val());
+            }).trigger("keyup");
+        }
+    }
+};
+/// END Remember comment count ///
+
 /// Fix user-block position:  Set the user info block\'s position as fixed. ///
 AVE.Modules['UserInfoFixedPos'] = {
     ID: 'UserInfoFixedPos',
@@ -3695,12 +3926,13 @@ AVE.Modules['CommentFilter'] = {
 
             htmlStr += '<span style="font-weight:bold;"> Example: "ex" matches "rex", "example" and "bexter".<br />Separate keywords and subverse names by a comma.</span><br />';
 
+            var count = 0;
             $.each(_this.Options.Filters.Value, function () {
                 var filter = Pref_this.htmlNewFilter + "<br />";
-                filter = filter.replace(/\{@id\}/ig, this.Id);
+                filter = filter.replace(/\{@id\}/ig, count);
                 filter = filter.replace("{@keywords}", this.Keywords.join(","));
                 filter = filter.replace("{@subverses}", this.ApplyToSub.join(","));
-
+                count++;
                 htmlStr += filter;
             });
 
@@ -3713,7 +3945,7 @@ AVE.Modules['CommentFilter'] = {
             var Pref_this = this;
             $("div#CommentFilter > div.AVE_ModuleCustomInput > a#AddNewFilter").on("click", function () {
                 var html = Pref_this.htmlNewFilter + "<br />";
-                html = html.replace(/\{@id\}/ig, $("div#CommentFilter > div.AVE_ModuleCustomInput > span.AVE_Comment_Filter").length);
+                html = html.replace(/\{@id\}/ig, parseInt($("div#CommentFilter > div.AVE_ModuleCustomInput > span.AVE_Comment_Filter:last").attr("id"), 10) + 1);
                 html = html.replace("{@keywords}", "");
                 html = html.replace("{@subverses}", "");
 
@@ -3725,6 +3957,7 @@ AVE.Modules['CommentFilter'] = {
                     $(this).prev("span.AVE_Comment_Filter").remove();
                     $(this).remove();
                 });
+                AVE.Modules.PreferenceManager.ChangeListeners();
             });
 
             $("div#CommentFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click");
@@ -3732,6 +3965,8 @@ AVE.Modules['CommentFilter'] = {
                 $(this).next("br").remove();
                 $(this).prev("span.AVE_Comment_Filter").remove();
                 $(this).remove();
+
+                AVE.Modules.PreferenceManager.AddToModifiedModulesList("CommentFilter");
             });
         },
     },
@@ -4134,7 +4369,7 @@ AVE.Modules['NeverEndingVoat'] = {
             });
         }
 
-        $("a#AVE_loadmorebutton").on("s", function () { _this.LoadMore(); });
+        $("a#AVE_loadmorebutton").on("click", function () { _this.LoadMore(); });
     },
 
     LoadMore: function () {
@@ -4850,12 +5085,13 @@ AVE.Modules['SubmissionFilter'] = {
 
             htmlStr += '<span style="font-weight:bold;"> Example: "ex" matches "rex", "example" and "bexter".<br />Separate keywords and subverse names by a comma.</span><br />';
 
+            var count = 0;
             $.each(_this.Options.Filters.Value, function () {
                 var filter = Pref_this.htmlNewFilter + "<br />";
-                filter = filter.replace(/\{@id\}/ig, this.Id);
+                filter = filter.replace(/\{@id\}/ig, count);
                 filter = filter.replace("{@keywords}", this.Keywords.join(","));
                 filter = filter.replace("{@subverses}", this.ApplyToSub.join(","));
-
+                count++;
                 htmlStr += filter;
             });
 
@@ -4868,7 +5104,7 @@ AVE.Modules['SubmissionFilter'] = {
             var Pref_this = this;
             $("div#SubmissionFilter > div.AVE_ModuleCustomInput > a#AddNewFilter").on("click", function () {
                 var html = Pref_this.htmlNewFilter + "<br />";
-                html = html.replace(/\{@id\}/ig, $("div#SubmissionFilter > div.AVE_ModuleCustomInput > span.AVE_Submission_Filter").length);
+                html = html.replace(/\{@id\}/ig, parseInt($("div#SubmissionFilter > div.AVE_ModuleCustomInput > span.AVE_Submission_Filter:last").attr("id"), 10) + 1);
                 html = html.replace("{@keywords}", "");
                 html = html.replace("{@subverses}", "");
 
@@ -4882,6 +5118,7 @@ AVE.Modules['SubmissionFilter'] = {
                     $(this).prev("span.AVE_Submission_Filter").remove();
                     $(this).remove();
                 });
+                AVE.Modules.PreferenceManager.ChangeListeners();
             });
 
             $("div#SubmissionFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click");
@@ -4889,6 +5126,8 @@ AVE.Modules['SubmissionFilter'] = {
                 $(this).next("br").remove();
                 $(this).prev("span.AVE_Submission_Filter").remove();
                 $(this).remove();
+
+                AVE.Modules.PreferenceManager.AddToModifiedModulesList("SubmissionFilter");
             });
         },
     },
@@ -5480,6 +5719,8 @@ AVE.Modules['DomainFilter'] = {
             }
         });
 
+        print(JSON.stringify( _this.Options.Filters.Value))
+
         this.Store.SetValue(this.Store.Prefix + this.ID,
             JSON.stringify(
                 {
@@ -5574,12 +5815,13 @@ AVE.Modules['DomainFilter'] = {
 
             htmlStr += '<span style="font-weight:bold;"> Example: "abc" matches "abc.com", "en.abc.com" but not "abcd.com".<br />Separate keywords and subverse names by a comma.</span><br />';
 
+            var count = 0;
             $.each(_this.Options.Filters.Value, function () {
                 var filter = Pref_this.htmlNewFilter + "<br />";
-                filter = filter.replace(/\{@id\}/ig, this.Id);
+                filter = filter.replace(/\{@id\}/ig, count);
                 filter = filter.replace("{@keywords}", this.Keywords.join(","));
                 filter = filter.replace("{@subverses}", this.ApplyToSub.join(","));
-
+                count++;
                 htmlStr += filter;
             });
 
@@ -5593,7 +5835,7 @@ AVE.Modules['DomainFilter'] = {
             var JqId = $("div#DomainFilter > div.AVE_ModuleCustomInput > a.RemoveFilter");
             $("div#DomainFilter > div.AVE_ModuleCustomInput > a#AddNewFilter").on("click", function () {
                 var html = Pref_this.htmlNewFilter + "<br />";
-                html = html.replace(/\{@id\}/ig, $("div#DomainFilter > div.AVE_ModuleCustomInput > span.AVE_Domain_Filter").length);
+                html = html.replace(/\{@id\}/ig, parseInt($("div#DomainFilter > div.AVE_ModuleCustomInput > span.AVE_Domain_Filter:last").attr("id"), 10) + 1);
                 html = html.replace("{@keywords}", "");
                 html = html.replace("{@subverses}", "");
 
@@ -5607,6 +5849,7 @@ AVE.Modules['DomainFilter'] = {
                     $(this).prev("span.AVE_Domain_Filter").remove();
                     $(this).remove();
                 });
+                AVE.Modules.PreferenceManager.ChangeListeners();
             });
 
             JqId.off("click");
@@ -5614,6 +5857,8 @@ AVE.Modules['DomainFilter'] = {
                 $(this).next("br").remove();
                 $(this).prev("span.AVE_Domain_Filter").remove();
                 $(this).remove();
+
+                AVE.Modules.PreferenceManager.AddToModifiedModulesList("DomainFilter");
             });
         },
     },
@@ -5625,7 +5870,7 @@ AVE.Modules['HideUsername'] = {
     ID: 'HideUsername',
     Name: 'Hide username',
     Desc: 'Options to hide or replace references to your username (not in posts).',
-    Category: 'General',
+    Category: 'Account',
 
     //Should be loaded after the usertag module 
     Index: 150,
@@ -5745,6 +5990,12 @@ AVE.Utils.SendMessage = function (Obj) {
                 case "DeleteValue":
                     GM_deleteValue(Obj.key);
                     break;
+                case "Update":
+                    AVE.Storage.Data = {};
+                    $.each(GM_listValues(), function () {
+                        AVE.Storage.Data[this] = GM_getValue(this.toString());
+                    });
+                    break;
             }
             break;
         case 'OpenInTab':
@@ -5753,9 +6004,6 @@ AVE.Utils.SendMessage = function (Obj) {
     }
 };
 AVE.Utils.MetaData = { version: GM_info.script.version, name: GM_info.script.name };
-AVE.Storage.Data = {};
-$.each(GM_listValues(), function () {
-    AVE.Storage.Data[this] = GM_getValue(this.toString());
-});
+AVE.Utils.SendMessage({ request: "Storage", type: "Update"});
 AVE.Init.Start();
 /// END Build Dependent ///
