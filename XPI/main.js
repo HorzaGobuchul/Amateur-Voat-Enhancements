@@ -26,7 +26,7 @@ pageMod.PageMod({
     exclude: ['*.voat.co/api'],
     contentScriptWhen: 'start',
     contentScriptFile: [
-    "./Ext/jquery.min.js",
+    "./Ext/jquery-2.1.4.min.js",
     "./Ext/to-markdown.js",
     "./Ext/FileSaver.min.js",
     "./Core/Init.js",
@@ -45,6 +45,7 @@ pageMod.PageMod({
     "./Modules/FixContainerWidth.js",
     "./Modules/IgnoreUsers.js",
     "./Modules/NeverEndingVoat.js",
+    //"./Modules/RememberCommentCount.js",
     "./Modules/ReplyWithQuote.js",
     "./Modules/SelectPost.js",
     "./Modules/Shortcuts.js",
@@ -52,10 +53,12 @@ pageMod.PageMod({
     "./Modules/ToggleChildComment.js",
     "./Modules/SubmissionFilter.js",
     "./Modules/CommentFilter.js",
+    "./Modules/DomainFilter.js",
     "./Modules/ShowSubmissionVoatBalance.js",
     "./Modules/HideUsername.js",
     "./Modules/InjectCustomStyle.js",
     "./Modules/ToggleCustomStyle.js",
+    "./Modules/ContributionDeltas.js",
     "./BuildDep.js",
     ],
     onAttach: function (worker) {
@@ -75,6 +78,9 @@ pageMod.PageMod({
                             break;
                         case 'DeleteValue':
                             Storage.DeleteValue(data.key);
+                            break;
+                        case "Update":
+                            worker.postMessage({ request: "SetStorage", message: Storage });
                             break;
                     }
                     break;

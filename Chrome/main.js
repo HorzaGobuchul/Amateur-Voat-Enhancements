@@ -6,13 +6,13 @@ Storage.SetValue = function (key, value) {
     newObj[key] = value;
     console.log(newObj);
     chrome.storage.local.set(newObj, function (result) {
-        console.log("result:");
+        // console.log("result:");
 
-        if (result) { // defined
-            console.log('Saved');
-        } else { // uninitialised
-            console.log("failed");
-        }
+        // if (result) { // defined
+        //     console.log('Saved');
+        // } else { // uninitialised
+        //     console.log("failed");
+        // }
     });
 };
 Storage.DeleteValue = function (key) {
@@ -31,6 +31,9 @@ chrome.runtime.onMessage.addListener(
 	                case 'DeleteValue':
 	                    Storage.DeleteValue(data.key);
 	                    break;
+                    case "Update":
+                        sendResponse({ request: "SetStorage"});
+                        break;
 	            }
 	            break;
 	        case 'GetMetadata':

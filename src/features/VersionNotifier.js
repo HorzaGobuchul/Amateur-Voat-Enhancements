@@ -59,7 +59,10 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.26.1.11",
+        "V2.26.1.13",
+        "   Filter modules:",
+        "     Fixed bug where (starting with two filters) removing the first filter, reloading, adding a new one would have the now first one be erased.",
+        "     Fixed issues with new or modified filters not triggering the PrefMngr's save function",
         "   NeverEndingVoat",
         "       Fixed typo that would stop the Load more button from working",
         "   ContributionDelta:",
@@ -128,7 +131,16 @@ AVE.Modules['VersionNotifier'] = {
         "   ToggleMedia:",
         "       Fixed bug where, in threads, media that were expanded when the user loaded more content weren't detected by the module, thus couldn't be collapsed back.",
         "   FixContainerWidth:",
-        "       The module used to update the container's width when starting the prefMngr even if disabled."],
+        "       The module used to update the container's width when starting the prefMngr even if disabled.",
+                "V2.23.2.2",
+        "   New feature: Hide username",
+        "       Options to hide or replace references to your username (not in posts)",
+        "   PreferenceManager:",
+        "       Added \"style\" tab",
+        "       Added visual of the saving process",
+        "       In order to save processing time, instead of saving all modules, only those which pref have been modified will be saved now",
+        "   ToggleMedia",
+        "       Corrected fix that prevented module from detecting media in self-text posts"],
 
     AppendToPage: function () {
         var CSSstyle = 'div.VersionBox' +

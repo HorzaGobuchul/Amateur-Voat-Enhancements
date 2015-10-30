@@ -325,6 +325,11 @@ AVE.Modules['PreferenceManager'] = {
             }
         });
 
+        this.ChangeListeners();
+    },
+
+    ChangeListeners: function () {
+        var _this = this;
         var JqId = $("section.ModulePref");
         JqId.find(":input").on("change", function () {
             _this.AddToModifiedModulesList($(this).parents("div.ModuleBlock:first").attr("id"));

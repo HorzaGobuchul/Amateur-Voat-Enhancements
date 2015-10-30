@@ -60,6 +60,8 @@ AVE.Modules['DomainFilter'] = {
             }
         });
 
+        print(JSON.stringify( _this.Options.Filters.Value))
+
         this.Store.SetValue(this.Store.Prefix + this.ID,
             JSON.stringify(
                 {
@@ -154,12 +156,13 @@ AVE.Modules['DomainFilter'] = {
 
             htmlStr += '<span style="font-weight:bold;"> Example: "abc" matches "abc.com", "en.abc.com" but not "abcd.com".<br />Separate keywords and subverse names by a comma.</span><br />';
 
+            var count = 0;
             $.each(_this.Options.Filters.Value, function () {
                 var filter = Pref_this.htmlNewFilter + "<br />";
-                filter = filter.replace(/\{@id\}/ig, this.Id);
+                filter = filter.replace(/\{@id\}/ig, count);
                 filter = filter.replace("{@keywords}", this.Keywords.join(","));
                 filter = filter.replace("{@subverses}", this.ApplyToSub.join(","));
-
+                count++;
                 htmlStr += filter;
             });
 
@@ -173,7 +176,7 @@ AVE.Modules['DomainFilter'] = {
             var JqId = $("div#DomainFilter > div.AVE_ModuleCustomInput > a.RemoveFilter");
             $("div#DomainFilter > div.AVE_ModuleCustomInput > a#AddNewFilter").on("click", function () {
                 var html = Pref_this.htmlNewFilter + "<br />";
-                html = html.replace(/\{@id\}/ig, $("div#DomainFilter > div.AVE_ModuleCustomInput > span.AVE_Domain_Filter").length);
+                html = html.replace(/\{@id\}/ig, parseInt($("div#DomainFilter > div.AVE_ModuleCustomInput > span.AVE_Domain_Filter:last").attr("id"), 10) + 1);
                 html = html.replace("{@keywords}", "");
                 html = html.replace("{@subverses}", "");
 
@@ -187,6 +190,7 @@ AVE.Modules['DomainFilter'] = {
                     $(this).prev("span.AVE_Domain_Filter").remove();
                     $(this).remove();
                 });
+                AVE.Modules.PreferenceManager.ChangeListeners();
             });
 
             JqId.off("click");
@@ -194,6 +198,8 @@ AVE.Modules['DomainFilter'] = {
                 $(this).next("br").remove();
                 $(this).prev("span.AVE_Domain_Filter").remove();
                 $(this).remove();
+
+                AVE.Modules.PreferenceManager.AddToModifiedModulesList("DomainFilter");
             });
         },
     },

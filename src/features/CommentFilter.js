@@ -192,12 +192,13 @@ AVE.Modules['CommentFilter'] = {
 
             htmlStr += '<span style="font-weight:bold;"> Example: "ex" matches "rex", "example" and "bexter".<br />Separate keywords and subverse names by a comma.</span><br />';
 
+            var count = 0;
             $.each(_this.Options.Filters.Value, function () {
                 var filter = Pref_this.htmlNewFilter + "<br />";
-                filter = filter.replace(/\{@id\}/ig, this.Id);
+                filter = filter.replace(/\{@id\}/ig, count);
                 filter = filter.replace("{@keywords}", this.Keywords.join(","));
                 filter = filter.replace("{@subverses}", this.ApplyToSub.join(","));
-
+                count++;
                 htmlStr += filter;
             });
 
@@ -210,7 +211,7 @@ AVE.Modules['CommentFilter'] = {
             var Pref_this = this;
             $("div#CommentFilter > div.AVE_ModuleCustomInput > a#AddNewFilter").on("click", function () {
                 var html = Pref_this.htmlNewFilter + "<br />";
-                html = html.replace(/\{@id\}/ig, $("div#CommentFilter > div.AVE_ModuleCustomInput > span.AVE_Comment_Filter").length);
+                html = html.replace(/\{@id\}/ig, parseInt($("div#CommentFilter > div.AVE_ModuleCustomInput > span.AVE_Comment_Filter:last").attr("id"), 10) + 1);
                 html = html.replace("{@keywords}", "");
                 html = html.replace("{@subverses}", "");
 
@@ -222,6 +223,7 @@ AVE.Modules['CommentFilter'] = {
                     $(this).prev("span.AVE_Comment_Filter").remove();
                     $(this).remove();
                 });
+                AVE.Modules.PreferenceManager.ChangeListeners();
             });
 
             $("div#CommentFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click");
@@ -229,6 +231,8 @@ AVE.Modules['CommentFilter'] = {
                 $(this).next("br").remove();
                 $(this).prev("span.AVE_Comment_Filter").remove();
                 $(this).remove();
+
+                AVE.Modules.PreferenceManager.AddToModifiedModulesList("CommentFilter");
             });
         },
     },
