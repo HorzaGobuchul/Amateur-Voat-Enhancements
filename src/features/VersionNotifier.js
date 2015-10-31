@@ -59,9 +59,11 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.27.0.0",
+        "V2.27.0.1",
         "   New feature: RememberCommentCount",
         "       For all visited threads show the number of new comments since the last time they were opened (and hilighted them)",
+        "   ContributionDelta:",
+        "       Replaced browser-specific function with shared one",
         "V2.26.1.13",
         "   Filter modules:",
         "     Fixed bug where (starting with two filters) removing the first filter, reloading, adding a new one would have the now first one be erased.",

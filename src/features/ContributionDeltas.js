@@ -302,7 +302,7 @@ AVE.Modules['ContributionDeltas'] = {
         },
 
         GetParsedDate: function(timeStamp) {
-            return new Date(timeStamp).toLocaleFormat();
+            return new Date(timeStamp).toLocaleString();
         }
     }
 };

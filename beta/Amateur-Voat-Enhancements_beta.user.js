@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2015-10-30
+// @date        2015-10-31
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.27.0.0
+// @version     2.27.0.1
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1064,9 +1064,11 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.27.0.0",
+        "V2.27.0.1",
         "   New feature: RememberCommentCount",
         "       For all visited threads show the number of new comments since the last time they were opened (and hilighted them)",
+        "   ContributionDelta:",
+        "       Replaced browser-specific function with shared one",
         "V2.26.1.13",
         "   Filter modules:",
         "     Fixed bug where (starting with two filters) removing the first filter, reloading, adding a new one would have the now first one be erased.",
@@ -4924,7 +4926,7 @@ AVE.Modules['ContributionDeltas'] = {
         },
 
         GetParsedDate: function(timeStamp) {
-            return new Date(timeStamp).toLocaleFormat();
+            return new Date(timeStamp).toLocaleString();
         }
     }
 };
