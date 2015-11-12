@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2015-10-31
+// @date        2015-11-12
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.27.0.1
+// @version     V2.27.0.2
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1064,11 +1064,17 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.27.0.2",
+        "   RememberCommentCount:",
+        "       Changed default highlight colour for the light theme to #ffffcf",
         "V2.27.0.1",
         "   New feature: RememberCommentCount",
-        "       For all visited threads show the number of new comments since the last time they were opened (and hilighted them)",
+        "       For all visited threads show the number of new comments since the last time they were opened (and hilight them)",
         "   ContributionDelta:",
         "       Replaced browser-specific function with shared one",
+        "V2.26.1.14",
+        "   ToggleMedia:",
+        "       Fixed bug preventing the module from detecting any media in submissions' pages.",
         "V2.26.1.13",
         "   Filter modules:",
         "     Fixed bug where (starting with two filters) removing the first filter, reloading, adding a new one would have the now first one be erased.",
@@ -1898,10 +1904,10 @@ AVE.Modules['ToggleMedia'] = {
             this.sel = $(strSel).filter(':parents(.titlebox)') //Remove from selection all media in the subverse's bar.
                                 .filter(function () {
                                     if ($(this).parents("div.submission[class*='id-']:first").css("opacity") === "1") {
-                                        //Is this element a link to a media in a self-post?
-                                        return ($(this).find("span.link-expando-type").length > 0)
                                         //Is this element in a submission post and not a duplicate inserted by NeverEndingVoat?
-                                           &&  ($(this).hasClass("expando-button"));
+                                        //Is this element a link to a media in a self-post?
+                                        return ($(this).next("span.link-expando-type").length > 0)
+                                           ||   $(this).hasClass("expando-button");
                                     }
                                     //Is this element in a comment?
                                     return ($(this).parents("div.md").length > 0)
@@ -2669,16 +2675,14 @@ AVE.Modules['InjectCustomStyle'] = {
 
 
         if (URL) {
-            function Inject (){
-            }
 
             if (this.Options.InjectLate.Value && !this.Options.RemoveSubverseStyle.Value) {
                 $(document).ready(function () {
-                    $("body").append('<link rel="StyleSheet" href="' + URL + '" type="text/css">');
+                    $("body").append('<link id="AVE_Inject_Style" rel="StyleSheet" href="' + URL + '" type="text/css">');
                 });
             } else {
                 $("head").append('<link rel="stylesheet" href="/Content/' + theme + '?HiFromAVE" type="text/css">');
-                $("head").append('<link rel="StyleSheet" href="' + URL + '" type="text/css">');
+                $("head").append('<link id="AVE_Inject_Style" rel="StyleSheet" href="' + URL + '" type="text/css">');
             }
 
             //If I use the following method, someone could easily inject javascript code and mess with the user.
@@ -3356,7 +3360,7 @@ AVE.Modules['RememberCommentCount'] = {
             Type: 'string',
             Desc: "Highlight CSS value",
             Value: ['#473232',
-                    '#473232']
+                    '#ffffcf']
         },
         MaxStorage: {
             Type: 'int',

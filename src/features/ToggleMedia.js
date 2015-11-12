@@ -82,10 +82,10 @@ AVE.Modules['ToggleMedia'] = {
             this.sel = $(strSel).filter(':parents(.titlebox)') //Remove from selection all media in the subverse's bar.
                                 .filter(function () {
                                     if ($(this).parents("div.submission[class*='id-']:first").css("opacity") === "1") {
-                                        //Is this element a link to a media in a self-post?
-                                        return ($(this).find("span.link-expando-type").length > 0)
                                         //Is this element in a submission post and not a duplicate inserted by NeverEndingVoat?
-                                           &&  ($(this).hasClass("expando-button"));
+                                        //Is this element a link to a media in a self-post?
+                                        return ($(this).next("span.link-expando-type").length > 0)
+                                           ||   $(this).hasClass("expando-button");
                                     }
                                     //Is this element in a comment?
                                     return ($(this).parents("div.md").length > 0)

@@ -148,16 +148,14 @@ AVE.Modules['InjectCustomStyle'] = {
 
 
         if (URL) {
-            function Inject (){
-            }
 
             if (this.Options.InjectLate.Value && !this.Options.RemoveSubverseStyle.Value) {
                 $(document).ready(function () {
-                    $("body").append('<link rel="StyleSheet" href="' + URL + '" type="text/css">');
+                    $("body").append('<link id="AVE_Inject_Style" rel="StyleSheet" href="' + URL + '" type="text/css">');
                 });
             } else {
                 $("head").append('<link rel="stylesheet" href="/Content/' + theme + '?HiFromAVE" type="text/css">');
-                $("head").append('<link rel="StyleSheet" href="' + URL + '" type="text/css">');
+                $("head").append('<link id="AVE_Inject_Style" rel="StyleSheet" href="' + URL + '" type="text/css">');
             }
 
             //If I use the following method, someone could easily inject javascript code and mess with the user.

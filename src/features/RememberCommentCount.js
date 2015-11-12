@@ -29,7 +29,7 @@ AVE.Modules['RememberCommentCount'] = {
             Type: 'string',
             Desc: "Highlight CSS value",
             Value: ['#473232',
-                    '#473232']
+                    '#ffffcf']
         },
         MaxStorage: {
             Type: 'int',
