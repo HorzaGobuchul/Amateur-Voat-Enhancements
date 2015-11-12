@@ -8,7 +8,7 @@
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     V2.27.0.2
+// @version     2.27.0.2
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1074,7 +1074,7 @@ AVE.Modules['VersionNotifier'] = {
         "       Replaced browser-specific function with shared one",
         "V2.26.1.14",
         "   ToggleMedia:",
-        "       Fixed bug preventing the module from detecting any media in submissions' pages.",
+        "       Fixed bug preventing the module from detecting any media in submissions' pages",
         "V2.26.1.13",
         "   Filter modules:",
         "     Fixed bug where (starting with two filters) removing the first filter, reloading, adding a new one would have the now first one be erased.",
