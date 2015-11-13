@@ -1,7 +1,7 @@
 AVE.Modules['RememberCommentCount'] = {
     ID: 'RememberCommentCount',
     Name: 'Remember comment count',
-    Desc: 'For all visited threads show the number of new comments since the last time they were opened',
+    Desc: 'For all visited threads show the number of new comments since the last time they were opened.',
     Category: 'Thread',
 
     Index: 100,
@@ -88,15 +88,13 @@ AVE.Modules['RememberCommentCount'] = {
         this.AppendToPage();
     },
 
-    /*TODO-> Add buffer when deleting so that it isn't pruning each time a new thread is opened
-    *   Delete 1/4 at once
-    *   Delete 1/10 at once
-    *   Delete 1/20
-    *       As a function of the max number*/
     Pruning: function(){
         var count, key;
         count = Object.keys(this.Data).length - this.Options.MaxStorage.Value;
+
         if (count < 1) {return;}
+
+        count += Math.ceil(this.Options.MaxStorage.Value / 8); //If over the limit we remove 1/8th of the total value
 
         for (key in this.Data){
             delete(this.Data[key]);

@@ -429,35 +429,30 @@ table#formTable{\
     },
 
     RemoveTag: function (username) {
-        var _this = this;
-        delete _this.usertags[username];
+        delete this.usertags[username];
 
-        _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.usertags));
+        this.Store.SetValue(this.StorageName, JSON.stringify(this.usertags));
     },
 
     SetTag: function (opt) {
-        var _this = this;
-        _this.usertags[opt.username] = new _this.UserTagObj(opt.tag, opt.colour, opt.ignore, opt.balance);
+        this.usertags[opt.username] = new this.UserTagObj(opt.tag, opt.colour, opt.ignore, opt.balance);
 
-        _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.usertags));
+        this.Store.SetValue(this.StorageName, JSON.stringify(this.usertags));
     },
 
     GetTag: function (userName) {
-        var _this = this;
-        return _this.usertags[userName] || false;
+        return this.usertags[userName] || false;
     },
 
     GetTagCount: function () {
         return this.usertags.length;
     },
 
-    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+    AppendToPreferenceManager: {
         html: function () {
             var _this = AVE.Modules['UserTag'];
             if (_this.Enabled) {
-                var TagLen = 0;
-                var VoteLen = 0;
-                var IgnoreLen = 0;
+                var TagLen = 0, VoteLen = 0, IgnoreLen = 0;
                 var htmlStr = "";
 
                 $.each(_this.usertags, function (key, value) {
@@ -475,8 +470,21 @@ table#formTable{\
                 //  Seeing as this.usertags is ordered oldest first, propose to remove X tags at the beginning of the list.
                 return htmlStr;
             }
+        }
+    },
+    
+    AppendToDashboard: {
+        html: function () {
+            var htmlStr = "Stub - WIP";
+            //Don't show tags as they should appear along with the username, but show a preview like in the tagbox
+
+            return htmlStr;
         },
         callback: function () {
-        },
-    },
+            "use strict";
+            //paging system:
+            //    Don't feed the html func anything it doesn't need.
+            //          Fill it with the paging function afterwards (trigger)
+        }
+    }
 };

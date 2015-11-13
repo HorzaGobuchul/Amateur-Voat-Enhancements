@@ -11,7 +11,7 @@ AVE.Modules['ID'] = {
 
     //   "start"     => as soon as possible
     //   "head"      => On head ready
-    //   "container" => On container ready (not yet implemented)
+    //   "container" => On container ready
     //   "ready"     => On DOMready
     //   "load"      => On DOMload
     // "ready" by default if RunAt is undefined

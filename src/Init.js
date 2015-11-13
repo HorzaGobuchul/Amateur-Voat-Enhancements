@@ -92,11 +92,11 @@ AVE.Init = {
         //var module = AVE.Modules[ID];s
         //print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")");
         
-        //AVE.Modules[ID].Load();
+        AVE.Modules[ID].Load();
 
         //var ntime = 0; var time = Date.now();
-        try { AVE.Modules[ID].Load(); }
-        catch (e) {print("AVE: Error loading " + ID);}
+        //try { AVE.Modules[ID].Load(); }
+        //catch (e) {print("AVE: Error loading " + ID);}
         //ntime =  Date.now();
         //print("updated > " + AVE.Modules[ID].ID + " (" + (ntime - time) + "ms)");
     },

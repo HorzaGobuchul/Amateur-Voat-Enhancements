@@ -59,6 +59,13 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.28.0.2",
+        "   New feature: Dashboard",
+        "       Use it to manage your saved data",
+        "   RememberCommentCount:",
+        "       The purging function will now delete 1/8th of the maximum stored values at once every time this max is reached",
+        "   VersioNotifier:",
+        "       The changelog box can now be closed by pressing \"Escape\"",
         "V2.27.0.2",
         "   RememberCommentCount:",
         "       Changed default highlight colour for the light theme to #ffffcf",
@@ -69,7 +76,7 @@ AVE.Modules['VersionNotifier'] = {
         "       Replaced browser-specific function with shared one",
         "V2.26.1.14",
         "   ToggleMedia:",
-        "       Fixed bug preventing the module from detecting any media in submissions' pages.",
+        "       Fixed bug preventing the module from detecting any media in submissions' pages",
         "V2.26.1.13",
         "   Filter modules:",
         "     Fixed bug where (starting with two filters) removing the first filter, reloading, adding a new one would have the now first one be erased.",
@@ -237,6 +244,12 @@ AVE.Modules['VersionNotifier'] = {
         $("div.VersionBoxClose").on("click", function () {
             VersionBox.hide("slow");
             _this.Store.SetValue(_this.Store.Prefix + _this.ID + "_Version", AVE.Utils.MetaData.version);
+        });
+
+        $(window).on("keyup", function (e) {
+            if (e.which === 27 && $("div.VersionBox").is(":visible")) {
+                $("div.VersionBoxClose").trigger("click");
+            }
         });
     },
 };
