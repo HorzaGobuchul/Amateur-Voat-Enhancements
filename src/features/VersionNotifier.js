@@ -59,6 +59,10 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.28.2.3",
+        "   UserInfoFixedPos:",
+        "       Renamed module and changed its description to be more general",
+        "       Added option to always hide contribution points in the userblock",
         "V2.28.1.2",
         "   Dashboard:",
         "       Implemented a manager for the Usertag module",

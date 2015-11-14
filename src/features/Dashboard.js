@@ -47,7 +47,6 @@ AVE.Modules['Dashboard'] = {
 
             $.each(_this.Modules, function (id, name) {
                 /*
-                 Usertags (delete, add(list","), update)
                  Subverse list (rearrange, delete, update, add(list",")
                  ToggleCustomStyle (stored subverse and if show or hide)
                  */
@@ -116,6 +115,7 @@ AVE.Modules['Dashboard'] = {
             $("a[id^='AVE_Dashboard_Show']").show();
 
             $("a#AVE_ShowDashboard").text("Hide Dashboard");
+            document.title = "Manage AVE's Data";
             location.hash = "#dashboard";
         } else {
             JqMain.show();
@@ -123,6 +123,7 @@ AVE.Modules['Dashboard'] = {
             $("a[id^='AVE_Dashboard_Show']").hide();
 
             $("a#AVE_ShowDashboard").text("Show Dashboard");
+            document.title = "Manage Account";
             location.hash = "";
         }
     }

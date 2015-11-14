@@ -8,7 +8,7 @@
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.28.1.2
+// @version     2.28.2.3
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -117,11 +117,11 @@ AVE.Init = {
         //var module = AVE.Modules[ID];s
         //print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")");
         
-        AVE.Modules[ID].Load();
+        //AVE.Modules[ID].Load();
 
         //var ntime = 0; var time = Date.now();
-        //try { AVE.Modules[ID].Load(); }
-        //catch (e) {print("AVE: Error loading " + ID);}
+        try { AVE.Modules[ID].Load(); }
+        catch (e) {print("AVE: Error loading " + ID);}
         //ntime =  Date.now();
         //print("updated > " + AVE.Modules[ID].ID + " (" + (ntime - time) + "ms)");
     },
@@ -1076,6 +1076,10 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.28.2.3",
+        "   UserInfoFixedPos:",
+        "       Renamed module and changed its description to be more general",
+        "       Added option to always hide contribution points in the userblock",
         "V2.28.1.2",
         "   Dashboard:",
         "       Implemented a manager for the Usertag module",
@@ -3967,11 +3971,11 @@ AVE.Modules['RememberCommentCount'] = {
 };
 /// END Remember comment count ///
 
-/// Fix user-block position:  Set the user info block\'s position as fixed. ///
+/// User-block fixes:  Minor fixes to the userblock. ///
 AVE.Modules['UserInfoFixedPos'] = {
     ID: 'UserInfoFixedPos',
-    Name: 'Fix user-block position',
-    Desc: 'Set the user info block\'s position as fixed.',
+    Name: 'User-block fixes',
+    Desc: 'Minor fixes to the userblock.',
     Category: 'Fixes',
 
     Index: 100,
@@ -3995,6 +3999,10 @@ AVE.Modules['UserInfoFixedPos'] = {
             Value: true,
         },
         PersistentHide: {
+            Type: 'boolean',
+            Value: false,
+        },
+        HidePoints: {
             Type: 'boolean',
             Value: false,
         },
@@ -4054,6 +4062,11 @@ AVE.Modules['UserInfoFixedPos'] = {
 
         if (this.Options.PersistentHide.Value) {
             $("div#AVE_ToggleUserBlock").click();
+        }
+
+        if (this.Options.HidePoints.Value){
+            var html = $("a[title='Profile']")[0].outerHTML;
+            $("span.user:first").html(html);
         }
 
         this.bg = $("div#header-container").css("background-color") + " " +
@@ -4161,12 +4174,13 @@ div#header-container {z-index: 2;}\
             htmlStr += '<input ' + (_this.Options.DivideBlock.Value ? 'checked="true"' : "") + ' id="DivideBlock" type="checkbox"/><label style="display:inline;" for="DivideBlock"> Do you want the header account separated- username and numbers at the top and icons below?</label>';
             htmlStr += '<br /><input ' + (_this.Options.ToggleBlock.Value ? 'checked="true"' : "") + ' id="ToggleBlock" type="checkbox"/><label style="display:inline;" for="ToggleBlock"> Show icon to toggle hide/show the user block.</label>';
             htmlStr += '<br /><input ' + (_this.Options.PersistentHide.Value ? 'checked="true"' : "") + ' id="PersistentHide" type="checkbox"/><label style="display:inline;" for="PersistentHide"> Always hide the userblock</label>';
+            htmlStr += '<br /><input ' + (_this.Options.HidePoints.Value ? 'checked="true"' : "") + ' id="HidePoints" type="checkbox"/><label style="display:inline;" for="HidePoints"> Hide contribution points</label>';
 
             return htmlStr;
         },
     },
 };
-/// END Fix user-block position ///
+/// END User-block fixes ///
 
 /// Comment Filter:  Choose keywords to filter comments by hiding or removing them. ///
 AVE.Modules['CommentFilter'] = {
@@ -6466,7 +6480,6 @@ AVE.Modules['Dashboard'] = {
 
             $.each(_this.Modules, function (id, name) {
                 /*
-                 Usertags (delete, add(list","), update)
                  Subverse list (rearrange, delete, update, add(list",")
                  ToggleCustomStyle (stored subverse and if show or hide)
                  */
@@ -6535,6 +6548,7 @@ AVE.Modules['Dashboard'] = {
             $("a[id^='AVE_Dashboard_Show']").show();
 
             $("a#AVE_ShowDashboard").text("Hide Dashboard");
+            document.title = "Manage AVE's Data";
             location.hash = "#dashboard";
         } else {
             JqMain.show();
@@ -6542,6 +6556,7 @@ AVE.Modules['Dashboard'] = {
             $("a[id^='AVE_Dashboard_Show']").hide();
 
             $("a#AVE_ShowDashboard").text("Show Dashboard");
+            document.title = "Manage Account";
             location.hash = "";
         }
     }

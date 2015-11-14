@@ -1,7 +1,7 @@
 AVE.Modules['UserInfoFixedPos'] = {
     ID: 'UserInfoFixedPos',
-    Name: 'Fix user-block position',
-    Desc: 'Set the user info block\'s position as fixed.',
+    Name: 'User-block fixes',
+    Desc: 'Minor fixes to the userblock.',
     Category: 'Fixes',
 
     Index: 100,
@@ -25,6 +25,10 @@ AVE.Modules['UserInfoFixedPos'] = {
             Value: true,
         },
         PersistentHide: {
+            Type: 'boolean',
+            Value: false,
+        },
+        HidePoints: {
             Type: 'boolean',
             Value: false,
         },
@@ -84,6 +88,11 @@ AVE.Modules['UserInfoFixedPos'] = {
 
         if (this.Options.PersistentHide.Value) {
             $("div#AVE_ToggleUserBlock").click();
+        }
+
+        if (this.Options.HidePoints.Value){
+            var html = $("a[title='Profile']")[0].outerHTML;
+            $("span.user:first").html(html);
         }
 
         this.bg = $("div#header-container").css("background-color") + " " +
@@ -191,6 +200,7 @@ div#header-container {z-index: 2;}\
             htmlStr += '<input ' + (_this.Options.DivideBlock.Value ? 'checked="true"' : "") + ' id="DivideBlock" type="checkbox"/><label style="display:inline;" for="DivideBlock"> Do you want the header account separated- username and numbers at the top and icons below?</label>';
             htmlStr += '<br /><input ' + (_this.Options.ToggleBlock.Value ? 'checked="true"' : "") + ' id="ToggleBlock" type="checkbox"/><label style="display:inline;" for="ToggleBlock"> Show icon to toggle hide/show the user block.</label>';
             htmlStr += '<br /><input ' + (_this.Options.PersistentHide.Value ? 'checked="true"' : "") + ' id="PersistentHide" type="checkbox"/><label style="display:inline;" for="PersistentHide"> Always hide the userblock</label>';
+            htmlStr += '<br /><input ' + (_this.Options.HidePoints.Value ? 'checked="true"' : "") + ' id="HidePoints" type="checkbox"/><label style="display:inline;" for="HidePoints"> Hide contribution points</label>';
 
             return htmlStr;
         },
