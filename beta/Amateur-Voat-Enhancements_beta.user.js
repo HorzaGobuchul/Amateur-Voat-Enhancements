@@ -8,7 +8,7 @@
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.28.2.3
+// @version     2.28.2.5
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1076,6 +1076,10 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.28.2.5",
+        "   Dashboard:",
+        "       Displaying the dashboard changes the page's title",
+        "       Usertag: fixed issue with arrow keys changing page even while editing a value",
         "V2.28.2.3",
         "   UserInfoFixedPos:",
         "       Renamed module and changed its description to be more general",
@@ -2115,20 +2119,24 @@ table#formTable{\
             $(document)
                 .off()
                 .on("keyup", function (event) { //navigate with arrow keys
-                    var ctrl, pos;
+                    var ctrl, pos, input;
                     ctrl= event.ctrlKey;
 
-                    if (event.which === 37){
-                        pos = (ctrl ? "first" : "prev");
-                    } else if (event.which === 39){
-                        pos = (ctrl ? "last" : "next");
-                    }
-                    if (pos){
-                        $('a#AVE_Dashboard_navigate_tags[role="'+ pos +'"]:first').trigger("click");
+                    input = $("input#AVE_Dashboard_usertag_quickedit");
+
+                    if (input.length === 0){
+                        //We don't want to change page when a user is using the arrow key to edit a value
+                        if (event.which === 37){
+                            pos = (ctrl ? "first" : "prev");
+                        } else if (event.which === 39){
+                            pos = (ctrl ? "last" : "next");
+                        }
+                        if (pos){
+                            $('a#AVE_Dashboard_navigate_tags[role="'+ pos +'"]:first').trigger("click");
+                        }
                     }
 
                     if (event.which === 13){ //Press enter to save tag
-                        var input = $("input#AVE_Dashboard_usertag_quickedit");
                         _this.editTag(input, input.attr("data"));
                     }
                 });

@@ -59,6 +59,10 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.28.2.5",
+        "   Dashboard:",
+        "       Displaying the dashboard changes the page's title",
+        "       Usertag: fixed issue with arrow keys changing page even while editing a value",
         "V2.28.2.3",
         "   UserInfoFixedPos:",
         "       Renamed module and changed its description to be more general",

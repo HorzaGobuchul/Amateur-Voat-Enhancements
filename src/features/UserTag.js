@@ -746,20 +746,24 @@ table#formTable{\
             $(document)
                 .off()
                 .on("keyup", function (event) { //navigate with arrow keys
-                    var ctrl, pos;
+                    var ctrl, pos, input;
                     ctrl= event.ctrlKey;
 
-                    if (event.which === 37){
-                        pos = (ctrl ? "first" : "prev");
-                    } else if (event.which === 39){
-                        pos = (ctrl ? "last" : "next");
-                    }
-                    if (pos){
-                        $('a#AVE_Dashboard_navigate_tags[role="'+ pos +'"]:first').trigger("click");
+                    input = $("input#AVE_Dashboard_usertag_quickedit");
+
+                    if (input.length === 0){
+                        //We don't want to change page when a user is using the arrow key to edit a value
+                        if (event.which === 37){
+                            pos = (ctrl ? "first" : "prev");
+                        } else if (event.which === 39){
+                            pos = (ctrl ? "last" : "next");
+                        }
+                        if (pos){
+                            $('a#AVE_Dashboard_navigate_tags[role="'+ pos +'"]:first').trigger("click");
+                        }
                     }
 
                     if (event.which === 13){ //Press enter to save tag
-                        var input = $("input#AVE_Dashboard_usertag_quickedit");
                         _this.editTag(input, input.attr("data"));
                     }
                 });
