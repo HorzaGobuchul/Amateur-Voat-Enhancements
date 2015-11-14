@@ -5,7 +5,7 @@ AVE.Modules['Dashboard'] = {
     Category: null,
     //Category set to null will make this module invisible to the pref-mngr
 
-    Index: 100,
+    Index: 1000,
     Enabled: false,
 
     Store: {},
@@ -30,10 +30,10 @@ AVE.Modules['Dashboard'] = {
     Start: function () {
         this.AppendToPage();
         this.Listeners();
-    },
 
-    UpdateData: function () {
-        this.Start();
+        if(location.hash === "#dashboard"){
+            $("a#AVE_ShowDashboard:first").trigger("click");
+        }
     },
 
     AppendToPage: function () {
@@ -42,7 +42,7 @@ AVE.Modules['Dashboard'] = {
         var _this = this;
 
         if ($("a#AVE_ShowDashboard").length === 0){
-            TempHtml = '<ul class="tabmenu"><li class="selected"><a id="AVE_ShowDashboard" style="font-weight: bold;margin-right: 20px;" title="Show AVE\'s dashboard" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub">Dashboard</a>';
+            TempHtml = '<ul class="tabmenu"><li class="selected"><a id="AVE_ShowDashboard" style="font-weight: bold;margin-right: 20px;" title="Show AVE\'s dashboard" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub">Show dashboard</a>';
 
 
             $.each(_this.Modules, function (id, name) {
@@ -113,13 +113,17 @@ AVE.Modules['Dashboard'] = {
         if (JqMain.is(":visible")){
             JqMain.hide();
             JqNew.show();
-            //$("a#AVE_ShowDashboard").css("background", "transparent -moz-linear-gradient(center top , #A43A3A, #993030) repeat scroll 0% 0%");
             $("a[id^='AVE_Dashboard_Show']").show();
+
+            $("a#AVE_ShowDashboard").text("Hide Dashboard");
+            location.hash = "#dashboard";
         } else {
             JqMain.show();
             JqNew.hide();
-            //$("a#AVE_ShowDashboard").css("background", "");//"transparent -moz-linear-gradient(center top , #4B4B4B, #454545) repeat scroll 0% 0%");
             $("a[id^='AVE_Dashboard_Show']").hide();
+
+            $("a#AVE_ShowDashboard").text("Show Dashboard");
+            location.hash = "";
         }
     }
 };

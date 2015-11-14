@@ -59,6 +59,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.28.1.2",
+        "   Dashboard:",
+        "       Implemented a manager for the Usertag module",
         "V2.28.0.2",
         "   New feature: Dashboard",
         "       Use it to manage your saved data",

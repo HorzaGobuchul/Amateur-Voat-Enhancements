@@ -88,7 +88,7 @@ input.UserTagTextInput{\
     height:20px;\
     padding-left:5px;\
 }\
-tr#ShowPreview > td > span#PreviewBox {\
+td > span#PreviewBox {\
     display: inline-block;\
     max-width: 130px;\
     overflow: hidden;\
@@ -300,7 +300,7 @@ table#formTable{\
             function () {
                 $("#UserTagBox").hide();
         });
-        //Show in the preview box the tag
+        //Show the tag in the preview box
         JqId1.off('keyup')
              .on('keyup', function () {
             $("tr#ShowPreview > td > span#PreviewBox").text($(this).val());
@@ -351,7 +351,7 @@ table#formTable{\
                 }
             }
             if (e.which === 27 && $("#UserTagBox").is(":visible")) {
-                $("div#UserTagHeader > span > a#CloseTagWin").click();
+                //$("div#UserTagHeader > span > a#CloseTagWin").click();
                 $("#UserTagBox").hide();
             }
         });
@@ -486,7 +486,7 @@ table#formTable{\
         CSSselector: "",
 
         MouseOverColours: [],
-
+        //' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + '
         init: function () {
             this.tableCSS = '\
                 table#AVE_Dashboard_usertags_table{\
@@ -495,7 +495,7 @@ table#formTable{\
                 table#AVE_Dashboard_usertags_table > thead > tr {\
                     font-size: 14px;\
                     padding-bottom: 10px;\
-                    margin-bottom: 10px;\
+                    margin-bottom: 20px;\
                 }\
                 table#AVE_Dashboard_usertags_table > thead > tr > th{\
                     text-align: center;\
@@ -508,26 +508,35 @@ table#formTable{\
                     padding-top: 5px;\
                     border-top : 1px solid #'+(AVE.Utils.CSSstyle === "dark" ? "3F3F3F" : "DDD")+';\
                     text-align: center;\
+                    margin\
                 }\
-                table#AVE_Dashboard_usertags_table > tbody > tr > td:first-child{\
+                table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(1){\
                     font-weight: bold;\
                     text-align: left;\
                 }\
                 table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(2){\
                     text-align: left;\
-                    max-width: 150px;\
+                    max-width: 100px;\
                     overflow: hidden;\
                     text-overflow: ellipsis;\
                     white-space: nowrap;\
+                    padding-right: 10px;\
                 }\
                 table#AVE_Dashboard_usertags_table > tbody > tr > td:last-child{\
                     border-left : 1px solid #'+(AVE.Utils.CSSstyle === "dark" ? "3F3F3F" : "DDD")+';\
-                    font-weight: bold;\
-                    color: red;\
+                    height: 14px;\
+                    width: 14px;\
+                    /* SVG from Jquery Mobile Icon Set */\
+                    background-image:url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpolygon%20fill%3D%22%23' + (AVE.Utils.CSSstyle === "dark" ? "af3f3f" : "ce6d6d") + '%22%20points%3D%2214%2C3%2011%2C0%207%2C4%203%2C0%200%2C3%204%2C7%200%2C11%203%2C14%207%2C10%2011%2C14%2014%2C11%2010%2C7%20%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E")!important;\
+                    background-repeat: no-repeat;\
+                    display: inline-block;\
                     cursor: pointer;\
                 }\
                 a#AVE_Dashboard_navigate_tags[role]{\
                     margin: 0px 5px 10px 0px;\
+                }\
+                td > span#PreviewBox {\
+                    margin: -2px 0px -2px 0px;\
                 }';
             AVE.Utils.AddStyle(this.tableCSS);
 
@@ -547,9 +556,9 @@ table#formTable{\
             //Empty container
             this.usertags = [];
 
-
-            var _this, tempObj, tempUsertags, keys, htmlStr;
+            var _this, tempObj, tempUsertags, keys, htmlStr, start;
             _this = this;
+            start  = this.currpage*this.tagsperpage;
             htmlStr = "";
 
             AVE.Utils.SendMessage({ request: "Storage", type: "Update"});
@@ -558,7 +567,13 @@ table#formTable{\
             keys.sort();
 
             //Remove all tags (prompt confirm)
-            //Add a list of tags in JSON format (accept as long as the tag property exists)
+            //Add a list of tags in JSON format (accept as long as the tag property exists) -> prompt input -> confirm (add X new tags?)
+            //Add a list of tags (accept as long as the tag property exists) -> prompt input (format=("name1:tag1,name2:tag2 name3:tag3;name4:tag4")) -> confirm (add X new tags?)
+            //  Try to parse as JSON first
+            //Export everything: prompt("Copy the value below:", value)
+            //Batch delete:
+            //  replaces crosses with checkboxes at the right side and adds a remove button below above and below the table (right side)
+            //Remove a batch from a list of username -> prompt input (sep=[ ,;])
             //Search function (by name, tag, colour, ignored, vote balance (< and >)
             //  Process _this.usertags to keep only usertags matching the search
             //  Paging function returning this.paging(0, this.tagsperpage);
@@ -575,8 +590,6 @@ table#formTable{\
                 _this.usertags.push( JSON.stringify( tempObj ) );
 
             });
-
-            var start  = this.currpage*this.tagsperpage;
 
             var htmlNavButtons = "";
             htmlNavButtons += '<div style="float: left;">' +
@@ -599,12 +612,12 @@ table#formTable{\
                             '<thead>' +
                                 '<tr>' +
                                     '<th>Username</th>' +
-                                    '<th>Tag</th>' +
-                                    '<th>Colour</th>' +
-                                    '<th>Ignored</th>' +
-                                    '<th>Vote balance</th>' +
+                                    '<th>Tag</th>' +            //click to show input box
+                                    '<th>Colour</th>' +         //click to show color picker
+                                    '<th>Ignored</th>' +        //click to toggle ignore
+                                    '<th>Vote balance</th>' +   //click to show input box
                                     '<th>Preview</th>' +
-                                    '<th>Remove</th>' +
+                                    '<th role="remove"></th>' +
                                 '</tr>' +
                             '</thead>';
             htmlTable +=    this.paging(start, this.tagsperpage);
@@ -612,24 +625,101 @@ table#formTable{\
 
             htmlStr += htmlTable;
 
-            htmlStr += '<div style="text-align: right;margin-bottom:10px;">Showing tags '+ (start+1)+' to '+ Math.min(this.usertags.length, start+this.tagsperpage) +' (total: '+this.usertags.length+')</div>';
+            htmlStr += '<div style="text-align: right;margin-bottom:10px;">Showing tags '+ (start+1)+' to '+ Math.min(this.usertags.length, start+this.tagsperpage) +' ('+this.usertags.length+' total)</div>';
 
             htmlStr += htmlNavButtons;
+
+            htmlStr +='<br><div style="margin-top:20px;font-weight:bold;">Click on a value to modify it.'+
+                '<br> Click the buttons on either sides to navigate through the table pages or use the arrow keys (+Ctrl to go to the first or last page)</div>';
 
             return htmlStr;
         },
         callback: function () {
             "use strict";
             var _this = this;
-            $('table#AVE_Dashboard_usertags_table > tbody > tr > td:last-child')
+            $('table#AVE_Dashboard_usertags_table > tbody > tr > td:last-child') //remove
                 .off()
                 .on("mouseover", function () {
                     $(this).parent().css("background", _this.MouseOverColours[1]);
                 })
                 .on("mouseleave", function () {
                     $(this).parent().css("background", "");
+                })
+                .on("click", function () {
+                    var name = $(this).parent().attr("username");
+                    if (confirm("Are you sure you want to delete "+name+"'s tag?")){
+                        _this.module.RemoveTag(name);
+                        $(_this.CSSselector).trigger("click");
+                    }
                 });
-            $('a#AVE_Dashboard_navigate_tags')
+            $('table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(2)') //edit tag
+                .off()
+                .on("click", function (e, artificial) {
+                    var tag = $(this).text() || $(this).find("input").val();
+
+                    if ($(this).find("input").length === 0){
+                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="tag" style="width:100%;" type="text" original="'+tag+'" value="'+tag+'">');
+                        var input = $(this).find("input");
+                        input.focus().select();
+                        input.on("focusout", function () {
+                            input.val(input.attr("original"));
+                            $(this).trigger("click", true);
+                        });
+                    } else {
+                        if (!artificial) {return;}//we don't want to lose the focus because of a click in the same input text
+                        $(this).find("input").off();
+                        $(this).html('<span title="'+tag+'">'+tag+'</span>');
+                    }
+                });
+            $('table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(3)') //edit colour
+                .off()
+                .on("click", function (e, artificial) {
+                    var colour = $(this).text() || $(this).find("input").val();
+
+                    if ($(this).find("input").length === 0){
+                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="colour" style="width:40px;" type="text" original="'+colour+'" value="'+colour+'">');
+                        var input = $(this).find("input");
+                        input.focus().select();
+                        input.on("focusout", function () {
+                            input.val(input.attr("original"));
+                            $(this).trigger("click", true);
+                        });
+                    } else {
+                        if (!artificial) {return;}//we don't want to lose the focus by a click in the same input text
+                        $(this).find("input").off();
+                        $(this).html('<span title="'+colour+'">'+colour+'</span>');
+                    }
+                });
+            $('table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(4)') //edit ignore
+                .off()
+                .on("click", function () {
+                    var ignore, newval;
+                    ignore = $(this).text();
+                    newval = ignore === "No" ? "Yes" : "No";
+
+                    $(this).text(newval);
+                    _this.editTag($(this), "ignore");
+                });
+            $('table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(5)') //edit vote-balance
+                .off()
+                .on("click", function (e, artificial) {
+                    var balance = $(this).text() || $(this).find("input").val();
+
+                    if ($(this).find("input").length === 0){
+                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="balance" style="width:50px;" type="number" original="'+balance+'" value="'+balance+'" step="1">');
+                        var input = $(this).find("input");
+                        input.focus().select();
+                        input.on("focusout", function () {
+                            input.val(input.attr("original"));
+                            $(this).trigger("click", true);
+                        });
+                    } else {
+                        if (!artificial) {return;}//we don't want to lose the focus by a click in the same input text
+                        $(this).find("input").off();
+                        $(this).html(balance);
+                    }
+                });
+            $('a#AVE_Dashboard_navigate_tags') //navigate with buttons
                 .off()
                 .on("click", function () {
                     if ($(this).hasClass("btn-unsub")){return false;}
@@ -655,7 +745,7 @@ table#formTable{\
                 });
             $(document)
                 .off()
-                .on("keyup", function (event) {
+                .on("keyup", function (event) { //navigate with arrow keys
                     var ctrl, pos;
                     ctrl= event.ctrlKey;
 
@@ -664,13 +754,58 @@ table#formTable{\
                     } else if (event.which === 39){
                         pos = (ctrl ? "last" : "next");
                     }
-                    $('a#AVE_Dashboard_navigate_tags[role="'+ pos +'"]:first').trigger("click");
+                    if (pos){
+                        $('a#AVE_Dashboard_navigate_tags[role="'+ pos +'"]:first').trigger("click");
+                    }
 
+                    if (event.which === 13){ //Press enter to save tag
+                        var input = $("input#AVE_Dashboard_usertag_quickedit");
+                        _this.editTag(input, input.attr("data"));
+                    }
                 });
         },
 
+        editTag: function (input, dtype) {
+            var _this = this;
+
+            if (input.length === 1){
+                if (input.attr("original") === input.val() && dtype !== "ignore"){input.trigger("click", true);return;}//No need to update nor reload if nothing changed
+                var root, tag, usertag;
+
+                root = input.parents("tr:first");
+
+                usertag = {};
+                usertag.username = root.attr("username");
+                usertag.ignore   = root.find("td[data='ignore']").text() === "Yes";
+
+                if (dtype === "tag"){
+                    usertag.tag = input.val();
+                } else {
+                    usertag.tag = root.find("td[data='tag']").text();
+                }
+
+                if (dtype === "colour"){
+                    usertag.colour = input.val() || input.attr("original");
+                } else {
+                    usertag.colour = root.find("td[data='colour']").text();
+                }
+
+                if (dtype === "balance"){
+                    var newval = input.val();
+                    usertag.balance = parseInt((isNaN(newval) || newval === "") ? input.attr("original") : input.val(), 10);
+                } else {
+                    usertag.balance = parseInt(root.find("td[data='balance']").text(), 10);
+                }
+
+                _this.module.SetTag(usertag); //save tag
+                print(JSON.stringify(usertag));
+
+                $(_this.CSSselector).trigger("click"); //Reload-update
+            }
+        },
+
         paging: function (start, nb) {
-            var colour, r, g, b;
+            var colour, r, g, b, bestColour;
 
             var htmlStr = "";
             var obj = {};
@@ -680,24 +815,25 @@ table#formTable{\
 
                 obj = JSON.parse(this.usertags[i]);
 
-                htmlStr += "<tr>";
-
                 colour = AVE.Utils.GetRGBvalues(obj.colour);
-                r = colour[0], g = colour[1], b = colour[2];
+                r = colour[0]; g = colour[1]; b = colour[2];
+                bestColour = AVE.Utils.GetBestFontColour(r, g, b);
 
-                //click value to edit it
-                //click X at the end of line to remove it (prompt comfirm)
-                htmlStr +=  '<td><a href="/user/'+obj.name+'" >'+obj.name+'</a></td>' +
-                            '<td><span title="'+obj.tag+'">'+obj.tag+'</span></td>' +
-                            '<td style="background-color:'+obj.colour+'; color:'+AVE.Utils.GetBestFontColour(r, g, b)+';">'+obj.colour+'</td>' +
-                            '<td>'+obj.ignored+'</td>' +
-                            '<td>'+obj.balance+'</td>' +
-                            '<td><span username="'+obj.name+'" id="AVE_Dashboard_usertag_td_preview" ></span></td>' +
-                            '<td>X</td>';
-
+                htmlStr += '<tr username="'+obj.name+'">';
+                htmlStr +=      '<td><a href="/user/'+obj.name+'" >'+obj.name+'</a></td>' +
+                                '<td data="tag"><span title="'+obj.tag+'">'+obj.tag+'</span></td>' +
+                                '<td data="colour" style="background-color:'+obj.colour+'; color:'+bestColour+';">'+obj.colour+'</td>' +
+                                '<td data="ignore">'+obj.ignored+'</td>' +
+                                '<td data="balance">'+obj.balance+'</td>' +
+                                '<td><span id="PreviewBox" style="background-color:'+obj.colour+';color:'+bestColour+';">'+obj.tag+'</span></td>' +
+                                '<td role="remove_icon"></td>';
                 htmlStr += "</tr>";
             }
             return htmlStr;
+        },
+
+        destructor: function () {
+            //set all listeners to off
         }
     }
 };

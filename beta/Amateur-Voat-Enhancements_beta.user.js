@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2015-11-12
+// @date        2015-11-14
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.27.0.2
+// @version     2.28.1.2
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -117,11 +117,11 @@ AVE.Init = {
         //var module = AVE.Modules[ID];s
         //print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")");
         
-        //AVE.Modules[ID].Load();
+        AVE.Modules[ID].Load();
 
         //var ntime = 0; var time = Date.now();
-        try { AVE.Modules[ID].Load(); }
-        catch (e) {print("AVE: Error loading " + ID);}
+        //try { AVE.Modules[ID].Load(); }
+        //catch (e) {print("AVE: Error loading " + ID);}
         //ntime =  Date.now();
         //print("updated > " + AVE.Modules[ID].ID + " (" + (ntime - time) + "ms)");
     },
@@ -254,6 +254,16 @@ AVE.Utils = {
         return (o > 125) ? 'black' : 'white';
     },
 
+    GetRGBvalues: function (colour) {
+        var r, g, b;
+        //from www.javascripter.net/faq/hextorgb.htm
+        r = parseInt(colour.substring(1, 3), 16);
+        g = parseInt(colour.substring(3, 5), 16);
+        b = parseInt(colour.substring(5, 7), 16);
+
+        return [r, g, b];
+    },
+
     AddStyle: function (StyleStr) {
         if ($("style[for='AVE']").length === 0) { $("head").append('<style for="AVE"></style>'); }
         $("style[for='AVE']").append("\n" + StyleStr);
@@ -313,7 +323,6 @@ AVE.Utils = {
 function print(str) { console.log(str); }
 //Thanks to Paolo Bergantino https://stackoverflow.com/questions/965816/what-jquery-selector-excludes-items-with-a-parent-that-matches-a-given-selector#answer-965962
 jQuery.expr[':'].parents = function (a, i, m) { return jQuery(a).parents(m[3]).length < 1; };
-
 //Might be overkill, but I need to be able to disconnect the listener before updating.
 var OnNodeChange = (function () {
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
@@ -602,7 +611,10 @@ AVE.Modules['PreferenceManager'] = {
             <div class="overlay">\
                 <div class="MngrWin" id="MngWin">\
                     <div class="MngWinHeader">\
-                        <span class="MngrWinTitle"><a target="_blank" href="https://voat.co/v/AVE">AVE</a></span> <span style="cursor:pointer;font-size:10px;" id="AVE_Version">Version @{version}</span>\
+                        <span class="MngrWinTitle">\
+                            <a target="_blank" href="/v/AVE">AVE</a></span>\
+                        <span style="cursor:pointer;font-size:10px;" id="AVE_Version">Version @{version}</span>\
+                        <span style="font-size: 10px;margin-left: 25px;"><a target="_blank" href="/account/manage#dashboard">Dashboard</a></span>\
                         <div class="TopButtons">\
                             <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-unsub" id="SaveData">Save Changes</a>\
                             <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default" id="CloseWinMngr">x</a>\
@@ -1064,6 +1076,16 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.28.1.2",
+        "   Dashboard:",
+        "       Implemented a manager for the Usertag module",
+        "V2.28.0.2",
+        "   New feature: Dashboard",
+        "       Use it to manage your saved data",
+        "   RememberCommentCount:",
+        "       The purging function will now delete 1/8th of the maximum stored values at once every time this max is reached",
+        "   VersionNotifier:",
+        "       The changelog box can now be closed by pressing \"Escape\"",
         "V2.27.0.2",
         "   RememberCommentCount:",
         "       Changed default highlight colour for the light theme to #ffffcf",
@@ -1243,6 +1265,12 @@ AVE.Modules['VersionNotifier'] = {
             VersionBox.hide("slow");
             _this.Store.SetValue(_this.Store.Prefix + _this.ID + "_Version", AVE.Utils.MetaData.version);
         });
+
+        $(window).on("keyup", function (e) {
+            if (e.which === 27 && $("div.VersionBox").is(":visible")) {
+                $("div.VersionBoxClose").trigger("click");
+            }
+        });
     },
 };
 /// END Version notifier ///
@@ -1360,7 +1388,7 @@ AVE.Modules['UserTag'] = {
             Type: 'boolean',
             Desc: 'Track votes and display the vote balance next to usernames.',
             Value: true
-        },
+        }
     },
     //Possible issues with the fact that the username in the profil overview is in lower case
     UserTagObj: function (tag, colour, ignored, balance) {
@@ -1425,7 +1453,7 @@ input.UserTagTextInput{\
     height:20px;\
     padding-left:5px;\
 }\
-tr#ShowPreview > td > span#PreviewBox {\
+td > span#PreviewBox {\
     display: inline-block;\
     max-width: 130px;\
     overflow: hidden;\
@@ -1637,7 +1665,7 @@ table#formTable{\
             function () {
                 $("#UserTagBox").hide();
         });
-        //Show in the preview box the tag
+        //Show the tag in the preview box
         JqId1.off('keyup')
              .on('keyup', function () {
             $("tr#ShowPreview > td > span#PreviewBox").text($(this).val());
@@ -1688,7 +1716,7 @@ table#formTable{\
                 }
             }
             if (e.which === 27 && $("#UserTagBox").is(":visible")) {
-                $("div#UserTagHeader > span > a#CloseTagWin").click();
+                //$("div#UserTagHeader > span > a#CloseTagWin").click();
                 $("#UserTagBox").hide();
             }
         });
@@ -1766,35 +1794,30 @@ table#formTable{\
     },
 
     RemoveTag: function (username) {
-        var _this = this;
-        delete _this.usertags[username];
+        delete this.usertags[username];
 
-        _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.usertags));
+        this.Store.SetValue(this.StorageName, JSON.stringify(this.usertags));
     },
 
     SetTag: function (opt) {
-        var _this = this;
-        _this.usertags[opt.username] = new _this.UserTagObj(opt.tag, opt.colour, opt.ignore, opt.balance);
+        this.usertags[opt.username] = new this.UserTagObj(opt.tag, opt.colour, opt.ignore, opt.balance);
 
-        _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.usertags));
+        this.Store.SetValue(this.StorageName, JSON.stringify(this.usertags));
     },
 
     GetTag: function (userName) {
-        var _this = this;
-        return _this.usertags[userName] || false;
+        return this.usertags[userName] || false;
     },
 
     GetTagCount: function () {
         return this.usertags.length;
     },
 
-    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+    AppendToPreferenceManager: {
         html: function () {
             var _this = AVE.Modules['UserTag'];
             if (_this.Enabled) {
-                var TagLen = 0;
-                var VoteLen = 0;
-                var IgnoreLen = 0;
+                var TagLen = 0, VoteLen = 0, IgnoreLen = 0;
                 var htmlStr = "";
 
                 $.each(_this.usertags, function (key, value) {
@@ -1812,10 +1835,372 @@ table#formTable{\
                 //  Seeing as this.usertags is ordered oldest first, propose to remove X tags at the beginning of the list.
                 return htmlStr;
             }
+        }
+    },
+    
+    AppendToDashboard: {
+        tableCSS: '',
+        initialized: false,
+        module: {},
+        usertags: [],
+
+        //implement quick storage for these values?
+        tagsperpage: 20,
+        currpage: 0,
+
+        CSSselector: "",
+
+        MouseOverColours: [],
+        //' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + '
+        init: function () {
+            this.tableCSS = '\
+                table#AVE_Dashboard_usertags_table{\
+                    width: 100%;\
+                }\
+                table#AVE_Dashboard_usertags_table > thead > tr {\
+                    font-size: 14px;\
+                    padding-bottom: 10px;\
+                    margin-bottom: 20px;\
+                }\
+                table#AVE_Dashboard_usertags_table > thead > tr > th{\
+                    text-align: center;\
+                    font-weight: bold;\
+                }\
+                table#AVE_Dashboard_usertags_table > tbody > tr:hover {\
+                    background-color: '+(AVE.Utils.CSSstyle === "dark" ? "#484648" : "#EDE9E9")+';\
+                }\
+                table#AVE_Dashboard_usertags_table > tbody > tr > td{\
+                    padding-top: 5px;\
+                    border-top : 1px solid #'+(AVE.Utils.CSSstyle === "dark" ? "3F3F3F" : "DDD")+';\
+                    text-align: center;\
+                    margin\
+                }\
+                table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(1){\
+                    font-weight: bold;\
+                    text-align: left;\
+                }\
+                table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(2){\
+                    text-align: left;\
+                    max-width: 100px;\
+                    overflow: hidden;\
+                    text-overflow: ellipsis;\
+                    white-space: nowrap;\
+                    padding-right: 10px;\
+                }\
+                table#AVE_Dashboard_usertags_table > tbody > tr > td:last-child{\
+                    border-left : 1px solid #'+(AVE.Utils.CSSstyle === "dark" ? "3F3F3F" : "DDD")+';\
+                    height: 14px;\
+                    width: 14px;\
+                    /* SVG from Jquery Mobile Icon Set */\
+                    background-image:url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpolygon%20fill%3D%22%23' + (AVE.Utils.CSSstyle === "dark" ? "af3f3f" : "ce6d6d") + '%22%20points%3D%2214%2C3%2011%2C0%207%2C4%203%2C0%200%2C3%204%2C7%200%2C11%203%2C14%207%2C10%2011%2C14%2014%2C11%2010%2C7%20%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E")!important;\
+                    background-repeat: no-repeat;\
+                    display: inline-block;\
+                    cursor: pointer;\
+                }\
+                a#AVE_Dashboard_navigate_tags[role]{\
+                    margin: 0px 5px 10px 0px;\
+                }\
+                td > span#PreviewBox {\
+                    margin: -2px 0px -2px 0px;\
+                }';
+            AVE.Utils.AddStyle(this.tableCSS);
+
+            this.MouseOverColours.push(AVE.Utils.CSSstyle === "dark" ? "#484648" : "#EDE9E9");
+            this.MouseOverColours.push(AVE.Utils.CSSstyle === "dark" ? "#534040" : "#FFC9C9");
+
+            this.module = AVE.Modules['UserTag'];
+
+            this.CSSselector = "a[id^='AVE_Dashboard_Show'][name='"+this.module.ID+"']";
+
+            this.initialized = true;
+        },
+
+        html: function () {
+            if (!this.initialized){this.init();}
+
+            //Empty container
+            this.usertags = [];
+
+            var _this, tempObj, tempUsertags, keys, htmlStr, start;
+            _this = this;
+            start  = this.currpage*this.tagsperpage;
+            htmlStr = "";
+
+            AVE.Utils.SendMessage({ request: "Storage", type: "Update"});
+            tempUsertags = JSON.parse(this.module.Store.GetValue(this.module.StorageName, "{}"));
+            keys = Object.keys(tempUsertags);
+            keys.sort();
+
+            //Remove all tags (prompt confirm)
+            //Add a list of tags in JSON format (accept as long as the tag property exists) -> prompt input -> confirm (add X new tags?)
+            //Add a list of tags (accept as long as the tag property exists) -> prompt input (format=("name1:tag1,name2:tag2 name3:tag3;name4:tag4")) -> confirm (add X new tags?)
+            //  Try to parse as JSON first
+            //Export everything: prompt("Copy the value below:", value)
+            //Batch delete:
+            //  replaces crosses with checkboxes at the right side and adds a remove button below above and below the table (right side)
+            //Remove a batch from a list of username -> prompt input (sep=[ ,;])
+            //Search function (by name, tag, colour, ignored, vote balance (< and >)
+            //  Process _this.usertags to keep only usertags matching the search
+            //  Paging function returning this.paging(0, this.tagsperpage);
+            //Order by: username, tag, ignored, votebalance (username default and secondary always)
+            //Paging function (default)
+
+            $.each(keys, function (idx, key) {
+
+                tempObj = tempUsertags[key];
+                if (tempObj.tag.length === 0 && tempObj.ignored === false) { return true; } //Don't show empty tags
+
+                tempObj.name = key;
+                tempObj.ignored = tempObj.ignored ? "Yes" : "No";
+                _this.usertags.push( JSON.stringify( tempObj ) );
+
+            });
+
+            var htmlNavButtons = "";
+            htmlNavButtons += '<div style="float: left;">' +
+                '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="first" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage === 0 ? "btn-unsub" : "btn-sub" ) +'">First</a>' +
+                '</div>';
+            htmlNavButtons += '<div style="float: left;">' +
+                            '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="prev" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage === 0 ? "btn-unsub" : "btn-sub" ) +'">Previous</a>' +
+                        '</div>';
+            htmlNavButtons += '<div style="float: right;">' +
+                '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="last" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage >= Math.ceil((this.usertags.length-this.tagsperpage)/this.tagsperpage) ? "btn-unsub" : "btn-sub" ) +'">Last</a>' +
+                '</div>';
+            htmlNavButtons += '<div style="float: right;">' +
+                '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="next" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage >= Math.ceil((this.usertags.length-this.tagsperpage)/this.tagsperpage) ? "btn-unsub" : "btn-sub" ) +'">Next</a>' +
+                '</div>';
+
+            htmlStr += htmlNavButtons;
+
+            var htmlTable = "";
+            htmlTable += '<table id="AVE_Dashboard_usertags_table">' +
+                            '<thead>' +
+                                '<tr>' +
+                                    '<th>Username</th>' +
+                                    '<th>Tag</th>' +            //click to show input box
+                                    '<th>Colour</th>' +         //click to show color picker
+                                    '<th>Ignored</th>' +        //click to toggle ignore
+                                    '<th>Vote balance</th>' +   //click to show input box
+                                    '<th>Preview</th>' +
+                                    '<th role="remove"></th>' +
+                                '</tr>' +
+                            '</thead>';
+            htmlTable +=    this.paging(start, this.tagsperpage);
+            htmlTable += "</table>";
+
+            htmlStr += htmlTable;
+
+            htmlStr += '<div style="text-align: right;margin-bottom:10px;">Showing tags '+ (start+1)+' to '+ Math.min(this.usertags.length, start+this.tagsperpage) +' ('+this.usertags.length+' total)</div>';
+
+            htmlStr += htmlNavButtons;
+
+            htmlStr +='<br><div style="margin-top:20px;font-weight:bold;">Click on a value to modify it.'+
+                '<br> Click the buttons on either sides to navigate through the table pages or use the arrow keys (+Ctrl to go to the first or last page)</div>';
+
+            return htmlStr;
         },
         callback: function () {
+            "use strict";
+            var _this = this;
+            $('table#AVE_Dashboard_usertags_table > tbody > tr > td:last-child') //remove
+                .off()
+                .on("mouseover", function () {
+                    $(this).parent().css("background", _this.MouseOverColours[1]);
+                })
+                .on("mouseleave", function () {
+                    $(this).parent().css("background", "");
+                })
+                .on("click", function () {
+                    var name = $(this).parent().attr("username");
+                    if (confirm("Are you sure you want to delete "+name+"'s tag?")){
+                        _this.module.RemoveTag(name);
+                        $(_this.CSSselector).trigger("click");
+                    }
+                });
+            $('table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(2)') //edit tag
+                .off()
+                .on("click", function (e, artificial) {
+                    var tag = $(this).text() || $(this).find("input").val();
+
+                    if ($(this).find("input").length === 0){
+                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="tag" style="width:100%;" type="text" original="'+tag+'" value="'+tag+'">');
+                        var input = $(this).find("input");
+                        input.focus().select();
+                        input.on("focusout", function () {
+                            input.val(input.attr("original"));
+                            $(this).trigger("click", true);
+                        });
+                    } else {
+                        if (!artificial) {return;}//we don't want to lose the focus because of a click in the same input text
+                        $(this).find("input").off();
+                        $(this).html('<span title="'+tag+'">'+tag+'</span>');
+                    }
+                });
+            $('table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(3)') //edit colour
+                .off()
+                .on("click", function (e, artificial) {
+                    var colour = $(this).text() || $(this).find("input").val();
+
+                    if ($(this).find("input").length === 0){
+                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="colour" style="width:40px;" type="text" original="'+colour+'" value="'+colour+'">');
+                        var input = $(this).find("input");
+                        input.focus().select();
+                        input.on("focusout", function () {
+                            input.val(input.attr("original"));
+                            $(this).trigger("click", true);
+                        });
+                    } else {
+                        if (!artificial) {return;}//we don't want to lose the focus by a click in the same input text
+                        $(this).find("input").off();
+                        $(this).html('<span title="'+colour+'">'+colour+'</span>');
+                    }
+                });
+            $('table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(4)') //edit ignore
+                .off()
+                .on("click", function () {
+                    var ignore, newval;
+                    ignore = $(this).text();
+                    newval = ignore === "No" ? "Yes" : "No";
+
+                    $(this).text(newval);
+                    _this.editTag($(this), "ignore");
+                });
+            $('table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(5)') //edit vote-balance
+                .off()
+                .on("click", function (e, artificial) {
+                    var balance = $(this).text() || $(this).find("input").val();
+
+                    if ($(this).find("input").length === 0){
+                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="balance" style="width:50px;" type="number" original="'+balance+'" value="'+balance+'" step="1">');
+                        var input = $(this).find("input");
+                        input.focus().select();
+                        input.on("focusout", function () {
+                            input.val(input.attr("original"));
+                            $(this).trigger("click", true);
+                        });
+                    } else {
+                        if (!artificial) {return;}//we don't want to lose the focus by a click in the same input text
+                        $(this).find("input").off();
+                        $(this).html(balance);
+                    }
+                });
+            $('a#AVE_Dashboard_navigate_tags') //navigate with buttons
+                .off()
+                .on("click", function () {
+                    if ($(this).hasClass("btn-unsub")){return false;}
+
+                    switch ($(this).attr('role')) {
+                        case "prev":
+                            _this.currpage--;
+                            break;
+                        case "next":
+                            _this.currpage++;
+                            break;
+                        case "first":
+                            _this.currpage = 0;
+                            break;
+                        case "last":
+                            _this.currpage = Math.ceil((_this.usertags.length - _this.tagsperpage) / _this.tagsperpage);
+                            break;
+                        default:
+                            return;
+                    }
+
+                    $(_this.CSSselector).trigger("click");
+                });
+            $(document)
+                .off()
+                .on("keyup", function (event) { //navigate with arrow keys
+                    var ctrl, pos;
+                    ctrl= event.ctrlKey;
+
+                    if (event.which === 37){
+                        pos = (ctrl ? "first" : "prev");
+                    } else if (event.which === 39){
+                        pos = (ctrl ? "last" : "next");
+                    }
+                    if (pos){
+                        $('a#AVE_Dashboard_navigate_tags[role="'+ pos +'"]:first').trigger("click");
+                    }
+
+                    if (event.which === 13){ //Press enter to save tag
+                        var input = $("input#AVE_Dashboard_usertag_quickedit");
+                        _this.editTag(input, input.attr("data"));
+                    }
+                });
         },
-    },
+
+        editTag: function (input, dtype) {
+            var _this = this;
+
+            if (input.length === 1){
+                if (input.attr("original") === input.val() && dtype !== "ignore"){input.trigger("click", true);return;}//No need to update nor reload if nothing changed
+                var root, tag, usertag;
+
+                root = input.parents("tr:first");
+
+                usertag = {};
+                usertag.username = root.attr("username");
+                usertag.ignore   = root.find("td[data='ignore']").text() === "Yes";
+
+                if (dtype === "tag"){
+                    usertag.tag = input.val();
+                } else {
+                    usertag.tag = root.find("td[data='tag']").text();
+                }
+
+                if (dtype === "colour"){
+                    usertag.colour = input.val() || input.attr("original");
+                } else {
+                    usertag.colour = root.find("td[data='colour']").text();
+                }
+
+                if (dtype === "balance"){
+                    var newval = input.val();
+                    usertag.balance = parseInt((isNaN(newval) || newval === "") ? input.attr("original") : input.val(), 10);
+                } else {
+                    usertag.balance = parseInt(root.find("td[data='balance']").text(), 10);
+                }
+
+                _this.module.SetTag(usertag); //save tag
+                print(JSON.stringify(usertag));
+
+                $(_this.CSSselector).trigger("click"); //Reload-update
+            }
+        },
+
+        paging: function (start, nb) {
+            var colour, r, g, b, bestColour;
+
+            var htmlStr = "";
+            var obj = {};
+
+            for (i=start; i <= start+nb-1; i++){
+                if (i >= this.usertags.length){break;}
+
+                obj = JSON.parse(this.usertags[i]);
+
+                colour = AVE.Utils.GetRGBvalues(obj.colour);
+                r = colour[0]; g = colour[1]; b = colour[2];
+                bestColour = AVE.Utils.GetBestFontColour(r, g, b);
+
+                htmlStr += '<tr username="'+obj.name+'">';
+                htmlStr +=      '<td><a href="/user/'+obj.name+'" >'+obj.name+'</a></td>' +
+                                '<td data="tag"><span title="'+obj.tag+'">'+obj.tag+'</span></td>' +
+                                '<td data="colour" style="background-color:'+obj.colour+'; color:'+bestColour+';">'+obj.colour+'</td>' +
+                                '<td data="ignore">'+obj.ignored+'</td>' +
+                                '<td data="balance">'+obj.balance+'</td>' +
+                                '<td><span id="PreviewBox" style="background-color:'+obj.colour+';color:'+bestColour+';">'+obj.tag+'</span></td>' +
+                                '<td role="remove_icon"></td>';
+                htmlStr += "</tr>";
+            }
+            return htmlStr;
+        },
+
+        destructor: function () {
+            //set all listeners to off
+        }
+    }
 };
 /// END User tagging ///
 
@@ -2963,6 +3348,30 @@ AVE.Modules['ToggleCustomStyle'] = {
         
         $(window).scrollTop(0);
     },
+
+    AppendToDashboard: {
+        initialized: false,
+        CSSselector: "",
+        module: {},
+
+        init: function () {
+            this.module = AVE.Modules['ToggleCustomStyle'];
+            this.CSSselector = "a[id^='AVE_Dashboard_Show'][name='"+this.module.ID+"']";
+            this.initialized = true;
+        },
+
+        html: function () {
+            if (!this.initialized){this.init();}
+            var htmlStr;
+
+            htmlStr = '<div>Dashboard functionalities for '+this.module.ID+' are not yet implemented.</div>';
+
+            return htmlStr;
+        },
+        callback: function () {
+            "use strict";
+        }
+    }
 };
 /// END Toggle subverse custom style ///
 
@@ -3325,14 +3734,38 @@ AVE.Modules['Shortcuts'] = {
 
         return this.isSubInShortcuts(AVE.Utils.subverseName);
     },
+
+    AppendToDashboard: {
+        initialized: false,
+        CSSselector: "",
+        module: {},
+
+        init: function () {
+            this.module = AVE.Modules['Shortcuts'];
+            this.CSSselector = "a[id^='AVE_Dashboard_Show'][name='"+this.module.ID+"']";
+            this.initialized = true;
+        },
+
+        html: function () {
+            if (!this.initialized){this.init();}
+            var htmlStr;
+
+            htmlStr = '<div>Dashboard functionalities for '+this.module.ID+' are not yet implemented.</div>';
+
+            return htmlStr;
+        },
+        callback: function () {
+            "use strict";
+        }
+    }
 };
 /// END Subverse and Set shortcuts ///
 
-/// Remember comment count:  For all visited threads show the number of new comments since the last time they were opened ///
+/// Remember comment count:  For all visited threads show the number of new comments since the last time they were opened. ///
 AVE.Modules['RememberCommentCount'] = {
     ID: 'RememberCommentCount',
     Name: 'Remember comment count',
-    Desc: 'For all visited threads show the number of new comments since the last time they were opened',
+    Desc: 'For all visited threads show the number of new comments since the last time they were opened.',
     Category: 'Thread',
 
     Index: 100,
@@ -3419,15 +3852,13 @@ AVE.Modules['RememberCommentCount'] = {
         this.AppendToPage();
     },
 
-    /*TODO-> Add buffer when deleting so that it isn't pruning each time a new thread is opened
-    *   Delete 1/4 at once
-    *   Delete 1/10 at once
-    *   Delete 1/20
-    *       As a function of the max number*/
     Pruning: function(){
         var count, key;
         count = Object.keys(this.Data).length - this.Options.MaxStorage.Value;
+
         if (count < 1) {return;}
+
+        count += Math.ceil(this.Options.MaxStorage.Value / 8); //If over the limit we remove 1/8th of the total value
 
         for (key in this.Data){
             delete(this.Data[key]);
@@ -5984,6 +6415,138 @@ AVE.Modules['HideUsername'] = {
     },
 };
 /// END Hide username ///
+
+/// AVE\'s dashboard:  Use it to manage your saved data. ///
+AVE.Modules['Dashboard'] = {
+    ID: 'Dashboard',
+    Name: 'AVE\'s dashboard',
+    Desc: 'Use it to manage your saved data.',
+    Category: null,
+    //Category set to null will make this module invisible to the pref-mngr
+
+    Index: 1000,
+    Enabled: false,
+
+    Store: {},
+
+    RunAt: "container",
+
+    Modules: {
+        "UserTag": "User tags",
+        "Shortcuts": "Subverse shortcuts",
+        "ToggleCustomStyle": "Custom style permissions"},
+
+    Load: function () {
+        if (AVE.Utils.currentPageType === "user-manage"){
+            this.Enabled = true;
+        }
+
+        if (this.Enabled){
+            this.Start();
+        }
+    },
+
+    Start: function () {
+        this.AppendToPage();
+        this.Listeners();
+
+        if(location.hash === "#dashboard"){
+            $("a#AVE_ShowDashboard:first").trigger("click");
+        }
+    },
+
+    AppendToPage: function () {
+        "use strict";
+        var TempHtml;
+        var _this = this;
+
+        if ($("a#AVE_ShowDashboard").length === 0){
+            TempHtml = '<ul class="tabmenu"><li class="selected"><a id="AVE_ShowDashboard" style="font-weight: bold;margin-right: 20px;" title="Show AVE\'s dashboard" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub">Show dashboard</a>';
+
+
+            $.each(_this.Modules, function (id, name) {
+                /*
+                 Usertags (delete, add(list","), update)
+                 Subverse list (rearrange, delete, update, add(list",")
+                 ToggleCustomStyle (stored subverse and if show or hide)
+                 */
+                TempHtml += '<a style="margin-left:10px;" name="'+id+'" id="AVE_Dashboard_Show_'+id+'" title="Show '+name+'" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub">'+name+'</a>';
+            });
+            TempHtml += '</li></ul>';
+
+            $(TempHtml).insertAfter("#show-menu-button");
+            $("a[id^='AVE_Dashboard_Show']").hide();
+        }
+        if ($('div.content').length === 1){
+            TempHtml = '<div style="display: none;" class="content" id="AVE_Dashboard_content" role="default"><div class="row nomargin"></div></div>';
+
+            $(TempHtml).insertAfter('div.content[role="main"]');
+
+            var JqId = $('div.content#AVE_Dashboard_content[role="default"] > div.row.nomargin');
+            TempHtml = '<div class="alert-title">AVE\'s dashboard</div>';
+            TempHtml += '<section id="userPreferences">';
+            TempHtml += '   <div style="font-weight: bold;font-size: 12px;" >Click one of the buttons above to display the data associated with it.<br />';
+            TempHtml += '   <span style="text-decoration: underline;">Nota Bene</span>: stored data aren\'t cached; they are retrieved and processed every time you click one of the button to always display the most up to date values.</div>';
+            TempHtml +='</section>';
+            JqId.append(TempHtml);
+        }
+    },
+
+    Listeners: function () {
+        var _this = this;
+        $("a#AVE_ShowDashboard")
+            .off("click")
+            .on("click", function () {_this.ToggleMainContent();});
+
+        $("a[id^='AVE_Dashboard_Show']")
+            .off("click")
+            .on("click", function (el) {
+                "use strict";
+                _this.ToggleContent($(this).attr("name"), $(this).text());
+        });
+    },
+
+    ToggleContent: function (module, name) {
+        if (AVE.Modules[module].AppendToDashboard !== undefined) {
+            if (typeof AVE.Modules[module].AppendToDashboard.html === "function") {
+                var html;
+
+                html = '<div class="alert-title">'+name+'</div>';
+                html += '<section id="userPreferences" role="AVE_Dashboard" module="'+module+'">';
+                html += AVE.Modules[module].AppendToDashboard.html();
+                html +='</section>';
+
+                $('div.content#AVE_Dashboard_content[role="default"] > div.row.nomargin').html(html);
+            } else {print("AVE: Dashboard > Module \""+module+"\" doesn't implement function \"AppendToPreferenceManager.html()\"");return;}
+            if (typeof AVE.Modules[module].AppendToDashboard.callback === "function") {
+                AVE.Modules[module].AppendToDashboard.callback();
+            }
+
+        } else {print("AVE: Dashboard > Module \""+module+"\" doesn't implement asso. array \"AppendToPreferenceManager\"");}
+    },
+
+    ToggleMainContent: function(){
+        "use strict";
+        var JqMain = $('div.content[role="main"]:first');
+        var JqNew = $('div.content#AVE_Dashboard_content[role="default"]');
+        if (JqMain.is(":visible")){
+            JqMain.hide();
+            JqNew.show();
+            $("a[id^='AVE_Dashboard_Show']").show();
+
+            $("a#AVE_ShowDashboard").text("Hide Dashboard");
+            location.hash = "#dashboard";
+        } else {
+            JqMain.show();
+            JqNew.hide();
+            $("a[id^='AVE_Dashboard_Show']").hide();
+
+            $("a#AVE_ShowDashboard").text("Show Dashboard");
+            location.hash = "";
+        }
+    }
+};
+/// END AVE\'s dashboard ///
 
 /// Build Dependent ///
 AVE.Utils.SendMessage = function (Obj) {

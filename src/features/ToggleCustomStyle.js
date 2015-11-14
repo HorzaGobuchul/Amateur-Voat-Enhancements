@@ -138,4 +138,28 @@ AVE.Modules['ToggleCustomStyle'] = {
         
         $(window).scrollTop(0);
     },
+
+    AppendToDashboard: {
+        initialized: false,
+        CSSselector: "",
+        module: {},
+
+        init: function () {
+            this.module = AVE.Modules['ToggleCustomStyle'];
+            this.CSSselector = "a[id^='AVE_Dashboard_Show'][name='"+this.module.ID+"']";
+            this.initialized = true;
+        },
+
+        html: function () {
+            if (!this.initialized){this.init();}
+            var htmlStr;
+
+            htmlStr = '<div>Dashboard functionalities for '+this.module.ID+' are not yet implemented.</div>';
+
+            return htmlStr;
+        },
+        callback: function () {
+            "use strict";
+        }
+    }
 };
