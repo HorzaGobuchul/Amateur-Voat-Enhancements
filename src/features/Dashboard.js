@@ -93,7 +93,7 @@ AVE.Modules['Dashboard'] = {
                 var html;
 
                 html = '<div class="alert-title">'+name+'</div>';
-                html += '<section id="userPreferences">';
+                html += '<section id="userPreferences" role="AVE_Dashboard" module="'+module+'">';
                 html += AVE.Modules[module].AppendToDashboard.html();
                 html +='</section>';
 

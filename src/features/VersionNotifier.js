@@ -64,7 +64,7 @@ AVE.Modules['VersionNotifier'] = {
         "       Use it to manage your saved data",
         "   RememberCommentCount:",
         "       The purging function will now delete 1/8th of the maximum stored values at once every time this max is reached",
-        "   VersioNotifier:",
+        "   VersionNotifier:",
         "       The changelog box can now be closed by pressing \"Escape\"",
         "V2.27.0.2",
         "   RememberCommentCount:",

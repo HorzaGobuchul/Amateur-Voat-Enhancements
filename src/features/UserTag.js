@@ -23,7 +23,7 @@ AVE.Modules['UserTag'] = {
             Type: 'boolean',
             Desc: 'Track votes and display the vote balance next to usernames.',
             Value: true
-        },
+        }
     },
     //Possible issues with the fact that the username in the profil overview is in lower case
     UserTagObj: function (tag, colour, ignored, balance) {
@@ -474,17 +474,230 @@ table#formTable{\
     },
     
     AppendToDashboard: {
+        tableCSS: '',
+        initialized: false,
+        module: {},
+        usertags: [],
+
+        //implement quick storage for these values?
+        tagsperpage: 20,
+        currpage: 0,
+
+        CSSselector: "",
+
+        MouseOverColours: [],
+
+        init: function () {
+            this.tableCSS = '\
+                table#AVE_Dashboard_usertags_table{\
+                    width: 100%;\
+                }\
+                table#AVE_Dashboard_usertags_table > thead > tr {\
+                    font-size: 14px;\
+                    padding-bottom: 10px;\
+                    margin-bottom: 10px;\
+                }\
+                table#AVE_Dashboard_usertags_table > thead > tr > th{\
+                    text-align: center;\
+                    font-weight: bold;\
+                }\
+                table#AVE_Dashboard_usertags_table > tbody > tr:hover {\
+                    background-color: '+(AVE.Utils.CSSstyle === "dark" ? "#484648" : "#EDE9E9")+';\
+                }\
+                table#AVE_Dashboard_usertags_table > tbody > tr > td{\
+                    padding-top: 5px;\
+                    border-top : 1px solid #'+(AVE.Utils.CSSstyle === "dark" ? "3F3F3F" : "DDD")+';\
+                    text-align: center;\
+                }\
+                table#AVE_Dashboard_usertags_table > tbody > tr > td:first-child{\
+                    font-weight: bold;\
+                    text-align: left;\
+                }\
+                table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(2){\
+                    text-align: left;\
+                    max-width: 150px;\
+                    overflow: hidden;\
+                    text-overflow: ellipsis;\
+                    white-space: nowrap;\
+                }\
+                table#AVE_Dashboard_usertags_table > tbody > tr > td:last-child{\
+                    border-left : 1px solid #'+(AVE.Utils.CSSstyle === "dark" ? "3F3F3F" : "DDD")+';\
+                    font-weight: bold;\
+                    color: red;\
+                    cursor: pointer;\
+                }\
+                a#AVE_Dashboard_navigate_tags[role]{\
+                    margin: 0px 5px 10px 0px;\
+                }';
+            AVE.Utils.AddStyle(this.tableCSS);
+
+            this.MouseOverColours.push(AVE.Utils.CSSstyle === "dark" ? "#484648" : "#EDE9E9");
+            this.MouseOverColours.push(AVE.Utils.CSSstyle === "dark" ? "#534040" : "#FFC9C9");
+
+            this.module = AVE.Modules['UserTag'];
+
+            this.CSSselector = "a[id^='AVE_Dashboard_Show'][name='"+this.module.ID+"']";
+
+            this.initialized = true;
+        },
+
         html: function () {
-            var htmlStr = "Stub - WIP";
-            //Don't show tags as they should appear along with the username, but show a preview like in the tagbox
+            if (!this.initialized){this.init();}
+
+            //Empty container
+            this.usertags = [];
+
+
+            var _this, tempObj, tempUsertags, keys, htmlStr;
+            _this = this;
+            htmlStr = "";
+
+            AVE.Utils.SendMessage({ request: "Storage", type: "Update"});
+            tempUsertags = JSON.parse(this.module.Store.GetValue(this.module.StorageName, "{}"));
+            keys = Object.keys(tempUsertags);
+            keys.sort();
+
+            //Remove all tags (prompt confirm)
+            //Add a list of tags in JSON format (accept as long as the tag property exists)
+            //Search function (by name, tag, colour, ignored, vote balance (< and >)
+            //  Process _this.usertags to keep only usertags matching the search
+            //  Paging function returning this.paging(0, this.tagsperpage);
+            //Order by: username, tag, ignored, votebalance (username default and secondary always)
+            //Paging function (default)
+
+            $.each(keys, function (idx, key) {
+
+                tempObj = tempUsertags[key];
+                if (tempObj.tag.length === 0 && tempObj.ignored === false) { return true; } //Don't show empty tags
+
+                tempObj.name = key;
+                tempObj.ignored = tempObj.ignored ? "Yes" : "No";
+                _this.usertags.push( JSON.stringify( tempObj ) );
+
+            });
+
+            var start  = this.currpage*this.tagsperpage;
+
+            var htmlNavButtons = "";
+            htmlNavButtons += '<div style="float: left;">' +
+                '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="first" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage === 0 ? "btn-unsub" : "btn-sub" ) +'">First</a>' +
+                '</div>';
+            htmlNavButtons += '<div style="float: left;">' +
+                            '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="prev" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage === 0 ? "btn-unsub" : "btn-sub" ) +'">Previous</a>' +
+                        '</div>';
+            htmlNavButtons += '<div style="float: right;">' +
+                '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="last" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage >= Math.ceil((this.usertags.length-this.tagsperpage)/this.tagsperpage) ? "btn-unsub" : "btn-sub" ) +'">Last</a>' +
+                '</div>';
+            htmlNavButtons += '<div style="float: right;">' +
+                '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="next" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage >= Math.ceil((this.usertags.length-this.tagsperpage)/this.tagsperpage) ? "btn-unsub" : "btn-sub" ) +'">Next</a>' +
+                '</div>';
+
+            htmlStr += htmlNavButtons;
+
+            var htmlTable = "";
+            htmlTable += '<table id="AVE_Dashboard_usertags_table">' +
+                            '<thead>' +
+                                '<tr>' +
+                                    '<th>Username</th>' +
+                                    '<th>Tag</th>' +
+                                    '<th>Colour</th>' +
+                                    '<th>Ignored</th>' +
+                                    '<th>Vote balance</th>' +
+                                    '<th>Preview</th>' +
+                                    '<th>Remove</th>' +
+                                '</tr>' +
+                            '</thead>';
+            htmlTable +=    this.paging(start, this.tagsperpage);
+            htmlTable += "</table>";
+
+            htmlStr += htmlTable;
+
+            htmlStr += '<div style="text-align: right;margin-bottom:10px;">Showing tags '+ (start+1)+' to '+ Math.min(this.usertags.length, start+this.tagsperpage) +' (total: '+this.usertags.length+')</div>';
+
+            htmlStr += htmlNavButtons;
 
             return htmlStr;
         },
         callback: function () {
             "use strict";
-            //paging system:
-            //    Don't feed the html func anything it doesn't need.
-            //          Fill it with the paging function afterwards (trigger)
+            var _this = this;
+            $('table#AVE_Dashboard_usertags_table > tbody > tr > td:last-child')
+                .off()
+                .on("mouseover", function () {
+                    $(this).parent().css("background", _this.MouseOverColours[1]);
+                })
+                .on("mouseleave", function () {
+                    $(this).parent().css("background", "");
+                });
+            $('a#AVE_Dashboard_navigate_tags')
+                .off()
+                .on("click", function () {
+                    if ($(this).hasClass("btn-unsub")){return false;}
+
+                    switch ($(this).attr('role')) {
+                        case "prev":
+                            _this.currpage--;
+                            break;
+                        case "next":
+                            _this.currpage++;
+                            break;
+                        case "first":
+                            _this.currpage = 0;
+                            break;
+                        case "last":
+                            _this.currpage = Math.ceil((_this.usertags.length - _this.tagsperpage) / _this.tagsperpage);
+                            break;
+                        default:
+                            return;
+                    }
+
+                    $(_this.CSSselector).trigger("click");
+                });
+            $(document)
+                .off()
+                .on("keyup", function (event) {
+                    var ctrl, pos;
+                    ctrl= event.ctrlKey;
+
+                    if (event.which === 37){
+                        pos = (ctrl ? "first" : "prev");
+                    } else if (event.which === 39){
+                        pos = (ctrl ? "last" : "next");
+                    }
+                    $('a#AVE_Dashboard_navigate_tags[role="'+ pos +'"]:first').trigger("click");
+
+                });
+        },
+
+        paging: function (start, nb) {
+            var colour, r, g, b;
+
+            var htmlStr = "";
+            var obj = {};
+
+            for (i=start; i <= start+nb-1; i++){
+                if (i >= this.usertags.length){break;}
+
+                obj = JSON.parse(this.usertags[i]);
+
+                htmlStr += "<tr>";
+
+                colour = AVE.Utils.GetRGBvalues(obj.colour);
+                r = colour[0], g = colour[1], b = colour[2];
+
+                //click value to edit it
+                //click X at the end of line to remove it (prompt comfirm)
+                htmlStr +=  '<td><a href="/user/'+obj.name+'" >'+obj.name+'</a></td>' +
+                            '<td><span title="'+obj.tag+'">'+obj.tag+'</span></td>' +
+                            '<td style="background-color:'+obj.colour+'; color:'+AVE.Utils.GetBestFontColour(r, g, b)+';">'+obj.colour+'</td>' +
+                            '<td>'+obj.ignored+'</td>' +
+                            '<td>'+obj.balance+'</td>' +
+                            '<td><span username="'+obj.name+'" id="AVE_Dashboard_usertag_td_preview" ></span></td>' +
+                            '<td>X</td>';
+
+                htmlStr += "</tr>";
+            }
+            return htmlStr;
         }
     }
 };

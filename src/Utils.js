@@ -109,6 +109,16 @@ AVE.Utils = {
         return (o > 125) ? 'black' : 'white';
     },
 
+    GetRGBvalues: function (colour) {
+        var r, g, b;
+        //from www.javascripter.net/faq/hextorgb.htm
+        r = parseInt(colour.substring(1, 3), 16);
+        g = parseInt(colour.substring(3, 5), 16);
+        b = parseInt(colour.substring(5, 7), 16);
+
+        return [r, g, b];
+    },
+
     AddStyle: function (StyleStr) {
         if ($("style[for='AVE']").length === 0) { $("head").append('<style for="AVE"></style>'); }
         $("style[for='AVE']").append("\n" + StyleStr);
@@ -168,7 +178,6 @@ AVE.Utils = {
 function print(str) { console.log(str); }
 //Thanks to Paolo Bergantino https://stackoverflow.com/questions/965816/what-jquery-selector-excludes-items-with-a-parent-that-matches-a-given-selector#answer-965962
 jQuery.expr[':'].parents = function (a, i, m) { return jQuery(a).parents(m[3]).length < 1; };
-
 //Might be overkill, but I need to be able to disconnect the listener before updating.
 var OnNodeChange = (function () {
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
