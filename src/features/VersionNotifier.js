@@ -59,6 +59,12 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.28.3.7",
+        "   Usertag:",
+        "       New option to add a background colour to vote balances (green to red)",
+        "       Added a border radius of 2px to the previous background colour",
+        "   Dashboard:",
+        "       In the Usertags section, modifying the colour is now done with a colour palette",
         "V2.28.2.5",
         "   Dashboard:",
         "       Displaying the dashboard changes the page's title",

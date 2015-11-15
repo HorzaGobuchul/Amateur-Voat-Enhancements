@@ -23,6 +23,11 @@ AVE.Modules['UserTag'] = {
             Type: 'boolean',
             Desc: 'Track votes and display the vote balance next to usernames.',
             Value: true
+        },
+        ShowBalanceWithColourGradient: {
+            Type: 'boolean',
+            Desc: 'Show vote balances over a colour gradient going from green to red according to its positivity.',
+            Value: true
         }
     },
     //Possible issues with the fact that the username in the profil overview is in lower case
@@ -118,7 +123,9 @@ span.AVE_UserTag:empty{\
     display: inline-block;\
 }\
 span.AVE_UserBalance{\
-    padding: 0px 4px;font-size: 10px;\
+    margin: 0px 4px;\
+    font-size: 10px;\
+    border-radius: 2px;\
 }\
 span.AVE_UserBalance:empty{\
     padding: 0px;\
@@ -210,8 +217,22 @@ table#formTable{\
             Tag_html = '<span class="AVE_UserTag" id="' + name + '">' + (!tag.tag ? "" : tag.tag) + '</span>';
             if (_this.Options.VoteBalance.Value) {
                 if (tag.balance !== 0) {
-                    var sign = tag.balance > 0 ? "+" : "";
-                    Tag_html += '<span class="AVE_UserBalance" id="' + name + '">[ ' + sign + tag.balance + ' ]</span>';
+                    var valence = tag.balance > 0;
+                    var sign = valence ? "+" : "";
+                    var progValence = valence ? Math.min(100, tag.balance) : Math.max(-100, tag.balance);
+                    var style = "";
+
+                    if (!valence){progValence *= -1;}
+
+                    if (_this.Options.ShowBalanceWithColourGradient.Value){
+                        var r, g, b;
+                        r = g = b = parseInt(210 - progValence/100 * 210, 10);
+                        if (valence) { g = 255; }
+                        else { r = 255; }
+                        style = 'style="color:#262626;background-color:rgb('+r+','+g+','+b+');" ';
+                    }
+
+                    Tag_html += '<span '+style+' class="AVE_UserBalance" id="' + name + '">[ ' + sign + tag.balance + ' ]</span>';
                 } else {
                     Tag_html += '<span class="AVE_UserBalance" id="' + name + '"></span>';
                 }
@@ -403,11 +424,8 @@ table#formTable{\
                 $(this).text(tag.tag);
 
                 var r, g, b;
-                var newColour = tag.colour;
-                //from www.javascripter.net/faq/hextorgb.htm
-                r = parseInt(newColour.substring(1, 3), 16);
-                g = parseInt(newColour.substring(3, 5), 16);
-                b = parseInt(newColour.substring(5, 7), 16);
+                var c = AVE.Utils.GetRGBvalues(tag.colour);
+                r = c[0]; g = c[1]; b = c[2];
 
                 $(this).css("background-color", tag.colour);
                 $(this).css("color", AVE.Utils.GetBestFontColour(r, g, b));
@@ -419,8 +437,24 @@ table#formTable{\
 
             if (_this.Options.VoteBalance.Value) {
                 if (tag.balance !== 0) {
-                    var sign = tag.balance > 0 ? "+" : "";
-                    $(this).nextAll("span.AVE_UserBalance:first").text('[ ' + sign + tag.balance + ' ]');
+                    var valence = tag.balance > 0;
+                    var sign = valence ? "+" : "";
+                    var progValence = valence ? Math.min(100, tag.balance) : Math.max(-100, tag.balance);
+                    var style = "";
+
+                    if (!valence){progValence *= -1;}
+
+                    if (_this.Options.ShowBalanceWithColourGradient.Value){
+                        var r, g, b;
+                        r = g = b = parseInt(210 - progValence/100 * 210, 10);
+                        if (valence) { g = 255; }
+                        else { r = 255; }
+                        style = 'color:#262626;background-color:rgb('+r+','+g+','+b+');';
+                    }
+
+                    $(this).nextAll("span.AVE_UserBalance:first")
+                        .text('[ ' + sign + tag.balance + ' ]')
+                        .attr("style", style);
                 } else {
                     $(this).nextAll("span.AVE_UserBalance:first").text("");
                 }
@@ -466,6 +500,7 @@ table#formTable{\
                 htmlStr += "<li>You have chosen to ignore " + IgnoreLen + " users.</li></ul>";
 
                 htmlStr += '<br /><input id="VoteBalance" ' + (_this.Options.VoteBalance.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="VoteBalance"> ' + _this.Options.VoteBalance.Desc + '</label><br />';
+                htmlStr += '<br /><input id="ShowBalanceWithColourGradient" ' + (_this.Options.ShowBalanceWithColourGradient.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ShowBalanceWithColourGradient"> ' + _this.Options.ShowBalanceWithColourGradient.Desc + '</label><br />';
                 //Add option to remove oldest tags.
                 //  Seeing as this.usertags is ordered oldest first, propose to remove X tags at the beginning of the list.
                 return htmlStr;
@@ -516,11 +551,15 @@ table#formTable{\
                 }\
                 table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(2){\
                     text-align: left;\
-                    max-width: 100px;\
+                    width: 100px;\
+                    max-width: 150px;\
                     overflow: hidden;\
                     text-overflow: ellipsis;\
                     white-space: nowrap;\
                     padding-right: 10px;\
+                }\
+                table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(6){\
+                    width: 140px;\
                 }\
                 table#AVE_Dashboard_usertags_table > tbody > tr > td:last-child{\
                     border-left : 1px solid #'+(AVE.Utils.CSSstyle === "dark" ? "3F3F3F" : "DDD")+';\
@@ -607,6 +646,8 @@ table#formTable{\
 
             htmlStr += htmlNavButtons;
 
+            htmlStr += '<input style="display:none;" id="AVE_Dashboard_usertag_quickedit" data="colour" style="width:50px;" type="color" original="#FFFFFF" value="#FFFFFF">';
+
             var htmlTable = "";
             htmlTable += '<table id="AVE_Dashboard_usertags_table">' +
                             '<thead>' +
@@ -658,7 +699,7 @@ table#formTable{\
                     var tag = $(this).text() || $(this).find("input").val();
 
                     if ($(this).find("input").length === 0){
-                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="tag" style="width:100%;" type="text" original="'+tag+'" value="'+tag+'">');
+                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="tag" style="max-width:140px;" type="text" original="'+tag+'" value="'+tag+'">');
                         var input = $(this).find("input");
                         input.focus().select();
                         input.on("focusout", function () {
@@ -677,13 +718,12 @@ table#formTable{\
                     var colour = $(this).text() || $(this).find("input").val();
 
                     if ($(this).find("input").length === 0){
-                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="colour" style="width:40px;" type="text" original="'+colour+'" value="'+colour+'">');
-                        var input = $(this).find("input");
-                        input.focus().select();
-                        input.on("focusout", function () {
-                            input.val(input.attr("original"));
-                            $(this).trigger("click", true);
+                        var input = $("input#AVE_Dashboard_usertag_quickedit[type='color'][data='colour']");
+                        input.attr("original", colour).attr("u", $(this).parent().attr("username")).val(colour);
+                        input.one("change", function () {
+                            _this.editTag(input, "colour");
                         });
+                        input.trigger("click");
                     } else {
                         if (!artificial) {return;}//we don't want to lose the focus by a click in the same input text
                         $(this).find("input").off();
@@ -706,7 +746,7 @@ table#formTable{\
                     var balance = $(this).text() || $(this).find("input").val();
 
                     if ($(this).find("input").length === 0){
-                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="balance" style="width:50px;" type="number" original="'+balance+'" value="'+balance+'" step="1">');
+                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="balance" style="text-align:center;width:50px;" type="number" original="'+balance+'" value="'+balance+'" step="1">');
                         var input = $(this).find("input");
                         input.focus().select();
                         input.on("focusout", function () {
@@ -749,7 +789,8 @@ table#formTable{\
                     var ctrl, pos, input;
                     ctrl= event.ctrlKey;
 
-                    input = $("input#AVE_Dashboard_usertag_quickedit");
+                    input = $("input#AVE_Dashboard_usertag_quickedit[type!='color']");
+                    alert("Error here usertag:l790");
 
                     if (input.length === 0){
                         //We don't want to change page when a user is using the arrow key to edit a value
@@ -770,13 +811,20 @@ table#formTable{\
         },
 
         editTag: function (input, dtype) {
+            "use strict";
             var _this = this;
 
             if (input.length === 1){
                 if (input.attr("original") === input.val() && dtype !== "ignore"){input.trigger("click", true);return;}//No need to update nor reload if nothing changed
                 var root, tag, usertag;
 
-                root = input.parents("tr:first");
+                if (dtype === "colour"){
+                    let u  = input.attr("u");
+                    root = $("tr[username='"+u+"']");
+                } else {
+                    root = input.parents("tr:first");
+                }
+
 
                 usertag = {};
                 usertag.username = root.attr("username");
