@@ -59,6 +59,19 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.30.1.4",
+        "   New feature: DomainTags",
+        "       Choose tags to characterize domains",
+        "       New tab in the PrefMngr: Domains",
+        "   New feature: VoteBalance",
+        "       Separated module for the votebalance feature",
+        "   Usertag:",
+        "       Context is a new element saved with the tag. When tagging a user, a link will now be added as context of the tag (link to submission or to comment)",
+        "   RememberCommentCount:",
+        "       Comments made by the user will no longer be highlighted",
+        "       Comments made by the user will automatically increment the comment count of the thread",
+        "   RememberCommentCount:",
+        "       Changed default highlight colour for the dark theme to #423C3C",
         "V2.28.3.7",
         "   Usertag:",
         "       New option to add a background colour to vote balances (green to red)",
@@ -232,7 +245,7 @@ AVE.Modules['VersionNotifier'] = {
                                 '<div class="VersionBoxClose">Close</div>' +
                             '</div>';
 
-        $("<style></style>").appendTo("head").html(CSSstyle);
+        $('<style id="AVE_Version_notif"></style>').appendTo("head").html(CSSstyle);
         $("body").append(notifierHTML);
     },
 
@@ -243,19 +256,21 @@ AVE.Modules['VersionNotifier'] = {
 
         $("p.VersionBoxToggle").on("click", function () {
             var ChangeLogHTML = '<textarea class="VersionBoxText" readonly="true">';
-            for (var idx in ChangeLog) {
-                ChangeLogHTML += ChangeLog[idx] + "\n";
-            }
+            //for (var idx in ChangeLog) {
+            //    ChangeLogHTML += ChangeLog[idx] + "\n";
+            //}
+            ChangeLogHTML += ChangeLog.join("\n");
+
             ChangeLogHTML += '</textarea>';
             $(this).remove();
             $(ChangeLogHTML).insertAfter(VersionBox.find("p.VersionBoxInfo"));
 
             $("textarea.VersionBoxText").animate({
-                height: "370px",
+                height: "370px"
             }, 1000);
             VersionBox.animate({
                 width: "85%",
-                height: "450px",
+                height: "450px"
             }, 1000);
         });
         $("div.VersionBoxClose").on("click", function () {

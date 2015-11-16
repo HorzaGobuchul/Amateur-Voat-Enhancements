@@ -86,6 +86,7 @@ AVE.Modules['RememberCommentCount'] = {
 
     Start: function () {
         this.AppendToPage();
+        this.Listeners();
     },
 
     Pruning: function(){
@@ -132,9 +133,15 @@ AVE.Modules['RememberCommentCount'] = {
 
                     if(_this.Options.HighlightNewComments.Value){
                         var CommId, CommTimeStamp;
+                        var CommAuthor, Username;
+
+                        Username = $("span.user > a[title='Profile']");
+                        Username = Username.length > 0 ? Username.text().toLowerCase() : "";
                         $("div.noncollapsed").each(function () {
                             CommId = $(this).attr("id");
-                            if ($.inArray(CommId, _this.Processed) === -1){
+                            CommAuthor = $(this).find("a.userinfo.author").text().toLowerCase();
+
+                            if ($.inArray(CommId, _this.Processed) === -1 && CommAuthor !== Username){
                                 CommTimeStamp = new Date($(this).find("time:first").attr("datetime")).getTime();
                                 if (CommTimeStamp > _this.TimeStamp){
                                     $(this).parents("div[class*=' id-']:first").css('background-color', _this.Options.HighlightStyle.Value[_style]);
@@ -153,7 +160,7 @@ AVE.Modules['RememberCommentCount'] = {
                 if (this.Data.hasOwnProperty(_id) && _count === this.Data[_id][0]){
                     //Pass
                 } else if (_new) {
-                    //print("AVE: RememberCommentCount > Writing");
+                    //s("AVE: RememberCommentCount > Writing");
                     //Update Stored Data in case multiple threads were opened at the same time (we don't want them to overwrite each others).
                     AVE.Utils.SendMessage({ request: "Storage", type: "Update"});
                     this.Data = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
@@ -176,6 +183,25 @@ AVE.Modules['RememberCommentCount'] = {
                 _this.Processed.push(_id)
             });
         }
+    },
+
+    Listeners: function () {
+        var _this = this;
+        $("body")//Doesn't work. Not "live"
+            .off()
+            .on("click", "form[id^='commentreplyform-'] > input#submitbutton[value='Submit reply']",  function () {
+                var _id;
+                alert("New comment by user");
+                _id = $("div.submission[class*='id-']:first").attr("id").split("-")[1];
+
+                AVE.Utils.SendMessage({ request: "Storage", type: "Update"});
+                _this.Data = JSON.parse(_this.Store.GetValue(_this.StorageName, "{}"));
+
+                if (_this.Data.hasOwnProperty(_id)){
+                    _this.Data[_id][0] = _this.Data[_id][0]++;
+                    _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.Data));
+                }
+            });
     },
 
     AppendToPreferenceManager: {

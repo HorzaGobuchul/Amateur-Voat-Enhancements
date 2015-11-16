@@ -31,11 +31,12 @@ AVE.Modules['UserTag'] = {
         }
     },
     //Possible issues with the fact that the username in the profil overview is in lower case
-    UserTagObj: function (tag, colour, ignored, balance) {
+    UserTagObj: function (tag, colour, ignored, balance, context) {
         this.tag = tag.toString();
         this.colour = colour;
         this.ignored = (typeof ignored === "boolean" ? ignored : false);
         this.balance = (typeof balance === "number" ? balance : 0);
+        this.context = context ? context.toString() : "";
     },
 
     SavePref: function (POST) {
@@ -145,7 +146,7 @@ table#formTable{\
                 <td>Tag</td>\
                 <td style="width:10px;"></td>\
                 <td>\
-                    <input class="UserTagTextInput" type="text" value="" id="ChooseTag" style="width:130px;"/>\
+                    <input class="UserTagTextInput" type="text" value="" id="ChooseTag" style="width:170px;"/>\
                 </td>\
             </tr>\
             <tr id="SetColour">\
@@ -162,6 +163,13 @@ table#formTable{\
                 <td>Ignore</td>\
                 <td style="width:10px;"></td>\
                 <td><input type="checkbox" id="ToggleIgnore" class="tagInput" /></td>\
+            </tr>\
+            <tr id="SetContext">\
+                <td>Context <a target="_blank" style="display:none;" href="">[link]</a></td>\
+                <td style="width:10px;"></td>\
+                <td>\
+                    <input class="UserTagTextInput" type="text" value="" id="ChooseContext" style="width:170px;"/>\
+                </td>\
             </tr>\
             <tr id="SetBalance">\
                 <td>Vote balance</td>\
@@ -212,7 +220,7 @@ table#formTable{\
 
             if ($(this).attr('href').split("/")[2].toLowerCase() !== name) { return true; } //don't add if this is a link whose label isn't the username
 
-            tag = _this.GetTag(name) || new _this.UserTagObj("",  (AVE.Utils.CSSstyle === "dark" ? "#d1d1d1" : "#e1fcff"), false, 0);
+            tag = _this.GetTag(name) || new _this.UserTagObj("",  "", false, 0);
 
             Tag_html = '<span class="AVE_UserTag" id="' + name + '">' + (!tag.tag ? "" : tag.tag) + '</span>';
             if (_this.Options.VoteBalance.Value) {
@@ -239,17 +247,11 @@ table#formTable{\
             }
             $(Tag_html).insertAfter($(this));
 
-
             if (tag.tag) {
-                var r, g, b;
-                var newColour = tag.colour;
-                //from www.javascripter.net/faq/hextorgb.htm
-                r = parseInt(newColour.substring(1, 3), 16);
-                g = parseInt(newColour.substring(3, 5), 16);
-                b = parseInt(newColour.substring(5, 7), 16);
+                var c = AVE.Utils.GetRGBvalues(tag.colour);
 
                 $(this).next(".AVE_UserTag").css("background-color", tag.colour);
-                $(this).next(".AVE_UserTag").css("color", AVE.Utils.GetBestFontColour(r, g, b));
+                $(this).next(".AVE_UserTag").css("color", AVE.Utils.GetBestFontColour(c[0], c[1], c[2]));
             }
 
             if (AVE.Modules['IgnoreUsers'] && tag.ignored) {
@@ -272,7 +274,7 @@ table#formTable{\
         var _this = this;
         var JqId1, JqId2;
 
-        JqId1 = $("tr#SetTag > td > input.UserTagTextInput");
+        JqId1 = $("tr#SetTag > td > input.UserTagTextInput#ChooseTag");
         JqId2 = $("tr#SetColour > td > input#ChooseColor");
         $(".AVE_UserTag").off("click")
                          .on("click", function () {
@@ -289,10 +291,30 @@ table#formTable{\
 
             $("div#UserTagHeader > span#username").text(username);
 
+            if (!usertag || !usertag.tag){
+                //if comment
+                if ($(this).parents("div.comment:first").length > 0){
+                    usertag.context = $(this).parent().parent().find("ul.flat-list.buttons").find("a.bylink").attr("href");
+                }
+                //if submission
+                else if ($(this).parents("div.submission:first").length > 0){
+                    usertag.context = $(this).parent().next("ul.flat-list.buttons").find("a.comments.may-blank").attr("href");
+                } else {
+                    usertag.context = "";
+                }
+            }
+
+            $("tr#SetContext > td > input.UserTagTextInput#ChooseContext").val(usertag.context);
+            if (usertag.context !== ""){
+                $("tr#SetContext > td:first-child > a").attr("href", usertag.context).show();
+            } else {
+                $("tr#SetContext > td:first-child > a").hide();
+            }
+
             JqId1.val(oldTag === "+" ? "" : oldTag);
             $("tr#ShowPreview > td > span#PreviewBox").text(oldTag === "+" ? "" : oldTag);
             if (usertag !== undefined) {
-                JqId2.val(usertag.colour);
+                JqId2.val(usertag.colour !== "" ? usertag.colour : (AVE.Utils.CSSstyle === "dark" ? "#d1d1d1" : "#e1fcff"));
                 JqId2.change();
                 if (usertag.ignored) { $("tr#SetIgnore > td > input#ToggleIgnore").prop('checked', "true"); }
                 $("tr#SetBalance > td > input#voteBalance").val(usertag.balance);
@@ -303,7 +325,6 @@ table#formTable{\
             JqId1.focus();
             JqId1.select();
         });
-        
 
         if (_this.Options.VoteBalance.Value) {
             if (_this.obsVoteChange) { _this.obsVoteChange.disconnect(); }
@@ -329,15 +350,10 @@ table#formTable{\
         //Show in the preview box the colour chosen and change the font-colour accordingly
         JqId2.off('change')
              .on('change', function () {
-            var r, g, b;
-            var newColour = $(this).val();
-            //from www.javascripter.net/faq/hextorgb.htm
-            r = parseInt(newColour.substring(1, 3), 16);
-            g = parseInt(newColour.substring(3, 5), 16);
-            b = parseInt(newColour.substring(5, 7), 16);
+            var c = AVE.Utils.GetRGBvalues($(this).val());
 
             $("tr#ShowPreview > td > span#PreviewBox").css("background-color", $(this).val())
-                                                      .css("color", AVE.Utils.GetBestFontColour(r, g, b));
+                                                      .css("color", AVE.Utils.GetBestFontColour(c[0], c[1], c[2]));
         });
         //Saving tag
         $("tr#SetBalance > td > a#SaveTag").off("click")
@@ -347,16 +363,24 @@ table#formTable{\
                 tag: $("tr#SetTag > td > input.UserTagTextInput").val(),//.replace(/[:,]/g, "-")
                 colour: $("tr#SetColour > td > input#ChooseColor").val(),
                 ignore: $("tr#SetIgnore > td > input#ToggleIgnore").get(0).checked,
-                balance: parseInt($("tr#SetBalance > td > input#voteBalance").val(), 10)
+                balance: parseInt($("tr#SetBalance > td > input#voteBalance").val(), 10),
+                context: $("tr#SetContext > td > input.UserTagTextInput#ChooseContext").val()
             };
 
             if (isNaN(opt.balance)) { opt.balance = 0; }
+
+            if (!opt.tag){
+                opt.context= "";
+                opt.colour = "";
+            }
 
             if (opt.tag.length === 0 && opt.ignore === false && opt.balance === 0) {
                 _this.RemoveTag(opt.username);
             } else {
                 _this.SetTag(opt);
             }
+
+
 
             _this.UpdateUserTag(opt);
 
@@ -423,12 +447,10 @@ table#formTable{\
             if (tag.tag !== "") {
                 $(this).text(tag.tag);
 
-                var r, g, b;
                 var c = AVE.Utils.GetRGBvalues(tag.colour);
-                r = c[0]; g = c[1]; b = c[2];
 
                 $(this).css("background-color", tag.colour);
-                $(this).css("color", AVE.Utils.GetBestFontColour(r, g, b));
+                $(this).css("color", AVE.Utils.GetBestFontColour(c[0], c[1], c[2]));
             }
             else {
                 $(this).text("");
@@ -469,7 +491,7 @@ table#formTable{\
     },
 
     SetTag: function (opt) {
-        this.usertags[opt.username] = new this.UserTagObj(opt.tag, opt.colour, opt.ignore, opt.balance);
+        this.usertags[opt.username] = new this.UserTagObj(opt.tag, opt.colour, opt.ignore, opt.balance, opt.context);
 
         this.Store.SetValue(this.StorageName, JSON.stringify(this.usertags));
     },
@@ -500,7 +522,7 @@ table#formTable{\
                 htmlStr += "<li>You have chosen to ignore " + IgnoreLen + " users.</li></ul>";
 
                 htmlStr += '<br /><input id="VoteBalance" ' + (_this.Options.VoteBalance.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="VoteBalance"> ' + _this.Options.VoteBalance.Desc + '</label><br />';
-                htmlStr += '<br /><input id="ShowBalanceWithColourGradient" ' + (_this.Options.ShowBalanceWithColourGradient.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ShowBalanceWithColourGradient"> ' + _this.Options.ShowBalanceWithColourGradient.Desc + '</label><br />';
+                htmlStr += '<input id="ShowBalanceWithColourGradient" ' + (_this.Options.ShowBalanceWithColourGradient.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ShowBalanceWithColourGradient"> ' + _this.Options.ShowBalanceWithColourGradient.Desc + '</label><br />';
                 //Add option to remove oldest tags.
                 //  Seeing as this.usertags is ordered oldest first, propose to remove X tags at the beginning of the list.
                 return htmlStr;
@@ -630,19 +652,7 @@ table#formTable{\
 
             });
 
-            var htmlNavButtons = "";
-            htmlNavButtons += '<div style="float: left;">' +
-                '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="first" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage === 0 ? "btn-unsub" : "btn-sub" ) +'">First</a>' +
-                '</div>';
-            htmlNavButtons += '<div style="float: left;">' +
-                            '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="prev" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage === 0 ? "btn-unsub" : "btn-sub" ) +'">Previous</a>' +
-                        '</div>';
-            htmlNavButtons += '<div style="float: right;">' +
-                '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="last" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage >= Math.ceil((this.usertags.length-this.tagsperpage)/this.tagsperpage) ? "btn-unsub" : "btn-sub" ) +'">Last</a>' +
-                '</div>';
-            htmlNavButtons += '<div style="float: right;">' +
-                '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="next" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage >= Math.ceil((this.usertags.length-this.tagsperpage)/this.tagsperpage) ? "btn-unsub" : "btn-sub" ) +'">Next</a>' +
-                '</div>';
+            var htmlNavButtons = this.navbuttons();
 
             htmlStr += htmlNavButtons;
 
@@ -652,13 +662,13 @@ table#formTable{\
             htmlTable += '<table id="AVE_Dashboard_usertags_table">' +
                             '<thead>' +
                                 '<tr>' +
-                                    '<th>Username</th>' +
+                                    '<th>Username</th>' +       //click to go to user page
                                     '<th>Tag</th>' +            //click to show input box
                                     '<th>Colour</th>' +         //click to show color picker
                                     '<th>Ignored</th>' +        //click to toggle ignore
                                     '<th>Vote balance</th>' +   //click to show input box
                                     '<th>Preview</th>' +
-                                    '<th role="remove"></th>' +
+                                    '<th role="remove"></th>' + //click to remove entire tag
                                 '</tr>' +
                             '</thead>';
             htmlTable +=    this.paging(start, this.tagsperpage);
@@ -702,7 +712,7 @@ table#formTable{\
                         $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="tag" style="max-width:140px;" type="text" original="'+tag+'" value="'+tag+'">');
                         var input = $(this).find("input");
                         input.focus().select();
-                        input.on("focusout", function () {
+                        input.one("focusout", function () {
                             input.val(input.attr("original"));
                             $(this).trigger("click", true);
                         });
@@ -749,7 +759,7 @@ table#formTable{\
                         $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="balance" style="text-align:center;width:50px;" type="number" original="'+balance+'" value="'+balance+'" step="1">');
                         var input = $(this).find("input");
                         input.focus().select();
-                        input.on("focusout", function () {
+                        input.one("focusout", function () {
                             input.val(input.attr("original"));
                             $(this).trigger("click", true);
                         });
@@ -785,14 +795,13 @@ table#formTable{\
                 });
             $(document)
                 .off()
-                .on("keyup", function (event) { //navigate with arrow keys
+                .on("keyup", function (event) {
                     var ctrl, pos, input;
                     ctrl= event.ctrlKey;
 
-                    input = $("input#AVE_Dashboard_usertag_quickedit[type!='color']");
-                    alert("Error here usertag:l790");
+                    input = $("input#AVE_Dashboard_usertag_quickedit:not([type='color'])");
 
-                    if (input.length === 0){
+                    if (input.length === 0){ //navigate with arrow keys
                         //We don't want to change page when a user is using the arrow key to edit a value
                         if (event.which === 37){
                             pos = (ctrl ? "first" : "prev");
@@ -804,7 +813,7 @@ table#formTable{\
                         }
                     }
 
-                    if (event.which === 13){ //Press enter to save tag
+                    if (event.which === 13){ //Press enter to confirm change
                         _this.editTag(input, input.attr("data"));
                     }
                 });
@@ -850,10 +859,26 @@ table#formTable{\
                 }
 
                 _this.module.SetTag(usertag); //save tag
-                print(JSON.stringify(usertag));
 
                 $(_this.CSSselector).trigger("click"); //Reload-update
             }
+        },
+
+        navbuttons: function () {
+            var htmlNavButtons = "";
+            htmlNavButtons += '<div style="float: left;">' +
+                '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="first" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage === 0 ? "btn-unsub" : "btn-sub" ) +'">First</a>' +
+                '</div>';
+            htmlNavButtons += '<div style="float: left;">' +
+                '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="prev" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage === 0 ? "btn-unsub" : "btn-sub" ) +'">Previous</a>' +
+                '</div>';
+            htmlNavButtons += '<div style="float: right;">' +
+                '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="last" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage >= Math.ceil((this.usertags.length-this.tagsperpage)/this.tagsperpage) ? "btn-unsub" : "btn-sub" ) +'">Last</a>' +
+                '</div>';
+            htmlNavButtons += '<div style="float: right;">' +
+                '<a href="javascript:void(0)" id="AVE_Dashboard_navigate_tags" role="next" class="btn-whoaverse-paging btn-xs btn-default '+ (this.currpage >= Math.ceil((this.usertags.length-this.tagsperpage)/this.tagsperpage) ? "btn-unsub" : "btn-sub" ) +'">Next</a>' +
+                '</div>';
+            return htmlNavButtons;
         },
 
         paging: function (start, nb) {
