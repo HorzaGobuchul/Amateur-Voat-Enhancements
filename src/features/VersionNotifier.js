@@ -12,8 +12,8 @@ AVE.Modules['VersionNotifier'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
-        },
+            Value: true
+        }
     },
 
     SavePref: function (POST) {
@@ -59,14 +59,17 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.30.2.4",
+        "V2.29.3.5",
+        "   PreferenceManager:",
+        "       You can no longer open several changelogs by clicking the version number",
+        "   UserTag:",
+        "       Only used data will be saved. I.e. upvoting someone will no longer save a new UserTagObj but a simple obj containing a username and a votebalance",
+        "       Optimization by a factor of 3",
         "   BuilDep.js files",
         "       Added callback option to SendMessage (postMessage) function",
         "   New feature: DomainTags",
         "       Choose tags to characterize domains",
         "       New tab in the PrefMngr: Domains",
-        "   New feature: VoteBalance",
-        "       Separated module for the votebalance feature",
         "   Usertag:",
         "       Context is a new element saved with the tag. When tagging a user, a link will now be added as context of the tag (link to submission or to comment)",
         "   RememberCommentCount:",

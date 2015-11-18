@@ -295,7 +295,7 @@ AVE.Modules['PreferenceManager'] = {
         $("div.ModuleToggle:first").click();
         //Show changelog when clicking the version number
         $("span#AVE_Version").on("click", function () {
-            if (AVE.Modules['VersionNotifier']) {
+            if (AVE.Modules['VersionNotifier'] && !$("div.VersionBox").is(":visible")) {
                 AVE.Modules['VersionNotifier'].Trigger = "changelog";
                 AVE.Modules['VersionNotifier'].Start();
                 $("p.VersionBoxToggle").click();

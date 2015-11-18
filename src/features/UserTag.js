@@ -28,15 +28,19 @@ AVE.Modules['UserTag'] = {
             Type: 'boolean',
             Desc: 'Show vote balances over a colour gradient going from green to red according to its positivity.',
             Value: true
+        },
+        Migrated: {
+            Type: 'boolean',
+            Value: false
         }
     },
     //Possible issues with the fact that the username in the profil overview is in lower case
     UserTagObj: function (tag, colour, ignored, balance, context) {
-        this.tag = tag.toString();
-        this.colour = colour;
-        this.ignored = (typeof ignored === "boolean" ? ignored : false);
-        this.balance = (typeof balance === "number" ? balance : 0);
-        this.context = context ? context.toString() : "";
+        this.t = tag.toString();
+        this.col = colour;
+        this.i = (typeof ignored === "boolean" ? ignored : false);
+        this.b = (typeof balance === "number" ? balance : 0);
+        this.con = context ? context.toString() : "";
     },
 
     SavePref: function (POST) {
@@ -184,9 +188,45 @@ table#formTable{\
             this.StorageName = this.Store.Prefix + this.ID + "_Tags";
             //this.Store.DeleteValue(this.StorageName);
 
+            if (!this.Options.Migrated.Value){
+                this.Migrate();
+            }
+
             this.usertags = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
             this.Start();
         }
+    },
+
+    Migrate: function () {
+        var _this = this;
+        data = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
+        
+        $.each(data, function (key, val) {
+            data[key] = new _this.UserTagObj(data[key].tag, data[key].colour, data[key].ignore, data[key].balance, data[key].context);
+            if(!val.tag){
+                delete data[key].t;
+                delete data[key].col;
+            }
+            if (!val.balance){
+                delete data[key].b;
+            }
+            if (!val.ignored){
+                delete data[key].i;
+            }
+            if (!val.context){
+                delete  data[key].con;
+            }
+        });
+        this.Store.SetValue(this.StorageName, JSON.stringify(data));
+
+        var POST = {};
+        POST[this.ID] = {
+            Enabled: true,
+            VoteBalance: this.Options.VoteBalance.Value,
+            ShowBalanceWithColourGradient: this.Options.ShowBalanceWithColourGradient.Value,
+            Migrated: true
+        };
+        this.SavePref(POST);
     },
 
     Start: function () {
@@ -222,12 +262,12 @@ table#formTable{\
 
             tag = _this.GetTag(name) || new _this.UserTagObj("",  "", false, 0);
 
-            Tag_html = '<span class="AVE_UserTag" id="' + name + '">' + (!tag.tag ? "" : tag.tag) + '</span>';
+            Tag_html = '<span class="AVE_UserTag" id="' + name + '">' + (!tag.t ? "" : tag.t) + '</span>';
             if (_this.Options.VoteBalance.Value) {
-                if (tag.balance !== 0) {
-                    var valence = tag.balance > 0;
+                if (tag.b !== 0) {
+                    var valence = tag.b > 0;
                     var sign = valence ? "+" : "";
-                    var progValence = valence ? Math.min(100, tag.balance) : Math.max(-100, tag.balance);
+                    var progValence = valence ? Math.min(100, tag.b) : Math.max(-100, tag.b);
                     var style = "";
 
                     if (!valence){progValence *= -1;}
@@ -240,21 +280,21 @@ table#formTable{\
                         style = 'style="color:#262626;background-color:rgb('+r+','+g+','+b+');" ';
                     }
 
-                    Tag_html += '<span '+style+' class="AVE_UserBalance" id="' + name + '">[ ' + sign + tag.balance + ' ]</span>';
+                    Tag_html += '<span '+style+' class="AVE_UserBalance" id="' + name + '">[ ' + sign + tag.b + ' ]</span>';
                 } else {
                     Tag_html += '<span class="AVE_UserBalance" id="' + name + '"></span>';
                 }
             }
             $(Tag_html).insertAfter($(this));
 
-            if (tag.tag) {
-                var c = AVE.Utils.GetRGBvalues(tag.colour);
+            if (tag.t) {
+                var c = AVE.Utils.GetRGBvalues(tag.col);
 
-                $(this).next(".AVE_UserTag").css("background-color", tag.colour);
+                $(this).next(".AVE_UserTag").css("background-color", tag.col);
                 $(this).next(".AVE_UserTag").css("color", AVE.Utils.GetBestFontColour(c[0], c[1], c[2]));
             }
 
-            if (AVE.Modules['IgnoreUsers'] && tag.ignored) {
+            if (AVE.Modules['IgnoreUsers'] && tag.i) {
                 if ($.inArray(name, AVE.Modules['IgnoreUsers'].IgnoreList) === -1) {
                     AVE.Modules['IgnoreUsers'].IgnoreList.push(name);
                 }
@@ -291,22 +331,22 @@ table#formTable{\
 
             $("div#UserTagHeader > span#username").text(username);
 
-            if (!usertag || !usertag.tag){
+            if (!usertag || !usertag.t){
                 //if comment
                 if ($(this).parents("div.comment:first").length > 0){
-                    usertag.context = $(this).parent().parent().find("ul.flat-list.buttons").find("a.bylink").attr("href");
+                    usertag.con = $(this).parent().parent().find("ul.flat-list.buttons").find("a.bylink").attr("href");
                 }
                 //if submission
                 else if ($(this).parents("div.submission:first").length > 0){
-                    usertag.context = $(this).parent().next("ul.flat-list.buttons").find("a.comments.may-blank").attr("href");
+                    usertag.con = $(this).parent().next("ul.flat-list.buttons").find("a.comments.may-blank").attr("href");
                 } else {
-                    usertag.context = "";
+                    usertag.con = "";
                 }
             }
 
-            $("tr#SetContext > td > input.UserTagTextInput#ChooseContext").val(usertag.context);
-            if (usertag.context !== ""){
-                $("tr#SetContext > td:first-child > a").attr("href", usertag.context).show();
+            $("tr#SetContext > td > input.UserTagTextInput#ChooseContext").val(usertag.con);
+            if (usertag.con !== ""){
+                $("tr#SetContext > td:first-child > a").attr("href", usertag.con).show();
             } else {
                 $("tr#SetContext > td:first-child > a").hide();
             }
@@ -314,10 +354,10 @@ table#formTable{\
             JqId1.val(oldTag === "+" ? "" : oldTag);
             $("tr#ShowPreview > td > span#PreviewBox").text(oldTag === "+" ? "" : oldTag);
             if (usertag !== undefined) {
-                JqId2.val(usertag.colour !== "" ? usertag.colour : (AVE.Utils.CSSstyle === "dark" ? "#d1d1d1" : "#e1fcff"));
+                JqId2.val(usertag.col !== "" ? usertag.col : (AVE.Utils.CSSstyle === "dark" ? "#d1d1d1" : "#e1fcff"));
                 JqId2.change();
-                if (usertag.ignored) { $("tr#SetIgnore > td > input#ToggleIgnore").prop('checked', "true"); }
-                $("tr#SetBalance > td > input#voteBalance").val(usertag.balance);
+                if (usertag.i) { $("tr#SetIgnore > td > input#ToggleIgnore").prop('checked', "true"); }
+                $("tr#SetBalance > td > input#voteBalance").val(usertag.b);
             } else {
                 JqId2.val((AVE.Utils.CSSstyle === "dark" ? "#d1d1d1" : "#e1fcff"));
                 JqId2.change();
@@ -360,27 +400,25 @@ table#formTable{\
                                            .on("click", function () {
             var opt = {
                 username: $("div#UserTagHeader > span#username").text(),
-                tag: $("tr#SetTag > td > input.UserTagTextInput").val(),//.replace(/[:,]/g, "-")
-                colour: $("tr#SetColour > td > input#ChooseColor").val(),
-                ignore: $("tr#SetIgnore > td > input#ToggleIgnore").get(0).checked,
-                balance: parseInt($("tr#SetBalance > td > input#voteBalance").val(), 10),
-                context: $("tr#SetContext > td > input.UserTagTextInput#ChooseContext").val()
+                t: $("tr#SetTag > td > input.UserTagTextInput").val(),//.replace(/[:,]/g, "-")
+                col: $("tr#SetColour > td > input#ChooseColor").val(),
+                i: $("tr#SetIgnore > td > input#ToggleIgnore").get(0).checked,
+                b: parseInt($("tr#SetBalance > td > input#voteBalance").val(), 10),
+                con: $("tr#SetContext > td > input.UserTagTextInput#ChooseContext").val()
             };
 
-            if (isNaN(opt.balance)) { opt.balance = 0; }
+            if (isNaN(opt.b)) { opt.b = 0; }
 
-            if (!opt.tag){
-                opt.context= "";
-                opt.colour = "";
+            if (!opt.t){
+                //opt.con= "";
+                opt.col = "";
             }
 
-            if (opt.tag.length === 0 && opt.ignore === false && opt.balance === 0) {
+            if (opt.t.length === 0 && opt.i === false && opt.b === 0) {
                 _this.RemoveTag(opt.username);
             } else {
                 _this.SetTag(opt);
             }
-
-
 
             _this.UpdateUserTag(opt);
 
@@ -406,7 +444,7 @@ table#formTable{\
     //      we use a second function that keypresses in ShortKeys.js can invoke directly.
     // Ten mimutes later it works perfectly well. Maybe, voat's current instability was to blame. I'm not changing it back, anyway...
     ChangeVoteBalance: function (target, oldValue) {
-        //print("target: "+target); 
+        //print("target: "+target);
         //print("oldvalue: "+oldValue);
         //print("newvalue: "+$(target).attr('class'));
 
@@ -416,7 +454,7 @@ table#formTable{\
         if (!username) { return true; }
 
         var tag = this.GetTag(username);
-        var opt = { username: username, tag: tag.tag || '', colour: tag.colour || "#d1d1d1", ignore: tag.ignore || false, balance: tag.balance || 0 };
+        var opt = { username: username, t: tag.t || '', col: tag.col || "#d1d1d1", i: tag.i || false, b: tag.b || 0 };
 
         //If the previous status was "unvoted"
         if (oldValue === "midcol unvoted") {
@@ -435,7 +473,7 @@ table#formTable{\
                 else if ($(target).hasClass('unvoted')) { opt.balance += 1; }
             }
         }
-        
+
         this.SetTag(opt);
         this.UpdateUserTag(opt);
     },
@@ -444,12 +482,12 @@ table#formTable{\
         var _this = this;
         $("span[class*='AVE_UserTag'][id*='" + tag.username + "']").each(function () {
 
-            if (tag.tag !== "") {
-                $(this).text(tag.tag);
+            if (tag.t !== "") {
+                $(this).text(tag.t);
 
-                var c = AVE.Utils.GetRGBvalues(tag.colour);
+                var c = AVE.Utils.GetRGBvalues(tag.col);
 
-                $(this).css("background-color", tag.colour);
+                $(this).css("background-color", tag.col);
                 $(this).css("color", AVE.Utils.GetBestFontColour(c[0], c[1], c[2]));
             }
             else {
@@ -458,10 +496,10 @@ table#formTable{\
             }
 
             if (_this.Options.VoteBalance.Value) {
-                if (tag.balance !== 0) {
-                    var valence = tag.balance > 0;
+                if (tag.b !== 0) {
+                    var valence = tag.b > 0;
                     var sign = valence ? "+" : "";
-                    var progValence = valence ? Math.min(100, tag.balance) : Math.max(-100, tag.balance);
+                    var progValence = valence ? Math.min(100, tag.b) : Math.max(-100, tag.b);
                     var style = "";
 
                     if (!valence){progValence *= -1;}
@@ -475,7 +513,7 @@ table#formTable{\
                     }
 
                     $(this).nextAll("span.AVE_UserBalance:first")
-                        .text('[ ' + sign + tag.balance + ' ]')
+                        .text('[ ' + sign + tag.b + ' ]')
                         .attr("style", style);
                 } else {
                     $(this).nextAll("span.AVE_UserBalance:first").text("");
@@ -488,10 +526,25 @@ table#formTable{\
         delete this.usertags[username];
 
         this.Store.SetValue(this.StorageName, JSON.stringify(this.usertags));
+        print("AVE > Usertag: removed tag associated with user: " + username);
     },
 
     SetTag: function (opt) {
-        this.usertags[opt.username] = new this.UserTagObj(opt.tag, opt.colour, opt.ignore, opt.balance, opt.context);
+        this.usertags[opt.username] = new this.UserTagObj(opt.t, opt.col, opt.i, opt.b, opt.con);
+
+        if(!this.usertags[opt.username].t){
+            delete this.usertags[opt.username].t;
+            delete this.usertags[opt.username].col;
+        }
+        if (!val.balance){
+            delete this.usertags[opt.username].b;
+        }
+        if (!this.usertags[opt.username].i){
+            delete this.usertags[opt.username].i;
+        }
+        if (!this.usertags[opt.username].con){
+            delete this.usertags[opt.username].c;
+        }
 
         this.Store.SetValue(this.StorageName, JSON.stringify(this.usertags));
     },
@@ -512,9 +565,9 @@ table#formTable{\
                 var htmlStr = "";
 
                 $.each(_this.usertags, function (key, value) {
-                    if (value.tag.length > 0) { TagLen++; }
-                    if (value.balance !== 0) { VoteLen++; }
-                    if (value.ignored === true) { IgnoreLen++; }
+                    if (value.t) { TagLen++; }
+                    if (value.b) { VoteLen++; }
+                    if (value.i) { IgnoreLen++; }
                 });
 
                 htmlStr += '<ul style="list-style:inside circle;"><li>You have tagged ' + TagLen + ' users.</li>';
@@ -644,10 +697,10 @@ table#formTable{\
             $.each(keys, function (idx, key) {
 
                 tempObj = tempUsertags[key];
-                if (tempObj.tag.length === 0 && tempObj.ignored === false) { return true; } //Don't show empty tags
+                if (tempObj.t.length === 0 && tempObj.ignored === false) { return true; } //Don't show empty tags
 
                 tempObj.name = key;
-                tempObj.ignored = tempObj.ignored ? "Yes" : "No";
+                tempObj.i = tempObj.ignored ? "Yes" : "No";
                 _this.usertags.push( JSON.stringify( tempObj ) );
 
             });
@@ -837,25 +890,25 @@ table#formTable{\
 
                 usertag = {};
                 usertag.username = root.attr("username");
-                usertag.ignore   = root.find("td[data='ignore']").text() === "Yes";
+                usertag.i   = root.find("td[data='ignore']").text() === "Yes";
 
                 if (dtype === "tag"){
-                    usertag.tag = input.val();
+                    usertag.t = input.val();
                 } else {
-                    usertag.tag = root.find("td[data='tag']").text();
+                    usertag.t = root.find("td[data='tag']").text();
                 }
 
                 if (dtype === "colour"){
-                    usertag.colour = input.val() || input.attr("original");
+                    usertag.col = input.val() || input.attr("original");
                 } else {
-                    usertag.colour = root.find("td[data='colour']").text();
+                    usertag.col = root.find("td[data='colour']").text();
                 }
 
                 if (dtype === "balance"){
                     var newval = input.val();
-                    usertag.balance = parseInt((isNaN(newval) || newval === "") ? input.attr("original") : input.val(), 10);
+                    usertag.b = parseInt((isNaN(newval) || newval === "") ? input.attr("original") : input.val(), 10);
                 } else {
-                    usertag.balance = parseInt(root.find("td[data='balance']").text(), 10);
+                    usertag.b = parseInt(root.find("td[data='balance']").text(), 10);
                 }
 
                 _this.module.SetTag(usertag); //save tag

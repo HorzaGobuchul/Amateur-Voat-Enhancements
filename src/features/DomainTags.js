@@ -18,7 +18,6 @@ AVE.Modules['DomainTags'] = {
         }
     },
 
-
     /*
     Add a "location" icon if empty, an "info" one if not (https://api.jquerymobile.com/icons/)
         Option to only display the tag on mouse over
