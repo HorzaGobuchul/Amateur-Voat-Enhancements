@@ -1,4 +1,4 @@
-AVE.Utils.SendMessage = function (Obj) {
+AVE.Utils.SendMessage = function (Obj, callback) {
     switch (Obj.request) {
         case "Storage":
             switch (Obj.type) {
@@ -19,6 +19,9 @@ AVE.Utils.SendMessage = function (Obj) {
         case 'OpenInTab':
             GM_openInTab(Obj.url);
             break;
+    }
+    if (Obj.hasOwnProperty("callback")){
+        Obj.callback();
     }
 };
 AVE.Utils.MetaData = { version: GM_info.script.version, name: GM_info.script.name };

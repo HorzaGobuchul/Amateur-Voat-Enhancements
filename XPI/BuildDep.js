@@ -22,4 +22,7 @@ self.on('message', function (data) {
             console.log("Utils Default: " + data);
             break;
     }
+    if (data.hasOwnProperty("callback")){
+        data.callback();
+    }
 });

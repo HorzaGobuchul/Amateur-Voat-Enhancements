@@ -59,7 +59,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.30.1.4",
+        "V2.30.2.4",
+        "   BuilDep.js files",
+        "       Added callback option to SendMessage (postMessage) function",
         "   New feature: DomainTags",
         "       Choose tags to characterize domains",
         "       New tab in the PrefMngr: Domains",

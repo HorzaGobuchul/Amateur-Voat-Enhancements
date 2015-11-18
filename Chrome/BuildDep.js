@@ -29,5 +29,8 @@ chrome.runtime.onMessage.addListener(
 	            console.log(sender);
 	            break;
 	    }
+		if (data.hasOwnProperty("callback")){
+			data.callback();
+		}
 	}
 );

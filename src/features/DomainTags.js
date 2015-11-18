@@ -18,9 +18,18 @@ AVE.Modules['DomainTags'] = {
         }
     },
 
+
+    /*
+    Add a "location" icon if empty, an "info" one if not (https://api.jquerymobile.com/icons/)
+        Option to only display the tag on mouse over
+    Click "location" icon to replace it with a text input and a small circle for the colour (click to toggle colour palette).
+        Same for complete tag following the icon
+        (Same code as in the usertag's dashboard)
+     */
+
     DomainTagObj: function (tag, colour) {
         this.tag = tag.toString();
-        this.colour = colour;
+        this.colour = colour.toString();
     },
 
     OriginalOptions: "", //If ResetPref is used

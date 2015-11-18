@@ -11,7 +11,6 @@ AVE.Modules['RememberCommentCount'] = {
     StorageName: "",
     Data: {},
     Processed: [],
-    TimeStamp: 0,
 
     RunAt: "ready",
 
@@ -36,10 +35,15 @@ AVE.Modules['RememberCommentCount'] = {
             Range: [1,5000],
             Desc: "Max number of threads to remember",
             Value: 400
-        },
+        }
     },
 
     OriginalOptions: "",
+
+    Username : "",
+    SubmissionID : "",
+    TimeStamp : 0,
+    Init : false,
 
     SavePref: function (POST) {
         var style = AVE.Utils.CSSstyle === "dark" ? 0 : 1;
@@ -86,7 +90,7 @@ AVE.Modules['RememberCommentCount'] = {
 
     Start: function () {
         this.AppendToPage();
-        this.Listeners();
+        this.Listeners(); // shouldn't be updated
     },
 
     Pruning: function(){
@@ -107,7 +111,7 @@ AVE.Modules['RememberCommentCount'] = {
 
     Update: function () {
         if (this.Enabled) {
-            this.Start();
+            this.AppendToPage();
         }
     },
 
@@ -115,38 +119,38 @@ AVE.Modules['RememberCommentCount'] = {
         var _this = this;
         var _style = AVE.Utils.CSSstyle === "dark" ? 0 : 1;
         var _count, _id;
-        //this.Data = {448721: 2, 594824: 2, 592949: 1};
+
+        _this.TimeStamp = Date.now();
+        //Current date with hour correction since timestamps on the page are GMT (CET-1)
+        _this.TimeStamp += (new Date(_this.TimeStamp).getTimezoneOffset() * 60000);
 
         if (AVE.Utils.currentPageType === "thread") { // comments
             var JqId = $("a.comments.may-blank:first");
             var _new = JqId.find("span").length == 0;
-            _count = parseInt(JqId.text().split(" ")[0], 10) || 0;
-            if (_count > 0){
-                _id = $("div.submission[class*='id-']:first").attr("id").split("-")[1];
-                if (this.Data.hasOwnProperty(_id)){
-                    if (_new){
-                        _this.TimeStamp = _this.Data[_id][1];
-                        if (_count > this.Data[_id][0]){
-                            JqId.append('&nbsp;<span style="font-weight:bold;color:#4189B1;">(+'+(_count - this.Data[_id][0])+')</span>');
+            _count = parseInt(JqId.text().split(" ")[0], 10) || 0;
+            if (_count > 0) {
+                _this.SubmissionID = _id = $("div.submission[class*='id-']:first").attr("id").split("-")[1];
+                if (this.Data.hasOwnProperty(_id)) {
+                    if (_new) {
+                        if (_count > this.Data[_id][0]) {
+                            JqId.append('&nbsp;<span style="font-weight:bold;color:#4189B1;">(+' + (_count - this.Data[_id][0]) + ')</span>');
                         }
                     }
 
-                    if(_this.Options.HighlightNewComments.Value){
-                        var CommId, CommTimeStamp;
-                        var CommAuthor, Username;
+                    if (_this.Options.HighlightNewComments.Value) {
+                        var CommId, CommTimeStamp, CommAuthor;
 
-                        Username = $("span.user > a[title='Profile']");
-                        Username = Username.length > 0 ? Username.text().toLowerCase() : "";
+                        _this.Username = $("span.user > a[title='Profile']");
+                        _this.Username = _this.Username.length > 0 ? _this.Username.text().toLowerCase() : "";
                         $("div.noncollapsed").each(function () {
                             CommId = $(this).attr("id");
                             CommAuthor = $(this).find("a.userinfo.author").text().toLowerCase();
 
-                            if ($.inArray(CommId, _this.Processed) === -1 && CommAuthor !== Username){
+                            if ($.inArray(CommId, _this.Processed) === -1 && CommAuthor !== _this.Username) {
                                 CommTimeStamp = new Date($(this).find("time:first").attr("datetime")).getTime();
-                                if (CommTimeStamp > _this.TimeStamp){
+                                if (CommTimeStamp > _this.TimeStamp) {
                                     $(this).parents("div[class*=' id-']:first").css('background-color', _this.Options.HighlightStyle.Value[_style]);
                                 }
-
                                 _this.Processed.push(CommId)
                             }
                         });
@@ -157,16 +161,23 @@ AVE.Modules['RememberCommentCount'] = {
                     //print("AVE: RememberCommentCount > adding "+ _id);
                 }
 
-                if (this.Data.hasOwnProperty(_id) && _count === this.Data[_id][0]){
-                    //Pass
-                } else if (_new) {
-                    //s("AVE: RememberCommentCount > Writing");
-                    //Update Stored Data in case multiple threads were opened at the same time (we don't want them to overwrite each others).
-                    AVE.Utils.SendMessage({ request: "Storage", type: "Update"});
-                    this.Data = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
+                if (!this.Init) {//We have no reason to update this again after loading more comments
+                    //If we do, we cannot update manually when the user adds a new comment
+                    if (this.Data.hasOwnProperty(_id) && _count === this.Data[_id][0]) {
+                        //Pass
+                    } else if (_new) {
+                        //s("AVE: RememberCommentCount > Writing");
+                        //Update Stored Data in case multiple threads were opened at the same time (we don't want them to overwrite each others).
+                        AVE.Utils.SendMessage({
+                            request: "Storage", type: "Update", callback: function () {
+                                _this.Data = JSON.parse(_this.Store.GetValue(_this.StorageName, "{}"));
 
-                    this.Data[_id] = [_count, Date.now()];
-                    this.Store.SetValue(this.StorageName, JSON.stringify(this.Data));
+                                _this.Data[_id] = [_count, _this.TimeStamp];
+                                _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.Data));
+                            }
+                        });
+                    }
+                    this.Init = true;
                 }
             }
         } else if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "search", "domain", "user-submissions"]) !== -1) { // submissions
@@ -187,21 +198,40 @@ AVE.Modules['RememberCommentCount'] = {
 
     Listeners: function () {
         var _this = this;
-        $("body")//Doesn't work. Not "live"
-            .off()
-            .on("click", "form[id^='commentreplyform-'] > input#submitbutton[value='Submit reply']",  function () {
-                var _id;
-                alert("New comment by user");
-                _id = $("div.submission[class*='id-']:first").attr("id").split("-")[1];
 
-                AVE.Utils.SendMessage({ request: "Storage", type: "Update"});
-                _this.Data = JSON.parse(_this.Store.GetValue(_this.StorageName, "{}"));
+        if (AVE.Utils.currentPageType === "thread") {
+            var timestamp = Date.now();
+            //listen on new nodes added to the div containing all comments
+            $("div.commentarea > div#siteTable").on("DOMNodeInserted",  function (e) {
+                var _id, _target;
 
-                if (_this.Data.hasOwnProperty(_id)){
-                    _this.Data[_id][0] = _this.Data[_id][0]++;
-                    _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.Data));
+                _id = _this.SubmissionID;
+                _target = $(e.target);
+                //If the new element is a div with classes: "comment" and "child". Is it a comment?
+                if(_target.is("div.comment.child")){
+                    var CommTimeStamp, CommAuthor;
+                    //CommId = $(this).attr("id");
+                    CommAuthor = _target.find("a.userinfo.author").text().toLowerCase();
+                    CommTimeStamp = new Date(_target.find("time:first").attr("datetime")).getTime();
+                    //If  the new comment is from the same username as the one used by the current logged user
+                    //and the comment was added after this page was loaded
+                    if (CommAuthor === _this.Username && CommTimeStamp > timestamp) {
+                        //Update data storage and parse it as object from JSON
+                        AVE.Utils.SendMessage({ request: "Storage", type: "Update", callback: function () {
+                            _this.Data = JSON.parse(_this.Store.GetValue(_this.StorageName, "{}"));
+                            //If we have an entry stored for this thread (there is no reason there is not, but this is a security)
+                            if (_this.Data.hasOwnProperty(_id)) {
+                                //Increment comment count since the user just added one
+                                _this.Data[_id][0]++;
+                                //We don't update the timestamp because other users may have added comments too
+                                //Save new data
+                                _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.Data));
+                            }
+                        }});
+                    }
                 }
             });
+        }
     },
 
     AppendToPreferenceManager: {
