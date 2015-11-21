@@ -115,7 +115,8 @@ span.AVE_UserTag{\
     padding: 0px 4px;\
     border:1px solid #' + (AVE.Utils.CSSstyle === "dark" ? "FFF" : "484848") + ';\
     color:#' + (AVE.Utils.CSSstyle === "dark" ? "FFF" : "000") + ';\
-    border-radius:3px;font-size:10px;\
+    border-radius:3px;\
+    font-size:10px;\
 }\
 span.AVE_UserTag:empty{\
     border:0px;\
@@ -260,11 +261,11 @@ table#formTable{\
 
             if ($(this).attr('href').split("/")[2].toLowerCase() !== name) { return true; } //don't add if this is a link whose label isn't the username
 
-            tag = _this.GetTag(name) || new _this.UserTagObj("",  "", false, 0);
+            tag = _this.GetTag(name) || {};// || new _this.UserTagObj("",  "", false, 0);
 
-            Tag_html = '<span class="AVE_UserTag" id="' + name + '">' + (!tag.t ? "" : tag.t) + '</span>';
+            Tag_html = '<span class="AVE_UserTag" id="' + name + '">' + (tag.t || "") + '</span>';
             if (_this.Options.VoteBalance.Value) {
-                if (tag.b !== 0) {
+                if (tag.b && tag.b !== 0) {
                     var valence = tag.b > 0;
                     var sign = valence ? "+" : "";
                     var progValence = valence ? Math.min(100, tag.b) : Math.max(-100, tag.b);
@@ -282,7 +283,7 @@ table#formTable{\
 
                     Tag_html += '<span '+style+' class="AVE_UserBalance" id="' + name + '">[ ' + sign + tag.b + ' ]</span>';
                 } else {
-                    Tag_html += '<span class="AVE_UserBalance" id="' + name + '"></span>';
+                    Tag_html += '<span style="display:none;" class="AVE_UserBalance" id="' + name + '"></span>';
                 }
             }
             $(Tag_html).insertAfter($(this));
@@ -354,7 +355,7 @@ table#formTable{\
             JqId1.val(oldTag === "+" ? "" : oldTag);
             $("tr#ShowPreview > td > span#PreviewBox").text(oldTag === "+" ? "" : oldTag);
             if (usertag !== undefined) {
-                JqId2.val(usertag.col !== "" ? usertag.col : (AVE.Utils.CSSstyle === "dark" ? "#d1d1d1" : "#e1fcff"));
+                JqId2.val(usertag.col ? usertag.col : (AVE.Utils.CSSstyle === "dark" ? "#d1d1d1" : "#e1fcff"));
                 JqId2.change();
                 if (usertag.i) { $("tr#SetIgnore > td > input#ToggleIgnore").prop('checked', "true"); }
                 $("tr#SetBalance > td > input#voteBalance").val(usertag.b);
@@ -448,29 +449,30 @@ table#formTable{\
         //print("oldvalue: "+oldValue);
         //print("newvalue: "+$(target).attr('class'));
 
+
         var username = $(target).parent().find("p.tagline").find(".AVE_UserTag:first");
         if (!username) { return true; } //If we couldn't find a username in the tagline that means this is
         username = username.attr("id").toLowerCase();
         if (!username) { return true; }
 
         var tag = this.GetTag(username);
-        var opt = { username: username, t: tag.t || '', col: tag.col || "#d1d1d1", i: tag.i || false, b: tag.b || 0 };
+        var opt = { username: username, t: tag.t || '', col: tag.col || "#d1d1d1", i: tag.i || false, b: tag.b || 0, con: tag.con };
 
         //If the previous status was "unvoted"
         if (oldValue === "midcol unvoted") {
-            if ($(target).hasClass('likes')) { opt.balance += 1; }
-            else if ($(target).hasClass('dislikes')) { opt.balance -= 1; }
+            if ($(target).hasClass('likes')) { opt.b += 1; }
+            else if ($(target).hasClass('dislikes')) { opt.b -= 1; }
         }
         else {
             //If the previous status was "upvoted"
             if (oldValue === "midcol likes") {
-                if ($(target).hasClass('unvoted')) { opt.balance -= 1; }
-                else if ($(target).hasClass('dislikes')) { opt.balance -= 2; }
+                if ($(target).hasClass('unvoted')) { opt.b -= 1; }
+                else if ($(target).hasClass('dislikes')) { opt.b -= 2; }
             }
                 //If the previous status was "downvoted"
             else if (oldValue === "midcol dislikes") {
-                if ($(target).hasClass('likes')) { opt.balance += 2; }
-                else if ($(target).hasClass('unvoted')) { opt.balance += 1; }
+                if ($(target).hasClass('likes')) { opt.b += 2; }
+                else if ($(target).hasClass('unvoted')) { opt.b += 1; }
             }
         }
 
@@ -514,9 +516,10 @@ table#formTable{\
 
                     $(this).nextAll("span.AVE_UserBalance:first")
                         .text('[ ' + sign + tag.b + ' ]')
-                        .attr("style", style);
+                        .attr("style", style)
+                        .show();
                 } else {
-                    $(this).nextAll("span.AVE_UserBalance:first").text("");
+                    $(this).nextAll("span.AVE_UserBalance:first").text("").hide();
                 }
             }
         });
@@ -536,15 +539,17 @@ table#formTable{\
             delete this.usertags[opt.username].t;
             delete this.usertags[opt.username].col;
         }
-        if (!val.balance){
+        if (!this.usertags[opt.username].b){
             delete this.usertags[opt.username].b;
         }
         if (!this.usertags[opt.username].i){
             delete this.usertags[opt.username].i;
         }
         if (!this.usertags[opt.username].con){
-            delete this.usertags[opt.username].c;
+            delete this.usertags[opt.username].con;
         }
+
+        print(JSON.stringify(this.usertags[opt.username]));
 
         this.Store.SetValue(this.StorageName, JSON.stringify(this.usertags));
     },
@@ -621,10 +626,12 @@ table#formTable{\
                     margin\
                 }\
                 table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(1){\
+                    /* Username */\
                     font-weight: bold;\
                     text-align: left;\
                 }\
                 table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(2){\
+                    /* Tag */\
                     text-align: left;\
                     width: 100px;\
                     max-width: 150px;\
@@ -633,18 +640,33 @@ table#formTable{\
                     white-space: nowrap;\
                     padding-right: 10px;\
                 }\
-                table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(6){\
+                table#AVE_Dashboard_usertags_table > tbody > tr > td[data="context"][title]{\
+                    /* context non-null*/\
+                    /* SVG from Jquery Mobile Icon Set */\
+                    background-image:url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + '%22%20d%3D%22M12%2C0H2C0.896%2C0%2C0%2C0.896%2C0%2C2v7c0%2C1.104%2C0.896%2C2%2C2%2C2h1v3l3-3h6c1.104%2C0%2C2-0.896%2C2-2V2C14%2C0.896%2C13.104%2C0%2C12%2C0z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E");\
+                }\
+                table#AVE_Dashboard_usertags_table > tbody > tr > td[data="context"]{\
+                    /* context default */\
+                    height: 14px;\
+                    width: 14px;\
+                    /* SVG from Jquery Mobile Icon Set */\
+                    background-image:url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23' + (AVE.Utils.CSSstyle === "dark" ? "444" : "f2f2f2" ) + '%22%20d%3D%22M12%2C0H2C0.896%2C0%2C0%2C0.896%2C0%2C2v7c0%2C1.104%2C0.896%2C2%2C2%2C2h1v3l3-3h6c1.104%2C0%2C2-0.896%2C2-2V2C14%2C0.896%2C13.104%2C0%2C12%2C0z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E");\
+                    background-repeat: no-repeat;\
+                    background-position: center;\
+                }\
+                table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(7){\
+                    /* Preview */\
                     width: 140px;\
                 }\
                 table#AVE_Dashboard_usertags_table > tbody > tr > td:last-child{\
-                    border-left : 1px solid #'+(AVE.Utils.CSSstyle === "dark" ? "3F3F3F" : "DDD")+';\
+                    /* Delete */\
                     height: 14px;\
                     width: 14px;\
                     /* SVG from Jquery Mobile Icon Set */\
                     background-image:url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpolygon%20fill%3D%22%23' + (AVE.Utils.CSSstyle === "dark" ? "af3f3f" : "ce6d6d") + '%22%20points%3D%2214%2C3%2011%2C0%207%2C4%203%2C0%200%2C3%204%2C7%200%2C11%203%2C14%207%2C10%2011%2C14%2014%2C11%2010%2C7%20%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E")!important;\
                     background-repeat: no-repeat;\
-                    display: inline-block;\
                     cursor: pointer;\
+                    background-position: center;\
                 }\
                 a#AVE_Dashboard_navigate_tags[role]{\
                     margin: 0px 5px 10px 0px;\
@@ -697,10 +719,13 @@ table#formTable{\
             $.each(keys, function (idx, key) {
 
                 tempObj = tempUsertags[key];
-                if (tempObj.t.length === 0 && tempObj.ignored === false) { return true; } //Don't show empty tags
+
+                if (!tempObj.t && !tempObj.i) { return true; } //Don't show empty tags
 
                 tempObj.name = key;
-                tempObj.i = tempObj.ignored ? "Yes" : "No";
+                tempObj.i = tempObj.i ? "Yes" : "No";
+                tempObj.b = tempObj.b || 0;
+                tempObj.con = tempObj.con || "";
                 _this.usertags.push( JSON.stringify( tempObj ) );
 
             });
@@ -719,10 +744,11 @@ table#formTable{\
                                     '<th>Tag</th>' +            //click to show input box
                                     '<th>Colour</th>' +         //click to show color picker
                                     '<th>Ignored</th>' +        //click to toggle ignore
-                                    '<th>Vote balance</th>' +   //click to show input box
+                                    '<th>Vote</th>' +           //click to show input box
+                                    '<th>Context</th>' +        //click to show Context box
                                     '<th>Preview</th>' +
                                     '<th role="remove"></th>' + //click to remove entire tag
-                                '</tr>' +
+                                '</tr>' +//ADD context (as [link] click to go to, icon to edit (prompt alert)
                             '</thead>';
             htmlTable +=    this.paging(start, this.tagsperpage);
             htmlTable += "</table>";
@@ -734,7 +760,14 @@ table#formTable{\
             htmlStr += htmlNavButtons;
 
             htmlStr +='<br><div style="margin-top:20px;font-weight:bold;">Click on a value to modify it.'+
-                '<br> Click the buttons on either sides to navigate through the table pages or use the arrow keys (+Ctrl to go to the first or last page)</div>';
+                '<br> Click the buttons on either sides to navigate through the table pages or use the arrow keys (+Ctrl to go to the first or last page)';
+
+            htmlStr += '<br>Context: <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#'+(AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB")+'"d="M12,0H2C0.896,0,0,0.896,0,2v7c0,1.104,0.896,2,2,2h1v3l3-3h6c1.104,0,2-0.896,2-2V2C14,0.896,13.104,0,12,0z"/><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>' +
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None: <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#'+(AVE.Utils.CSSstyle === "dark" ? "444" : "f2f2f2" )+'" d="M12,0H2C0.896,0,0,0.896,0,2v7c0,1.104,0.896,2,2,2h1v3l3-3h6c1.104,0,2-0.896,2-2V2C14,0.896,13.104,0,12,0z"/><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>' +
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Edit: <svg title="Edit" style="cursor:pointer;" version="1.1" id="editContext" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + '" d="M1,10l-1,4l4-1l7-7L8,3L1,10z M11,0L9,2l3,3l2-2L11,0z"/><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>' +
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Peek: <svg version="1.1" id="peakContext" title="A comment or an URL would be here"  style="cursor:help;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path style="fill:#' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + ';" d="M7,2C3,2,0,7,0,7s3,5,7,5s7-5,7-5S11,2,7,2z M7,10c-1.657,0-3-1.344-3-3c0-1.657,1.343-3,3-3 s3,1.343,3,3C10,8.656,8.657,10,7,10z M7,6C6.448,6,6,6.447,6,7c0,0.553,0.448,1,1,1s1-0.447,1-1C8,6.447,7.552,6,7,6z"/></svg>' +
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Open link: <svg title="Open in new tab" style="cursor:alias;" version="1.1" id="openInTab" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path style="fill:#' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + ';" d="M13,4L9,0v3C6,3,1,4,1,8c0,5,7,6,7,6v-2c0,0-5-1-5-4s6-3,6-3v3L13,4z"/></svg>' +
+                '</div>';
 
             return htmlStr;
         },
@@ -802,6 +835,46 @@ table#formTable{\
 
                     $(this).text(newval);
                     _this.editTag($(this), "ignore");
+                });
+            $('table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(6)') //Show context option (goto link, edit)
+                .off()
+                .on("mouseenter", function () { //Display option box
+                    var JqId = $(this);
+                    var boxHtml = ''; //Edit : Forward
+
+                    var context = JqId.attr("title");
+
+                    boxHtml += '<svg title="Edit" style="cursor:pointer;" version="1.1" id="editContext" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + '" d="M1,10l-1,4l4-1l7-7L8,3L1,10z M11,0L9,2l3,3l2-2L11,0z"/><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>';
+
+                    if(context){
+                        var url;
+                        boxHtml += '<svg version="1.1" id="peakContext" title="'+context+'"  style="cursor:help;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path style="fill:#' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + ';" d="M7,2C3,2,0,7,0,7s3,5,7,5s7-5,7-5S11,2,7,2z M7,10c-1.657,0-3-1.344-3-3c0-1.657,1.343-3,3-3 s3,1.343,3,3C10,8.656,8.657,10,7,10z M7,6C6.448,6,6,6.447,6,7c0,0.553,0.448,1,1,1s1-0.447,1-1C8,6.447,7.552,6,7,6z"/></svg>';
+
+                        if (!/^http/.test(context)) { url = "https://" + window.location.hostname + context; }
+                        else{ url = context; }
+                        boxHtml += '<svg onclick="window.open(\''+url+'\');return false;" title="Open in new tab" style="cursor:alias;" version="1.1" id="openInTab" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path style="fill:#' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + ';" d="M13,4L9,0v3C6,3,1,4,1,8c0,5,7,6,7,6v-2c0,0-5-1-5-4s6-3,6-3v3L13,4z"/></svg>';
+                    }
+                    $(this).html(boxHtml)
+                        .css("background-image", "none");
+
+                    $("svg#editContext").on("click", function () {
+                        var newcontext = prompt(context ? "Choose new context" : "Edit context", context);
+                        if (newcontext === null){newcontext = context;}
+                        JqId.attr("title", newcontext);
+                        _this.editTag(JqId, "context");
+                    });
+                })
+                .on("mouseleave", function () { //Hide option box
+                    $("svg#editContext").off();
+                    $(this).html("")
+                        .css("background-image", "");
+                })
+                .on('dblclick', function() { //If a context exists try to open it in a new page
+                    if($(this).is(":not([title])")){return;}
+                    var url = $(this).attr("title");
+                    if (!/^http/.test(url)) { url = "https://" + window.location.hostname + url; }
+
+                    AVE.Utils.SendMessage({ request: "OpenInTab", url: url });
                 });
             $('table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(5)') //edit vote-balance
                 .off()
@@ -887,10 +960,11 @@ table#formTable{\
                     root = input.parents("tr:first");
                 }
 
-
                 usertag = {};
                 usertag.username = root.attr("username");
-                usertag.i   = root.find("td[data='ignore']").text() === "Yes";
+                usertag.i = root.find("td[data='ignore']").text() === "Yes";
+                usertag.con = root.find("td[data='context']").attr("title");
+                if (!usertag.con){delete usertag.con;}
 
                 if (dtype === "tag"){
                     usertag.t = input.val();
@@ -945,17 +1019,18 @@ table#formTable{\
 
                 obj = JSON.parse(this.usertags[i]);
 
-                colour = AVE.Utils.GetRGBvalues(obj.colour);
+                colour = AVE.Utils.GetRGBvalues(obj.col);
                 r = colour[0]; g = colour[1]; b = colour[2];
                 bestColour = AVE.Utils.GetBestFontColour(r, g, b);
 
                 htmlStr += '<tr username="'+obj.name+'">';
                 htmlStr +=      '<td><a href="/user/'+obj.name+'" >'+obj.name+'</a></td>' +
-                                '<td data="tag"><span title="'+obj.tag+'">'+obj.tag+'</span></td>' +
-                                '<td data="colour" style="background-color:'+obj.colour+'; color:'+bestColour+';">'+obj.colour+'</td>' +
-                                '<td data="ignore">'+obj.ignored+'</td>' +
-                                '<td data="balance">'+obj.balance+'</td>' +
-                                '<td><span id="PreviewBox" style="background-color:'+obj.colour+';color:'+bestColour+';">'+obj.tag+'</span></td>' +
+                                '<td data="tag"><span title="'+obj.t+'">'+obj.t+'</span></td>' +
+                                '<td data="colour" style="background-color:'+obj.col+'; color:'+bestColour+';">'+obj.col+'</td>' +
+                                '<td data="ignore">'+obj.i+'</td>' +
+                                '<td data="balance">'+obj.b+'</td>' +
+                                '<td data="context" '+ (obj.con ? ('title="'+obj.con+'"') : '') +'></td>' +
+                                '<td><span id="PreviewBox" style="background-color:'+obj.col+';color:'+bestColour+';">'+obj.t+'</span></td>' +
                                 '<td role="remove_icon"></td>';
                 htmlStr += "</tr>";
             }

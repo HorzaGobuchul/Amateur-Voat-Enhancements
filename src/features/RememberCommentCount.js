@@ -35,6 +35,11 @@ AVE.Modules['RememberCommentCount'] = {
             Range: [1,5000],
             Desc: "Max number of threads to remember",
             Value: 400
+        },
+        CorrectTimeZone: {
+            Type: 'boolean',
+            Desc: "Correct time zones (beta).",
+            Value: true
         }
     },
 
@@ -42,7 +47,8 @@ AVE.Modules['RememberCommentCount'] = {
 
     Username : "",
     SubmissionID : "",
-    TimeStamp : 0,
+    NewTimeStamp : 0,
+    OldTimeStamp : 0,
     Init : false,
 
     SavePref: function (POST) {
@@ -89,6 +95,13 @@ AVE.Modules['RememberCommentCount'] = {
     },
 
     Start: function () {
+
+        this.NewTimeStamp = Date.now();
+        if (this.Options.CorrectTimeZone.Value){
+            //Current date with hour correction since timestamps on the page are UTC+1 (CET)
+            this.NewTimeStamp += (new Date(this.NewTimeStamp).getTimezoneOffset() * 60000);
+        }
+
         this.AppendToPage();
         this.Listeners(); // shouldn't be updated
     },
@@ -120,10 +133,6 @@ AVE.Modules['RememberCommentCount'] = {
         var _style = AVE.Utils.CSSstyle === "dark" ? 0 : 1;
         var _count, _id;
 
-        _this.TimeStamp = Date.now();
-        //Current date with hour correction since timestamps on the page are GMT (CET-1)
-        _this.TimeStamp += (new Date(_this.TimeStamp).getTimezoneOffset() * 60000);
-
         if (AVE.Utils.currentPageType === "thread") { // comments
             var JqId = $("a.comments.may-blank:first");
             var _new = JqId.find("span").length == 0;
@@ -137,6 +146,10 @@ AVE.Modules['RememberCommentCount'] = {
                         }
                     }
 
+                    if (!this.OldTimeStamp){
+                        this.OldTimeStamp = this.Data[_id][1];
+                    }
+
                     if (_this.Options.HighlightNewComments.Value) {
                         var CommId, CommTimeStamp, CommAuthor;
 
@@ -148,7 +161,11 @@ AVE.Modules['RememberCommentCount'] = {
 
                             if ($.inArray(CommId, _this.Processed) === -1 && CommAuthor !== _this.Username) {
                                 CommTimeStamp = new Date($(this).find("time:first").attr("datetime")).getTime();
-                                if (CommTimeStamp > _this.TimeStamp) {
+                                if (this.Options.CorrectTimeZone.Value){
+                                    CommTimeStamp += (-60 * 60000); //Convert to UTC from CET(UTC+1)
+                                }
+
+                                if (CommTimeStamp > _this.OldTimeStamp) {
                                     $(this).parents("div[class*=' id-']:first").css('background-color', _this.Options.HighlightStyle.Value[_style]);
                                 }
                                 _this.Processed.push(CommId)
@@ -172,7 +189,7 @@ AVE.Modules['RememberCommentCount'] = {
                             request: "Storage", type: "Update", callback: function () {
                                 _this.Data = JSON.parse(_this.Store.GetValue(_this.StorageName, "{}"));
 
-                                _this.Data[_id] = [_count, _this.TimeStamp];
+                                _this.Data[_id] = [_count, _this.NewTimeStamp];
                                 _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.Data));
                             }
                         });
@@ -245,6 +262,8 @@ AVE.Modules['RememberCommentCount'] = {
 
             htmlStr += '<div style="display:inline;padding-left:15px;padding-right:15px;margin-right:10px;" id="Demo_HighlightStyle"></div>';
             htmlStr += '<input style="font-size:12px;display:inline;width:60px;padding:0px;" class="form-control" type="text" Module="' + _this.ID + '" id="HighlightStyle" Value="'+_this.Options.HighlightStyle.Value[style]+'"/> - Highlight CSS value<br />';
+
+            htmlStr += '<input id="CorrectTimeZone" ' + (_this.Options.CorrectTimeZone.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="CorrectTimeZone"> ' + _this.Options.CorrectTimeZone.Desc + '</label><br />';
 
             return htmlStr;
         },
