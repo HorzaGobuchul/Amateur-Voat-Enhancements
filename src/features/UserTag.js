@@ -427,7 +427,7 @@ table#formTable{\
         });
 
         //If Enter/Return is pressed while the focus is on one of the two text input, we save the tag.
-        $(document).off("keyup");
+        //$(document).off("keyup"); // Not a good idea to remove all "keyup" listeners bound to document
         $(document).on("keyup", function (e) {
             if (e.which === 13) {
                 if ($(e.target).attr("class") === "UserTagTextInput") {
@@ -549,7 +549,7 @@ table#formTable{\
             delete this.usertags[opt.username].con;
         }
 
-        print(JSON.stringify(this.usertags[opt.username]));
+        //print(JSON.stringify(this.usertags[opt.username]));
 
         this.Store.SetValue(this.StorageName, JSON.stringify(this.usertags));
     },

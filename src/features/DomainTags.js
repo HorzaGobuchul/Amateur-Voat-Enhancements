@@ -15,23 +15,11 @@ AVE.Modules['DomainTags'] = {
         Enabled: {
             Type: 'boolean',
             Value: false
-        },
-        ShowOnMouseOver: {
-            Type: 'boolean',
-            Desc: 'Hide tags by default, only show on mouse over.',
-            Value: false
-        },
+        }
     },
 
     Style: "",
-
-    /*
-    Add a "location" icon if empty, an "info" one if not (https://api.jquerymobile.com/icons/)
-        Option to only display the tag on mouse over
-    Click "location" icon to replace it with a text input and a small circle for the colour (click to toggle colour palette).
-        Same for complete tag following the icon
-        (Same code as in the usertag's dashboard)
-     */
+    DomainTags: "",
 
     DomainTagObj: function (tag, colour) {
         this.t = tag.toString();
@@ -55,7 +43,9 @@ AVE.Modules['DomainTags'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            _this.Options[key].Value = value;
+            if (_this.Options.hasOwnProperty(key)){
+                _this.Options[key].Value = value;
+            }
         });
         this.Enabled = this.Options.Enabled.Value;
     },
@@ -69,39 +59,55 @@ AVE.Modules['DomainTags'] = {
             this.style =
                 'div.AVE_Domain_tag {' +
                 '   margin-left: 5px;' +
-                '   border: 1px solid #929292;' +
-                '   color: #777;' +
-                '   padding: 0px 4px;' +
-                '   border-radius: 3px;' +
-                '   font-size: 10px;' +
+                '   cursor: pointer;' +
+                '   display: inline-block;' +
+                '}' +
+                'div.AVE_Domaintag_box > span {' +
+                '   cursor: pointer;' +
+                '   font-size: 14px;' +
+                '   margin-left: 2px;' +
+                '   margin-right: 2px;' +
+                '}' +
+                'div.AVE_Domaintag_box > div#ColourDot {' +
+                '	width: 15px;' +
+                '	height: 15px;' +
+                '	border-radius: 10px;' +
+                '	display: inline;' +
+                '	float: right;' +
+                '   margin: 2px 2px 2px 0px;' +
+                '	border: 2px solid black;' +
                 '   cursor: pointer;' +
                 '}' +
-                'div.AVE_Domain_tag:empty {' +
-                '   border:0px;' +
-                '   background-repeat: no-repeat;' +
-                '   display: inline-block;' +
-                '   width: 14px;' +
-                '   height: 14px;' +
-                '   background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20style%3D%22fill%3A%23' + (AVE.Utils.CSSstyle === "dark" ? "777" : "BBB") + '%22%20d%3D%22M7%2C0C4.791%2C0%2C3%2C1.791%2C3%2C4c0%2C2%2C4%2C10%2C4%2C10s4-8%2C4-10C11%2C1.791%2C9.209%2C0%2C7%2C0z%20M7%2C6C5.896%2C6%2C5%2C5.104%2C5%2C4%20s0.896-2%2C2-2c1.104%2C0%2C2%2C0.896%2C2%2C2S8.104%2C6%2C7%2C6z%22%2F%3E%3C%2Fsvg%3E");' +
+                'div.AVE_Domaintag_box > input[type="text"] {' +
+                '	height: 19px;' +
+                '	width: 220px;' +
+                '	border: medium none;' +
+                '	padding-left: 5px;' +
+                '	background-color: #414141;' +
                 '}' +
-                'div.AVE_Domain_tag:empty:hover {' +
-                '   background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20style%3D%22fill%3A%23' + (AVE.Utils.CSSstyle === "dark" ? "438BB7" : "BBB") + '%22%20d%3D%22M7%2C0C4.791%2C0%2C3%2C1.791%2C3%2C4c0%2C2%2C4%2C10%2C4%2C10s4-8%2C4-10C11%2C1.791%2C9.209%2C0%2C7%2C0z%20M7%2C6C5.896%2C6%2C5%2C5.104%2C5%2C4%20s0.896-2%2C2-2c1.104%2C0%2C2%2C0.896%2C2%2C2S8.104%2C6%2C7%2C6z%22%2F%3E%3C%2Fsvg%3E");' +
+                'div.AVE_Domaintag_box {' +
+                    'background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "333" : "FFF") + ';' +
+                    (AVE.Utils.CSSstyle === "dark" ? "" : "color: #707070;") +
+                    'z-index: 1000 !important;' +
+                    'position:absolute;' +
+                    'left:0px;' +
+                    'top:0px;' +
+                    'border: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "000" : "D1D1D1") + ';' +
+                    'border-radius:3px;' +
+                    'width:300px;' +
                 '}' +
-                'div.AVE_Domain_tag[hover="true"] {' +
-                '   border:0px;' +
-                '   background-repeat: no-repeat;' +
-                '   display: inline-block;' +
-                '   background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23' + (AVE.Utils.CSSstyle === "dark" ? "4f4f4f" : "BBB") + '%22%20d%3D%22M7%2C0C3.134%2C0%2C0%2C3.134%2C0%2C7s3.134%2C7%2C7%2C7s7-3.134%2C7-7S10.866%2C0%2C7%2C0z%20M7%2C2c0.552%2C0%2C1%2C0.447%2C1%2C1S7.552%2C4%2C7%2C4S6%2C3.553%2C6%2C3%20S6.448%2C2%2C7%2C2z%20M9%2C11H5v-1h1V6H5V5h3v5h1V11z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E");' +
-                '   background-position: left center;' +
+                'div.AVE_Domain_tag > svg {' +
                 '   vertical-align: middle;' +
                 '}' +
-                'div.AVE_Domain_tag[hover="true"]:hover {' +
-                '   background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23' + (AVE.Utils.CSSstyle === "dark" ? "438BB7" : "BBB") + '%22%20d%3D%22M7%2C0C3.134%2C0%2C0%2C3.134%2C0%2C7s3.134%2C7%2C7%2C7s7-3.134%2C7-7S10.866%2C0%2C7%2C0z%20M7%2C2c0.552%2C0%2C1%2C0.447%2C1%2C1S7.552%2C4%2C7%2C4S6%2C3.553%2C6%2C3%20S6.448%2C2%2C7%2C2z%20M9%2C11H5v-1h1V6H5V5h3v5h1V11z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E");' +
-                '}' +
-                'div.AVE_Domain_tag_content {' +
-                '   display:none;' +
+                'div.AVE_Domaintag_box > svg {' +
+                '   vertical-align: middle;' +
+                '   margin-left: 2px;' +
                 '}';
             AVE.Utils.AddStyle(this.style);
+
+            this.StorageName = this.Store.Prefix + this.ID + "_Tags";
+            this.DomainTags = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
+
             this.Start();
         }
     },
@@ -120,66 +126,191 @@ AVE.Modules['DomainTags'] = {
     AppendToPage: function () {
         "use strict";
         var _this;
-
         _this = this;
 
         $("p.title > span.domain > a").each(function () {
             var domain;
+            var tag, colour;
             domain = $(this).text();
-            if (/self\.[a-zA-Z0-9]?/.test(domain)){return true;}
-            if ($(this).parent().find("div.AVE_Domain_tag").length === 0){
 
-
-                $('<div class="AVE_Domain_tag"></div>').insertAfter($(this));
-                var JqId = $(this).parent().find("div.AVE_Domain_tag");
-
-                var tag = "This is a longer TAG";
-                //tag = "";
-
-                //https://stackoverflow.com/questions/14255631/style-svg-circle-with-css
-
-                //If comment exists
-                if (_this.Options.ShowOnMouseOver.Value){
-                    JqId.attr("hover", "true");
-                    JqId.attr("title", tag);
-                } else {
-                    JqId.text(tag);
-                }
-                //If comment exists
+            if (_this.DomainTags[domain]) {
+                tag = _this.DomainTags[domain].t;
+                colour = _this.DomainTags[domain].c;
             }
+            if (/self\.[a-zA-Z0-9]?/.test(domain)){return true;}
 
+            if ($(this).parent().find("div.AVE_Domain_tag").length === 0) {
+                $('<div class="AVE_Domain_tag"></div>').insertAfter($(this));
+                var el = $(this).parent().find("div.AVE_Domain_tag");
+
+                if (!tag && !colour) {
+                    el.html('<svg onmouseleave="javascript:$(this).find(\'path:first\').css(\'fill\', \'#' + (AVE.Utils.CSSstyle === "dark" ? "777" : "BBB") + '\');return false;" onmouseover="javascript:$(this).find(\'path:first\').css(\'fill\', \'#' + (AVE.Utils.CSSstyle === "dark" ? "438BB7" : "4AABE7") + '\');return false;" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path style="fill:#' + (AVE.Utils.CSSstyle === "dark" ? "777" : "BBB") + '" d="M7,0C4.791,0,3,1.791,3,4c0,2,4,10,4,10s4-8,4-10C11,1.791,9.209,0,7,0z M7,6C5.896,6,5,5.104,5,4 s0.896-2,2-2c1.104,0,2,0.896,2,2S8.104,6,7,6z"/></svg>');
+                    el.attr("title", "Click to create a new tag");
+                } else {
+                    if (!tag) { tag = "No tag"; }
+                    else if (!colour) { colour = (AVE.Utils.CSSstyle === "dark" ? "777" : "BBB"); }
+                    el.attr("title", tag);
+                    el.html('<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="' + colour + '" d="M7,0C3.134,0,0,3.134,0,7s3.134,7,7,7s7-3.134,7-7S10.866,0,7,0z M7,2c0.552,0,1,0.447,1,1S7.552,4,7,4S6,3.553,6,3 S6.448,2,7,2z M9,11H5v-1h1V6H5V5h3v5h1V11z"/></svg>');
+                }
+            }
         });
     },
 
     Listeners: function () {
         "use strict";
         var _this;
-
         _this = this;
 
-        if (_this.Options.ShowOnMouseOver.Value){
-            //$("div.AVE_Domain_tag[hover='true'][tag]").off().on("mouseenter", function () {
-            //    $(this).text($(this)
-            //        .attr("tag"));
-            //        //.css("padding-left", "18px");
-            //}).on("mouseleave", function () {
-            //    $(this).text("");
-            //        //.css("padding-left", "");
-            //});
-        }
+        $("div.AVE_Domain_tag").off().on("click", function (e) {
+            //e.stopPropagation();
+            var domain, box;
+            var tag, colour;
+
+            domain = $(this).parent().find("a").text();
+
+            if (_this.DomainTags[domain]) {
+                tag = _this.DomainTags[domain].t;
+                colour = _this.DomainTags[domain].c;
+            }
+            box = $("div.AVE_Domaintag_box");
+
+            if (box.length === 0){
+                let boxHtml;
+
+                boxHtml = '' +
+                    '<div domain="void" class="AVE_Domaintag_box">' +
+                    '   <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#FF0000" d="M7,0C3.134,0,0,3.134,0,7s3.134,7,7,7s7-3.134,7-7S10.866,0,7,0z M7,2c0.552,0,1,0.447,1,1S7.552,4,7,4S6,3.553,6,3 S6.448,2,7,2z M9,11H5v-1h1V6H5V5h3v5h1V11z"/></svg>' +
+                    '   <input placeholder="Click here to create a new tag" id="AVE_Domaintag_box_textinput" type="text" value="">' +
+                    '   <span id="cancel" title="Cancel and close" style="float:right;">✖</span>' +
+                    '   <span id="submit" title="Accept and save" style="float:right;">✔</span>' +
+                    '   <div id="ColourDot" title="Click to choose a color"></div><input style="display: none;" type="color" value="">' +
+                    '</div>';
+
+                $("body").append(boxHtml);
+
+                box = $("div.AVE_Domaintag_box");
+                box.find("div#ColourDot").on("click", function () {
+                    var dot = $(this);
+                    dot.parent().find("input[type='color']")
+                        .trigger("click")
+                        .on("change", function () {
+                            dot.css("background-color", $(this).val());
+                            dot.parent().find("svg > path").css("fill", $(this).val());
+                        });
+                });
+                box.find("input[type='text']").on("input", function () {
+                    box.find("svg").attr("title", $(this).val() || "No tag");
+                });
+
+                box.find("span#cancel").off().on("click", function () {
+                    box.hide();
+                });
+                box.find("span#submit").off().on("click", function () {
+                    domain = box.attr("domain");
+                    tag = box.find("input[type='text']").val();
+                    colour = box.find("input[type='color']").val();
+
+                    _this.setTag(domain, tag, colour);
+                    _this.updateTag(domain);
+                    box.hide();
+                });
+                box.hide();
+            }
+
+            if (box.is(":hidden")){
+                box.attr("domain", domain);
+                box.find("input[type='text']").val(tag).select();
+                box.find("input[type='color']").val(colour || (AVE.Utils.CSSstyle === "dark" ? "#438BB7" : "#4AABE7"));
+                box.find("div#ColourDot").css("background-color", colour || (AVE.Utils.CSSstyle === "dark" ? "#438BB7" : "#4AABE7"));
+                box.find("svg > path").css("fill", colour || (AVE.Utils.CSSstyle === "dark" ? "#438BB7" : "#4AABE7"));
+                box.find("svg").attr("title", tag || "No tag");
+
+                var position = $(this).offset();
+                position.top -= 5;
+                box.css(position)
+                    .show();
+            } else {
+                box.hide(); //just a security, but it shouldn't be possible to click this element while the box is active
+            }
+        });
+
+        $(document).on("keyup", function (e) {
+            var box = $("div.AVE_Domaintag_box");
+            if (box.is(":visible")){
+                //print(e.key + " - "+e.which);
+                if (e.which === 13) { //enter
+                    if ($(e.target).attr("id") === "AVE_Domaintag_box_textinput") {
+                        box.find("span#submit").trigger("click");
+                    }
+                }
+                else if (e.which === 27) { //escape
+                    box.find("span#cancel").trigger("click");
+                }
+            }
+        });
     },
 
-    AppendToPreferenceManager: {
+    updateTag: function (domain) {
+        "use strict";
+        var _this;
+        _this = this;
+        $("p.title > span.domain > a:contains("+domain+")").each(function(){
+            var tag, colour;
+
+            if (_this.DomainTags[domain]) {
+                tag = _this.DomainTags[domain].t;
+                colour = _this.DomainTags[domain].c;
+            }
+
+            var el = $(this).parent().find("div.AVE_Domain_tag");
+
+            if (!tag && !colour) {
+                el.html('<svg onmouseleave="javascript:$(this).find(\'path:first\').css(\'fill\', \'#' + (AVE.Utils.CSSstyle === "dark" ? "777" : "BBB") + '\');return false;" onmouseover="javascript:$(this).find(\'path:first\').css(\'fill\', \'#' + (AVE.Utils.CSSstyle === "dark" ? "438BB7" : "4AABE7") + '\');return false;" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path style="fill:#' + (AVE.Utils.CSSstyle === "dark" ? "777" : "BBB") + '" d="M7,0C4.791,0,3,1.791,3,4c0,2,4,10,4,10s4-8,4-10C11,1.791,9.209,0,7,0z M7,6C5.896,6,5,5.104,5,4 s0.896-2,2-2c1.104,0,2,0.896,2,2S8.104,6,7,6z"/></svg>');
+                el.attr("title", "Click to create a new tag");
+            } else {
+                if (!tag) { tag = "No tag"; }
+                else if (!colour) { colour = (AVE.Utils.CSSstyle === "dark" ? "777" : "BBB"); }
+                el.attr("title", tag);
+                el.html('<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="' + colour + '" d="M7,0C3.134,0,0,3.134,0,7s3.134,7,7,7s7-3.134,7-7S10.866,0,7,0z M7,2c0.552,0,1,0.447,1,1S7.552,4,7,4S6,3.553,6,3 S6.448,2,7,2z M9,11H5v-1h1V6H5V5h3v5h1V11z"/></svg>');
+            }
+        });
+    },
+
+    setTag: function (domain, tag, colour) {
+        "use strict";
+        var obj = new this.DomainTagObj(tag, colour);
+        if(!obj.t){ return;}
+        this.DomainTags[domain] = obj;
+
+        //print(JSON.stringify(this.DomainTags[domain]));
+        this.Store.SetValue(this.StorageName, JSON.stringify(this.DomainTags));
+    },
+    removeTag: function (domain) {
+        "use strict";
+        delete this.DomainTags[domain];
+    },
+
+    AppendToDashboard: {
+        initialized: false,
+        CSSselector: "",
+        module: {},
+
+        init: function () {
+            this.module = AVE.Modules['DomainTags'];
+            this.CSSselector = "a[id^='AVE_Dashboard_Show'][name='"+this.module.ID+"']";
+            this.initialized = true;
+        },
+
         html: function () {
-            var _this = AVE.Modules['DomainTags'];
-            var htmlStr = '';
+            if (!this.initialized){this.init();}
+            var htmlStr;
 
-            htmlStr += '<input id="ShowOnMouseOver" ' + (_this.Options.ShowOnMouseOver.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ShowOnMouseOver"> ' + _this.Options.ShowOnMouseOver.Desc + '</label><br />';
-
+            htmlStr = '<div>Dashboard functionalities for '+this.module.ID+' are not yet implemented.</div>';
 
             return htmlStr;
         },
         callback: function () {
+            "use strict";
         }
     }
 };

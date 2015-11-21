@@ -14,6 +14,7 @@ AVE.Modules['Dashboard'] = {
 
     Modules: {
         "UserTag": "User tags",
+        "DomainTags": "Domain tags",
         "Shortcuts": "Subverse shortcuts",
         "ToggleCustomStyle": "Custom style permissions"},
 
