@@ -535,7 +535,7 @@ AVE.Modules['PreferenceManager'] = {
                         }
                         _this.Store.SetValue(k, v);
                     });
-                    _this.ShowInfo(c + " values copied!", "success");
+                    _this.ShowInfo(c + " values copied! Reload to see changes.", "success");
                 });
                 reader.readAsText(f);
             });

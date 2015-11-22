@@ -48,13 +48,13 @@ AVE.Init = {
             //On container ready
             $("div#container").ready(function () {
                 $.each(ModLoad.ContainerReady, function () {
+                    AVE.Utils.LateSet();
                     _this.LoadModules(this);
                 });
             });
 
             //On doc ready
             $(document).ready(function () {
-                AVE.Utils.LateSet();
 
                 print("AVE: Current page > " + AVE.Utils.currentPageType);
                 //print("AVE: Current style > " + AVE.Utils.CSSstyle);

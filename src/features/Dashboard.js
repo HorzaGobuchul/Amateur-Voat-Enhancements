@@ -51,6 +51,7 @@ AVE.Modules['Dashboard'] = {
                  Subverse list (rearrange, delete, update, add(list",")
                  ToggleCustomStyle (stored subverse and if show or hide)
                  */
+                //Replace buttons with a droplist
                 TempHtml += '<a style="margin-left:10px;" name="'+id+'" id="AVE_Dashboard_Show_'+id+'" title="Show '+name+'" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub">'+name+'</a>';
             });
             TempHtml += '</li></ul>';

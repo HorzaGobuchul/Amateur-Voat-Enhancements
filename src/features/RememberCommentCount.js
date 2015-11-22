@@ -161,7 +161,7 @@ AVE.Modules['RememberCommentCount'] = {
 
                             if ($.inArray(CommId, _this.Processed) === -1 && CommAuthor !== _this.Username) {
                                 CommTimeStamp = new Date($(this).find("time:first").attr("datetime")).getTime();
-                                if (this.Options.CorrectTimeZone.Value){
+                                if (_this.Options.CorrectTimeZone.Value){
                                     CommTimeStamp += (-60 * 60000); //Convert to UTC from CET(UTC+1)
                                 }
 
@@ -209,6 +209,20 @@ AVE.Modules['RememberCommentCount'] = {
                     }
                 }
                 _this.Processed.push(_id)
+            });
+        } else if (AVE.Utils.currentPageType === "user-comments"){//Comments and link to submissions in user-comments page
+            $("div.thread").each(function () {
+                _id = $(this).find("p.parent >  a.title").attr("href").split("/");
+                _count = $(this).find("ul.flat-list.buttons > li:last-child > a").text().split(/(\(|\))/) || 0;
+
+                _id = _id[_id.length - 1];
+                _count = _count[_count.length -3];
+
+                if (_count > 0) {
+                    if (_this.Data.hasOwnProperty(_id) && _count > _this.Data[_id][0]) {
+                        $(this).find("ul.flat-list.buttons > li:last-child > a").append('&nbsp;<span style="font-weight:bold;color:#4189B1;">(+' + (_count - _this.Data[_id][0]) + ')</span>');
+                    }
+                }
             });
         }
     },

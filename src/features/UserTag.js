@@ -322,24 +322,24 @@ table#formTable{\
             var username = $(this).attr("id").toLowerCase();
             var oldTag = $(this).text();
 
-            var usertag = _this.usertags[username];
+            var usertag = _this.usertags[username] || {};
 
             var position = $(this).offset();
-
             position.top += 20;
             $("#UserTagBox").css(position)
                             .show();
 
             $("div#UserTagHeader > span#username").text(username);
 
-            if (!usertag || !usertag.t){
+            if (!usertag.t){
                 //if comment
                 if ($(this).parents("div.comment:first").length > 0){
                     usertag.con = $(this).parent().parent().find("ul.flat-list.buttons").find("a.bylink").attr("href");
                 }
                 //if submission
                 else if ($(this).parents("div.submission:first").length > 0){
-                    usertag.con = $(this).parent().next("ul.flat-list.buttons").find("a.comments.may-blank").attr("href");
+                    usertag.con = $(this).parent().next("ul.flat-list.buttons").find("a.comments.may-blank").attr("href")           //in submission page
+                               || $(this).parent().parent().next("ul.flat-list.buttons").find("a.comments.may-blank").attr("href"); //in thread page
                 } else {
                     usertag.con = "";
                 }
@@ -575,9 +575,9 @@ table#formTable{\
                     if (value.i) { IgnoreLen++; }
                 });
 
-                htmlStr += '<ul style="list-style:inside circle;"><li>You have tagged ' + TagLen + ' users.</li>';
-                htmlStr += "<li>You have voted on submissions made by " + VoteLen + " users.</li>";
-                htmlStr += "<li>You have chosen to ignore " + IgnoreLen + " users.</li></ul>";
+                htmlStr += '<ul style="list-style:inside circle;"><li>You have tagged <strong>' + TagLen + '</strong> users.</li>';
+                htmlStr += "<li>You have voted on submissions made by <strong>" + VoteLen + "</strong> users.</li>";
+                htmlStr += "<li>You have chosen to ignore <strong>" + IgnoreLen + "</strong> users.</li></ul>";
 
                 htmlStr += '<br /><input id="VoteBalance" ' + (_this.Options.VoteBalance.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="VoteBalance"> ' + _this.Options.VoteBalance.Desc + '</label><br />';
                 htmlStr += '<input id="ShowBalanceWithColourGradient" ' + (_this.Options.ShowBalanceWithColourGradient.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ShowBalanceWithColourGradient"> ' + _this.Options.ShowBalanceWithColourGradient.Desc + '</label><br />';
@@ -819,6 +819,7 @@ table#formTable{\
                         input.one("change", function () {
                             _this.editTag(input, "colour");
                         });
+                        input.show().css("opacity", "0"); //Because of Chrome which doesn't want to show the colour palette if the input is hidden ("display: none;")
                         input.trigger("click");
                     } else {
                         if (!artificial) {return;}//we don't want to lose the focus by a click in the same input text
@@ -954,7 +955,7 @@ table#formTable{\
                 var root, tag, usertag;
 
                 if (dtype === "colour"){
-                    let u  = input.attr("u");
+                    var u  = input.attr("u");
                     root = $("tr[username='"+u+"']");
                 } else {
                     root = input.parents("tr:first");

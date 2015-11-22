@@ -20,6 +20,7 @@ AVE.Modules['DomainTags'] = {
 
     Style: "",
     DomainTags: "",
+    Processed: [],
 
     DomainTagObj: function (tag, colour) {
         this.t = tag.toString();
@@ -74,16 +75,29 @@ AVE.Modules['DomainTags'] = {
                 '	border-radius: 10px;' +
                 '	display: inline;' +
                 '	float: right;' +
-                '   margin: 2px 2px 2px 0px;' +
-                '	border: 2px solid black;' +
+                '   margin: 2px 8px 2px 0px;' +
+                '	border: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "000" : "AAA") + ';' +
                 '   cursor: pointer;' +
+                '/* overrides */' +
+                //'	width: 20px;' +
+                //'	height: 20px;' +
+                //'	border-radius: 0px 10px 10px 0px;' +
+                //'	display: inline;' +
+                //'	float: right;' +
+                //'	margin: 0px 5px 0px 0px;' +
+                //'	border: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "000" : "AAA") + ';' +
+                //'	cursor: pointer;' +
+                //'	min-width: 10px;' +
+                //'	border-width: 0px 2px 0px 1px;' +
                 '}' +
                 'div.AVE_Domaintag_box > input[type="text"] {' +
-                '	height: 19px;' +
+                '	height: 20px;' +
                 '	width: 220px;' +
-                '	border: medium none;' +
+                '	border: none;' +
+                '   border-left: 1px solid #' + (AVE.Utils.CSSstyle === "dark" ? "000" : "AAA") + ';' +
+                '   border-right: 1px solid #' + (AVE.Utils.CSSstyle === "dark" ? "000" : "AAA") + ';' +
                 '	padding-left: 5px;' +
-                '	background-color: #414141;' +
+                '	background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "414141" : "F8F8F8") + ';' +
                 '}' +
                 'div.AVE_Domaintag_box {' +
                     'background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "333" : "FFF") + ';' +
@@ -92,7 +106,7 @@ AVE.Modules['DomainTags'] = {
                     'position:absolute;' +
                     'left:0px;' +
                     'top:0px;' +
-                    'border: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "000" : "D1D1D1") + ';' +
+                    'border: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "000" : "AAA") + ';' +
                     'border-radius:3px;' +
                     'width:300px;' +
                 '}' +
@@ -125,10 +139,13 @@ AVE.Modules['DomainTags'] = {
 
     AppendToPage: function () {
         "use strict";
-        var _this;
-        _this = this;
+        var _this  = this;
 
         $("p.title > span.domain > a").each(function () {
+            var id = $(this).parents("div.submission[class*='id-']:first").attr("data-fullname");
+            if ($.inArray(id, _this.Processed) !== -1){return true;}
+            else {_this.Processed.push(id);}
+
             var domain;
             var tag, colour;
             domain = $(this).text();
@@ -137,7 +154,8 @@ AVE.Modules['DomainTags'] = {
                 tag = _this.DomainTags[domain].t;
                 colour = _this.DomainTags[domain].c;
             }
-            if (/self\.[a-zA-Z0-9]?/.test(domain)){return true;}
+            //Commented out so that we can tag subverses (self-text submissions) too.
+            //if (/self\.[a-zA-Z0-9]?/.test(domain)){return true;}
 
             if ($(this).parent().find("div.AVE_Domain_tag").length === 0) {
                 $('<div class="AVE_Domain_tag"></div>').insertAfter($(this));
@@ -158,8 +176,7 @@ AVE.Modules['DomainTags'] = {
 
     Listeners: function () {
         "use strict";
-        var _this;
-        _this = this;
+        var _this = this;
 
         $("div.AVE_Domain_tag").off().on("click", function (e) {
             //e.stopPropagation();
@@ -175,7 +192,7 @@ AVE.Modules['DomainTags'] = {
             box = $("div.AVE_Domaintag_box");
 
             if (box.length === 0){
-                let boxHtml;
+                var boxHtml;
 
                 boxHtml = '' +
                     '<div domain="void" class="AVE_Domaintag_box">' +
@@ -183,8 +200,8 @@ AVE.Modules['DomainTags'] = {
                     '   <input placeholder="Click here to create a new tag" id="AVE_Domaintag_box_textinput" type="text" value="">' +
                     '   <span id="cancel" title="Cancel and close" style="float:right;">✖</span>' +
                     '   <span id="submit" title="Accept and save" style="float:right;">✔</span>' +
-                    '   <div id="ColourDot" title="Click to choose a color"></div><input style="display: none;" type="color" value="">' +
-                    '</div>';
+                    '   <div id="ColourDot" title="Click to choose a color"></div><input style="opacity:0;visiblity: hidden; position: absolute;width:0px;height:0px" type="color" value="">' +
+                    '</div>'; //Weird css values for the colour input because of Chrome not wanting to trigger it if hidden with "display:none;"
 
                 $("body").append(boxHtml);
 
@@ -217,21 +234,17 @@ AVE.Modules['DomainTags'] = {
                 box.hide();
             }
 
-            if (box.is(":hidden")){
-                box.attr("domain", domain);
-                box.find("input[type='text']").val(tag).select();
-                box.find("input[type='color']").val(colour || (AVE.Utils.CSSstyle === "dark" ? "#438BB7" : "#4AABE7"));
-                box.find("div#ColourDot").css("background-color", colour || (AVE.Utils.CSSstyle === "dark" ? "#438BB7" : "#4AABE7"));
-                box.find("svg > path").css("fill", colour || (AVE.Utils.CSSstyle === "dark" ? "#438BB7" : "#4AABE7"));
-                box.find("svg").attr("title", tag || "No tag");
+            var position = $(this).offset();
+            position.top -= 5;
+            box.css(position)
+                .show();
 
-                var position = $(this).offset();
-                position.top -= 5;
-                box.css(position)
-                    .show();
-            } else {
-                box.hide(); //just a security, but it shouldn't be possible to click this element while the box is active
-            }
+            box.attr("domain", domain);
+            box.find("input[type='text']").val(tag).select();
+            box.find("input[type='color']").val(colour || (AVE.Utils.CSSstyle === "dark" ? "#438BB7" : "#4AABE7"));
+            box.find("div#ColourDot").css("background-color", colour || (AVE.Utils.CSSstyle === "dark" ? "#438BB7" : "#4AABE7"));
+            box.find("svg > path").css("fill", colour || (AVE.Utils.CSSstyle === "dark" ? "#438BB7" : "#4AABE7"));
+            box.find("svg").attr("title", tag || "No tag");
         });
 
         $(document).on("keyup", function (e) {
@@ -252,9 +265,8 @@ AVE.Modules['DomainTags'] = {
 
     updateTag: function (domain) {
         "use strict";
-        var _this;
-        _this = this;
-        $("p.title > span.domain > a:contains("+domain+")").each(function(){
+        var _this = this;
+        $("p.title > span.domain > a:textEquals("+domain+")").each(function(){
             var tag, colour;
 
             if (_this.DomainTags[domain]) {
@@ -279,7 +291,7 @@ AVE.Modules['DomainTags'] = {
     setTag: function (domain, tag, colour) {
         "use strict";
         var obj = new this.DomainTagObj(tag, colour);
-        if(!obj.t){ return;}
+        if(!obj.t && !obj.c){ return;}
         this.DomainTags[domain] = obj;
 
         //print(JSON.stringify(this.DomainTags[domain]));
@@ -288,6 +300,26 @@ AVE.Modules['DomainTags'] = {
     removeTag: function (domain) {
         "use strict";
         delete this.DomainTags[domain];
+    },
+
+    AppendToPreferenceManager: {
+        html: function () {
+            "use strict";
+            var _this = AVE.Modules['DomainTags'];
+            var htmlStr = '' +
+                '<span>' +
+                '   Click the default icon (<svg onmouseleave="javascript:$(this).find(\'path:first\').css(\'fill\', \'#' + (AVE.Utils.CSSstyle === "dark" ? "777" : "BBB") + '\');return false;" onmouseover="javascript:$(this).find(\'path:first\').css(\'fill\', \'#' + (AVE.Utils.CSSstyle === "dark" ? "438BB7" : "4AABE7") + '\');return false;" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="vertical-align: middle;enable-background:new 0 0 14 14;" xml:space="preserve"><path style="fill:#' + (AVE.Utils.CSSstyle === "dark" ? "777" : "BBB") + '" d="M7,0C4.791,0,3,1.791,3,4c0,2,4,10,4,10s4-8,4-10C11,1.791,9.209,0,7,0z M7,6C5.896,6,5,5.104,5,4 s0.896-2,2-2c1.104,0,2,0.896,2,2S8.104,6,7,6z"/></svg>) to display the tagbox and create a new tag.' +
+                '   <br/>Move your mouse over the I icon (<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="vertical-align: middle;enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#' + (AVE.Utils.CSSstyle === "dark" ? "777" : "BBB") + '" d="M7,0C3.134,0,0,3.134,0,7s3.134,7,7,7s7-3.134,7-7S10.866,0,7,0z M7,2c0.552,0,1,0.447,1,1S7.552,4,7,4S6,3.553,6,3 S6.448,2,7,2z M9,11H5v-1h1V6H5V5h3v5h1V11z"/></svg>) to see the tag, click this icon to edit the current tag.' +
+                '   <br/>You don\'t have to choose a tag label to create a new domainTag; a colour alone is enough.';
+
+            if (_this.Enabled){
+                var len = Object.keys(_this.DomainTags).length;
+                htmlStr += '<br /><br />You have tagged <strong>'+ len +'</strong> domain'+ (len > 1 ? "s" : "") +'.';
+            }
+
+            htmlStr += '</span>';
+            return htmlStr;
+        }
     },
 
     AppendToDashboard: {
