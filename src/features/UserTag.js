@@ -29,6 +29,21 @@ AVE.Modules['UserTag'] = {
             Desc: 'Show vote balances over a colour gradient going from green to red according to its positivity.',
             Value: true
         },
+        ColourGradientRangePos: {
+            Type: "int",
+            Desc: "Positive vote balance above which the colour cannot get more green.",
+            Value: 100
+        },
+        ColourGradientRangeNeg: {
+            Type: "int",
+            Desc: "Negative vote balance above which the colour cannot get more red.",
+            Value: -100
+        },
+        ColourGradientMaxWhite: { //Show example of min value (1, -1) beside
+            Type: "int",
+            Desc: "The colour displayed are between red/green and white. How white do you want it to be at most? (0, 255)",
+            Value: 210
+        },
         Migrated: {
             Type: 'boolean',
             Value: false
@@ -268,13 +283,14 @@ table#formTable{\
                 if (tag.b && tag.b !== 0) {
                     var valence = tag.b > 0;
                     var sign = valence ? "+" : "";
-                    var progValence = valence ? Math.min(100, tag.b) : Math.max(-100, tag.b);
                     var style = "";
-
-                    if (!valence){progValence *= -1;}
 
                     if (_this.Options.ShowBalanceWithColourGradient.Value){
                         var r, g, b;
+
+                        var progValence = valence ? Math.min(100, tag.b) : Math.max(-100, tag.b);
+                        if (!valence){progValence *= -1;}
+
                         r = g = b = parseInt(210 - progValence/100 * 210, 10);
                         if (valence) { g = 255; }
                         else { r = 255; }
@@ -792,10 +808,10 @@ table#formTable{\
             $('table#AVE_Dashboard_usertags_table > tbody > tr > td:nth-child(2)') //edit tag
                 .off()
                 .on("click", function (e, artificial) {
-                    var tag = $(this).text() || $(this).find("input").val();
+                    var tag = $(this).text() || $(this).find("input").val() || "";
 
                     if ($(this).find("input").length === 0){
-                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="tag" style="max-width:140px;" type="text" original="'+tag+'" value="'+tag+'">');
+                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="tag" style="width:95%;" type="text" original="'+tag+'" value="'+tag+'">');
                         var input = $(this).find("input");
                         input.focus().select();
                         input.one("focusout", function () {
@@ -1024,12 +1040,26 @@ table#formTable{\
                 r = colour[0]; g = colour[1]; b = colour[2];
                 bestColour = AVE.Utils.GetBestFontColour(r, g, b);
 
+                var VoteColour = "";
+                if (this.module.Options.ShowBalanceWithColourGradient.Value && obj.b){
+                    var Vr, Vg, Vb;
+                    var valence = obj.b > 0;
+
+                    var progValence = valence ? Math.min(100, obj.b) : Math.max(-100, obj.b);
+                    if (!valence){progValence *= -1;}
+
+                    Vr = Vg = Vb = parseInt(210 - progValence/100 * 210, 10);
+                    if (valence) { Vg = 255; }
+                    else { Vr = 255; }
+                    VoteColour = 'color:#262626;background-color:rgb('+Vr+','+Vg+','+Vb+')';
+                }
+
                 htmlStr += '<tr username="'+obj.name+'">';
-                htmlStr +=      '<td><a href="/user/'+obj.name+'" >'+obj.name+'</a></td>' +
+                htmlStr +=      '<td><a target="_blank" href="/user/'+obj.name+'" >'+obj.name+'</a></td>' +
                                 '<td data="tag"><span title="'+obj.t+'">'+obj.t+'</span></td>' +
                                 '<td data="colour" style="background-color:'+obj.col+'; color:'+bestColour+';">'+obj.col+'</td>' +
                                 '<td data="ignore">'+obj.i+'</td>' +
-                                '<td data="balance">'+obj.b+'</td>' +
+                                '<td data="balance" style="'+VoteColour+'">'+obj.b+'</td>' +
                                 '<td data="context" '+ (obj.con ? ('title="'+obj.con+'"') : '') +'></td>' +
                                 '<td><span id="PreviewBox" style="background-color:'+obj.col+';color:'+bestColour+';">'+obj.t+'</span></td>' +
                                 '<td role="remove_icon"></td>';

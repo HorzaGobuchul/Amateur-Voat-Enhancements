@@ -148,9 +148,9 @@ AVE.Modules['DomainFilter'] = {
 
             this.htmlNewFilter = '<span class="AVE_Domain_Filter" id="{@id}">\
                                 Keyword(s) \
-                                    <input id="{@id}-kw" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="DomainFilter" value="{@keywords}"></input>\
+                                    <input id="{@id}-kw" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="DomainFilter" value="{@keywords}"/>\
                                     Subverse(s) \
-                                    <input id="{@id}-sub" style="width:29%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="DomainFilter" value="{@subverses}"></input>\
+                                    <input id="{@id}-sub" style="width:29%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="DomainFilter" value="{@subverses}"/>\
                                 </span>\
                                 <a href="javascript:void(0)" title="Remove filter" style="font-size: 16px;font-weight: bold;" class="RemoveFilter" id="{@id}">-</a>';
 

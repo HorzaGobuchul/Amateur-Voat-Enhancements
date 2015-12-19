@@ -46,7 +46,6 @@ AVE.Modules['Shortcuts'] = {
     },
 
     Start: function () {
-
         this.DisplayCustomSubversesList();
         if (AVE.Utils.isPageSubverse) {
             this.AppendShortcutButton();
@@ -76,9 +75,9 @@ AVE.Modules['Shortcuts'] = {
             tempSetId = $(this).find(".h4").attr("href").substr(5);
             inShortcut = this.isSubInShortcuts(tempSetName + ":" + tempSetId);
 
-            var btnHTML = '<br /><buttonstyle="margin-top:5px;" id="AVE_Sets_Shortcut" setName="' + tempSetName + '" setId="' + tempSetId + '" type="button" class="btn-whoaverse-paging btn-xs btn-default' + (inShortcut ? "" : "btn-sub") + '">'
-                                    + (inShortcut ? "-" : "+") + ' shortcut\
-                            </button>';
+            var btnHTML = '<br /><button style="margin-top:5px;" id="AVE_Sets_Shortcut" setName="' + tempSetName + '" setId="' + tempSetId + '" type="button" class="btn-whoaverse-paging btn-xs btn-default' + (inShortcut ? "" : "btn-sub") + '">' +
+                                    (inShortcut ? "-" : "+") + ' shortcut' +
+                            '</button>';
             $(btnHTML).appendTo($(this).find(".midcol").first());
         });
 
@@ -156,7 +155,7 @@ AVE.Modules['Shortcuts'] = {
 
     //// Special to subverse: adds a "shortcut" button for this subverse////
     AppendShortcutButton: function () {
-        _this = this;
+        var _this = this;
 
         if (!this.isPageInShortcuts()) {
             //style="display:inline" is a fix for the Scribble custom style that tries to hide the block button, but instead hides this shorcut button.
@@ -273,9 +272,11 @@ AVE.Modules['Shortcuts'] = {
 
         html: function () {
             if (!this.initialized){this.init();}
-            var htmlStr;
+            var htmlStr = "";
 
-            htmlStr = '<div>Dashboard functionalities for '+this.module.ID+' are not yet implemented.</div>';
+            $.each(this.module.GetSubversesList(), function (idx, sub) {
+                htmlStr += '<div> '+sub+' </div>';
+            });
 
             return htmlStr;
         },

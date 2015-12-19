@@ -59,6 +59,14 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.29.8.8",
+        "   DomainTags:",
+        "       Dashboard support",
+        "       Change box's position so that it doesn't get offscreen",
+        "       Started implementing ignore option (not functional yet)",
+        "           In: dashboard, box",
+        "   UserTag:",
+        "       Added the vote colour gradient in the dashboard",
         "V2.29.6.6",
         "   New feature: DomainTags",
         "       Choose tags to characterize domains",
