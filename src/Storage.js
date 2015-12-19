@@ -27,5 +27,9 @@ AVE.Storage = {
         AVE.Utils.SendMessage({ request: "Storage", type: "DeleteValue", key: key });
 
         delete this.Data[key];
-    }
+    },
+
+    Update: function () {
+        AVE.Utils.SendMessage({ request: "Storage", type: "Update"});
+    },
 };

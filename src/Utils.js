@@ -180,6 +180,8 @@ function print(str) { console.log(str); }
 jQuery.expr[':'].parents = function (a, i, m) { return jQuery(a).parents(m[3]).length < 1; };
 //Thanks to Narnian https://stackoverflow.com/questions/6673777/select-link-by-text-exact-match#answer-8447189
 jQuery.expr[':'].textEquals = function(a, i, m) { return jQuery(a).text().match("^" + m[3] + "$"); };
+    //Thanks to digiguru https://stackoverflow.com/questions/5306680/move-an-array-element-from-one-array-position-to-another#answer-7180095
+AVE.Utils.move = function(arr, from, to) { arr.splice(to, 0, arr.splice(from, 1)[0]);};
 //Might be overkill, but I need to be able to disconnect the listener before updating.
 var OnNodeChange = (function () {
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;

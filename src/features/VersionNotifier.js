@@ -59,7 +59,10 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.29.8.8",
+        "V2.29.9.9",
+        "   Shorcuts:",
+        "       Dashboard support",
+        "       Adding your first subverse into the list now replaces the default ones",
         "   DomainTags:",
         "       Dashboard support",
         "       Change box's position so that it doesn't get offscreen",

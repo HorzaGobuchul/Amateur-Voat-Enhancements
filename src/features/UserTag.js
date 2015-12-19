@@ -811,7 +811,7 @@ table#formTable{\
                     var tag = $(this).text() || $(this).find("input").val() || "";
 
                     if ($(this).find("input").length === 0){
-                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="tag" style="width:95%;" type="text" original="'+tag+'" value="'+tag+'">');
+                        $(this).html('<input id="AVE_Dashboard_usertag_quickedit" data="tag" style="max-width:140px;" type="text" original="'+tag+'" value="'+tag+'">');
                         var input = $(this).find("input");
                         input.focus().select();
                         input.one("focusout", function () {
