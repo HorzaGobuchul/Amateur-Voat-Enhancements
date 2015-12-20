@@ -20,6 +20,7 @@ AVE.Modules['DomainTags'] = {
 
     Style: "",
     DomainTags: "",
+    StorageName: "",
     Processed: [],
 
     DomainTagObj: function (tag, colour, ignore) {
@@ -231,8 +232,7 @@ AVE.Modules['DomainTags'] = {
                             Opt = JSON.parse(_this.Store.GetValue(_this.Store.Prefix + AVE.Modules['DomainFilter'].ID, "{}"));
                             Opt.Enabled = true;
                             _this.Store.SetValue(_this.Store.Prefix + AVE.Modules['DomainFilter'].ID, JSON.stringify(Opt));
-                            AVE.Modules['DomainFilter'].Enabled = true;
-                            print("AVE: turned on DomainFilter");
+                            print("AVE: DomainFilter > Enabled");
                         }
                     }
 

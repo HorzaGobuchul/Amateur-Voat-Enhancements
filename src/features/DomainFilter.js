@@ -96,7 +96,7 @@ AVE.Modules['DomainFilter'] = {
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
 
-        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "search", "domain"]) === -1) {
+        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "search", "domain", "user-submissions", "saved"]) === -1) {
             this.Enabled = false;
         }
 

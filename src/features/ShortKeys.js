@@ -12,56 +12,60 @@ AVE.Modules['ShortKeys'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         OpenInNewTab: {
             Type: 'boolean',
             Desc: 'Open comments and link pages in new tabs.',
-            Value: true,
+            Value: true
         },
         UpvoteKey: {
             Type: 'char',
-            Value: 'a',
+            Value: 'a'
         },
         DownvoteKey: {
             Type: 'char',
-            Value: 'z',
+            Value: 'z'
         },
         NextKey: {
             Type: 'char',
-            Value: 'j',
+            Value: 'j'
         },
         PrevKey: {
             Type: 'char',
-            Value: 'k',
+            Value: 'k'
         },
         OpenCommentsKey: {
             Type: 'char',
-            Value: 'c',
+            Value: 'c'
         },
         OpenLinkKey: {
             Type: 'char',
-            Value: 'l',
+            Value: 'l'
         },
         OpenLCKey: {
             Type: 'char',
-            Value: 'b',
+            Value: 'b'
         },
         ExpandKey: {
             Type: 'char',
-            Value: 'x',
+            Value: 'x'
         },
         ToggleCommentChain: {
             Type: 'char',
-            Value: '',
+            Value: ''
         },
         NavigateTop: {
             Type: 'char',
-            Value: 'f',
+            Value: 'f'
         },
         NavigateBottom: {
             Type: 'char',
-            Value: 'v',
+            Value: 'v'
+        },
+        HidePost: {
+            Type: 'char',
+            Value: 'h'
         },
     },
 
@@ -114,6 +118,7 @@ AVE.Modules['ShortKeys'] = {
         var TCC = this.Options.ToggleCommentChain.Value;
         var NavTop = this.Options.NavigateTop.Value;
         var NavBottom = this.Options.NavigateBottom.Value;
+        var HidePost = this.Options.HidePost.Value;
 
         $(document).keydown(function (event) {
             //Exit if the focus is given to a text input
@@ -291,6 +296,31 @@ AVE.Modules['ShortKeys'] = {
                     //Hide selected comment otherwise
                     sel.find('a.expand:visible:first')[0].click();
                 }
+            } else if (key === HidePost.toUpperCase()) { // Hide submission
+                if (!AVE.Modules['HideSubmissions'] || !AVE.Modules['HideSubmissions'].Enabled){
+                    if(!confirm("You are trying to hide a post but the module \"HideSubmissions\" is disabled.\nDo you want to activate and load this module?")){
+                        return;
+                    } else {
+                        var Opt = JSON.parse(_this.Store.GetValue(_this.Store.Prefix + AVE.Modules['HideSubmissions'].ID, "{}"));
+                        Opt.Enabled = true;
+                        _this.Store.SetValue(_this.Store.Prefix + AVE.Modules['HideSubmissions'].ID, JSON.stringify(Opt));
+                        AVE.Modules['HideSubmissions'].Load();
+                        print("AVE: DomainFilter > enabled and started");
+                    }
+                }
+                var id = sel.parent().attr("data-fullname");
+
+                //Select the next submission
+                var _next = sel.parent().nextAll("div.submission[class*='id-']:first");
+                if (_next.length > 0) {
+                    AVE.Modules['SelectPost'].ToggleSelectedState(_next.find("div.entry"));
+                    _this.ScrollToSelectedSubmission();
+                } else if (AVE.Modules['NeverEndingVoat'] && AVE.Modules['NeverEndingVoat'].Enabled) {
+                    //If the NeverEnding modules exists and is enabled, we load the next page.
+                    AVE.Modules['NeverEndingVoat'].LoadMore();
+                }
+
+                AVE.Modules['HideSubmissions'].AddToHiddenList(id);
             }
         });
     },
@@ -322,32 +352,33 @@ AVE.Modules['ShortKeys'] = {
             //Up and Down vote
             htmlStr += '<table id="AVE_ShortcutKeys" style="text-align: right;">';
             htmlStr += '<tr>';
-            htmlStr += '<td>Upvote: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="UpvoteKey" value="' + _this.Options.UpvoteKey.Value + '"></input></td>';
-            htmlStr += '<td>&nbsp; Downvote: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="DownvoteKey" value="' + _this.Options.DownvoteKey.Value + '"></input></td>';
+            htmlStr += '<td>Upvote: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="UpvoteKey" value="' + _this.Options.UpvoteKey.Value + '"/></td>';
+            htmlStr += '<td>&nbsp; Downvote: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="DownvoteKey" value="' + _this.Options.DownvoteKey.Value + '"/></td>';
             //Next and previous post
-            htmlStr += '<td>&nbsp; Next post: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="NextKey" value="' + _this.Options.NextKey.Value + '"></input></td>';
-            htmlStr += '<td>&nbsp; Previous post: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="PrevKey" value="' + _this.Options.PrevKey.Value + '"></input></td>';
+            htmlStr += '<td>&nbsp; Next post: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="NextKey" value="' + _this.Options.NextKey.Value + '"/></td>';
+            htmlStr += '<td>&nbsp; Previous post: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="PrevKey" value="' + _this.Options.PrevKey.Value + '"/></td>';
             htmlStr += '</tr>';
             //Open Link, Comments, Comments & Link
             htmlStr += '<tr>';
-            htmlStr += '<td>Open Link: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="OpenLinkKey" value="' + _this.Options.OpenLinkKey.Value + '"></input></td>';
-            htmlStr += '<td>&nbsp; Open comments: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="OpenCommentsKey" value="' + _this.Options.OpenCommentsKey.Value + '"></input>';
-            htmlStr += '<td>&nbsp; Open L&C: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="OpenLCKey" value="' + _this.Options.OpenLCKey.Value + '"></input></td>';
+            htmlStr += '<td>Open Link: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="OpenLinkKey" value="' + _this.Options.OpenLinkKey.Value + '"/></td>';
+            htmlStr += '<td>&nbsp; Open comments: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="OpenCommentsKey" value="' + _this.Options.OpenCommentsKey.Value + '"/>';
+            htmlStr += '<td>&nbsp; Open L&C: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="OpenLCKey" value="' + _this.Options.OpenLCKey.Value + '"/></td>';
             //Toggle expand media
-            htmlStr += '<td>&nbsp; Toggle expand: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="ExpandKey" value="' + _this.Options.ExpandKey.Value + '"></input>';
+            htmlStr += '<td>&nbsp; Toggle expand: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="ExpandKey" value="' + _this.Options.ExpandKey.Value + '"/>';
             htmlStr += '</tr>';
             //Toggle expand comment
             htmlStr += '<tr>';
-            htmlStr += '<td>&nbsp; <span title="Toggle comment chain or load more replies">Toggle comment</span>: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="ToggleCommentChain" value="' + _this.Options.ToggleCommentChain.Value + '"></input>';
+            htmlStr += '<td>&nbsp; <span title="Toggle comment chain or load more replies">Toggle comment</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="ToggleCommentChain" value="' + _this.Options.ToggleCommentChain.Value + '"/>';
             //Navigate to Top and Bottom of the page
-            htmlStr += '<td>&nbsp; <span title="Navigate to the top of the page">Top of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="NavigateTop" value="' + _this.Options.NavigateTop.Value + '"></input>';
-            htmlStr += '<td>&nbsp; <span title="Navigate to the bottom of the page">Bottom of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0px;text-align:center;" size="1" class="form-control" type="text" id="NavigateBottom" value="' + _this.Options.NavigateBottom.Value + '"></input></td>';
+            htmlStr += '<td>&nbsp; <span title="Navigate to the top of the page">Top of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="NavigateTop" value="' + _this.Options.NavigateTop.Value + '"/>';
+            htmlStr += '<td>&nbsp; <span title="Navigate to the bottom of the page">Bottom of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="NavigateBottom" value="' + _this.Options.NavigateBottom.Value + '"/></td>';
+            //Hide submission
+            htmlStr += '<td>&nbsp; <span title="This feaure requires the module HideSubmission to be enabled!">Hide post</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="HidePost" value="' + _this.Options.HidePost.Value + '"/></td>';
             htmlStr += '</tr>';
-
 
             htmlStr += '</table>';
             htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br />';
             return htmlStr;
-        },
-    },
+        }
+    }
 };
