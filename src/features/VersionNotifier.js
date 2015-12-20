@@ -59,7 +59,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.31.10.14",
+        "V2.31.10.15",
+        "   New feature: ArchiveSubmission",
+        "       Add a link to an archived version of the submission",
         "   ShortKeys:",
         "       Linked with HideSubmissions to hide posts with the keyboard (def.: h)",
         "       Automatically select the next submission after hiding one",

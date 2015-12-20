@@ -1,10 +1,10 @@
 AVE.Modules['SingleClickOpener'] = {
     ID: 'SingleClickOpener',
     Name: 'Single click opener',
-    Desc: 'Adds "[l+c]" link to submission, opens link and comment pages.',
+    Desc: 'Add "[l+c]" link to submission, opens link and comment pages.',
     Category: 'Subverse',
 
-    Index: 101,
+    Index: 102,
     Enabled: false,
 
     Store: {},
@@ -62,7 +62,7 @@ AVE.Modules['SingleClickOpener'] = {
         $("ul.flat-list.buttons").each(function () {
             "use strict";
             if ($(this).find("li > a#AVE_SingleClickOpener_link").length > 0) {return;}
-            $(this).append('<li><a id="AVE_SingleClickOpener_link" style="cursor:pointer;" href="javascript:void(0);">[l+c]</a></li>');
+            $(this).append('<li><a id="AVE_SingleClickOpener_link" href="javascript:void(0);">[l+c]</a></li>');
         });
     },
 

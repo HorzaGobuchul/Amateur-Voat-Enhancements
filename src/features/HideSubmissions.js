@@ -33,7 +33,7 @@ AVE.Modules['HideSubmissions'] = {
         },
         HideAfterVote: {
             Type: 'boolean',
-            Desc: "Hide the submission after a vote is registered",
+            Desc: "Hide the submission right after the vote is registered",
             Value: false
         },
         AddHideButton: {
@@ -143,7 +143,7 @@ AVE.Modules['HideSubmissions'] = {
         "use strict";
         $("ul.flat-list.buttons").each(function () {
             if ($(this).find("li > a#AVE_HideSubmissions_link").length > 0) {return;}
-            $(this).append('<li><a id="AVE_HideSubmissions_link" style="cursor:pointer;" href="javascript:void(0);">hide</a></li>');
+            $(this).append('<li><a id="AVE_HideSubmissions_link" href="javascript:void(0);">hide</a></li>');
         });
     },
 
