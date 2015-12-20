@@ -369,6 +369,12 @@ AVE.Modules['Shortcuts'] = {
             var JqId = $("section[role='AVE_Dashboard'][module='Shortcuts']");
             var input = JqId.parent().find("input");
 
+            JqId.find("a[role='append']").off().on("click", function () {
+                var newsubs = $.trim(input.val().replace(/\s/g, ''));
+                _this.module.AddToShortcuts(newsubs);
+
+                _this.Reload();
+            });
             JqId.find("a[role='set']").off().on("click", function () {
                 var newsubs = $.trim(input.val().replace(/\s/g, ''));
                 if (newsubs === "") {return;}
@@ -376,18 +382,9 @@ AVE.Modules['Shortcuts'] = {
 
                 _this.Reload();
             });
-            JqId.find("a[role='append']").off().on("click", function () {
-                var newsubs = $.trim(input.val()).split(",");
-
-                $.each(newsubs, function (idx, sub) {
-                    _this.module.AddToShortcuts(sub.trim());
-                });
-                _this.Reload();
-            });
             JqId.find("a[role='export']").off().on("click", function () {
                 prompt("Copy the string below", _this.module.GetSubversesListRaw());
             });
-
             JqId.find("svg[role='add']").off().on("click", function () {
                 var subname = $.trim(prompt("Enter below the subverse's name you want to add"));
                 if (subname === ""){return false;}
@@ -395,6 +392,7 @@ AVE.Modules['Shortcuts'] = {
                 _this.module.AddToShortcuts(subname);
                 _this.Reload();
             });
+
             JqId.find("svg[role='remove']").off().on("click", function () {
                 var subname = $(this).parent().attr("subname");
 

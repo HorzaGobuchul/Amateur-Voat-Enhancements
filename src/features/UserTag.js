@@ -465,7 +465,6 @@ table#formTable{\
         //print("oldvalue: "+oldValue);
         //print("newvalue: "+$(target).attr('class'));
 
-
         var username = $(target).parent().find("p.tagline").find(".AVE_UserTag:first");
         if (!username) { return true; } //If we couldn't find a username in the tagline that means this is
         username = username.attr("id").toLowerCase();
@@ -610,9 +609,14 @@ table#formTable{\
         module: {},
         usertags: [],
 
-        //implement quick storage for these values?
+        StorageName: "",
+
         tagsperpage: 20,
         currpage: 0,
+
+        ShowTag: true,
+        ShowIgnore: true,
+        ShowVoteBalance: false,
 
         CSSselector: "",
 
@@ -622,6 +626,27 @@ table#formTable{\
             this.tableCSS = '\
                 table#AVE_Dashboard_usertags_table{\
                     width: 100%;\
+                }\
+                fieldset#AVE_Dashboard_usertags_options{\
+                    width: 250px;\
+                    margin-left:10px;\
+                    margin-bottom:20px;\
+                    border-radius: 4px;\
+                    border: 1px solid #'+(AVE.Utils.CSSstyle === "dark" ? "3F3F3F" : "DDD")+';\
+                    padding: 5px;\
+                }\
+                fieldset#AVE_Dashboard_usertags_options > legend{\
+                    color: #'+(AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB")+';\
+                    width: auto;\
+                    border: 0px none;\
+                    font-size: 14px;\
+                    margin-bottom: 0px;\
+                    padding: 0px 10px;\
+                    cursor:pointer;\
+                }\
+                fieldset#AVE_Dashboard_usertags_options > input[type="checkbox"]{\
+                    vertical-align: sub;\
+                    margin-left: 10px;\
                 }\
                 table#AVE_Dashboard_usertags_table > thead > tr {\
                     font-size: 14px;\
@@ -699,7 +724,31 @@ table#formTable{\
 
             this.CSSselector = "a[id^='AVE_Dashboard_Show'][name='"+this.module.ID+"']";
 
+            this.StorageName = this.module.Store.Prefix + this.module.ID + "_Dashboard_options";
+            this.GetOptions();
+
             this.initialized = true;
+        },
+
+        GetOptions: function () {
+            var options = JSON.parse(this.module.Store.GetValue(this.StorageName, "{}"));
+
+            this.ShowVoteBalance = !!options[0];
+            this.ShowIgnore = options[1] ? true : false;
+            this.ShowTag = options[2] ? true : false;
+            this.tagsperpage = parseInt(options[3],10) || 20;
+        },
+
+        SaveOptions: function () {
+            var options = [];
+            options[0] = this.ShowVoteBalance;
+            options[1] = this.ShowIgnore;
+            options[2] = this.ShowTag;
+            options[3] = this.tagsperpage;
+
+            this.currpage = 0;
+
+            this.module.Store.SetValue(this.StorageName, JSON.stringify(options));
         },
 
         html: function () {
@@ -733,20 +782,35 @@ table#formTable{\
             //Paging function (default)
 
             $.each(keys, function (idx, key) {
-
+                var disp = false;
                 tempObj = tempUsertags[key];
 
-                if (!tempObj.t && !tempObj.i) { return true; } //Don't show empty tags
+                if (_this.ShowVoteBalance && tempObj.b){
+                    disp = true;
+                } else if (_this.ShowIgnore && tempObj.i){
+                    disp = true;
+                } else if (_this.ShowTag && tempObj.t){
+                    disp = true;
+                }
+
+                if (!disp) { return true; }
 
                 tempObj.name = key;
                 tempObj.i = tempObj.i ? "Yes" : "No";
                 tempObj.b = tempObj.b || 0;
                 tempObj.con = tempObj.con || "";
                 _this.usertags.push( JSON.stringify( tempObj ) );
-
             });
 
             var htmlNavButtons = this.navbuttons();
+
+            htmlStr += '<fieldset id="AVE_Dashboard_usertags_options"><legend title="Click to toggle">Options</legend>' +
+                        '   <label for="elperpage" style="vertical-align:inherit;padding-right:5px;">Entries per page </label><input type="number" id="elperpage" min="1" style="width:40px;text-align: center;" value="'+_this.tagsperpage+'"/><br>' +
+                        '   <span>Show: </span><input type="checkbox" '+ (_this.ShowTag ? "checked" : "") +' id="tag"/><label for="tag"> tags </label>' +
+                        '   <input type="checkbox" '+ (_this.ShowIgnore ? "checked" : "") +' id="ignore"/><label for="ignore"> ignored </label>' +
+                        '   <input type="checkbox" '+ (_this.ShowVoteBalance ? "checked" : "") +' id="balance"/><label for="balance"> votes </label><br>' +
+                        '   <a href="javascript:void(0)" id="save" class="btn-whoaverse-paging btn-xs btn-default btn-sub">Save</a>' +
+                       '</fieldset>';
 
             htmlStr += htmlNavButtons;
 
@@ -771,16 +835,16 @@ table#formTable{\
 
             htmlStr += htmlTable;
 
-            htmlStr += '<div style="text-align: right;margin-bottom:10px;">Showing tags '+ (start+1)+' to '+ Math.min(this.usertags.length, start+this.tagsperpage) +' ('+this.usertags.length+' total)</div>';
+            htmlStr += '<div style="text-align: right;margin-bottom:10px;">Showing entries '+ (start+1) +' to '+ Math.min(this.usertags.length, start+this.tagsperpage) +' ('+this.usertags.length+' total)</div>';
 
             htmlStr += htmlNavButtons;
 
             htmlStr +='<br><div style="margin-top:20px;font-weight:bold;">Click on a value to modify it.'+
                 '<br> Click the buttons on either sides to navigate through the table pages or use the arrow keys (+Ctrl to go to the first or last page)';
 
-            htmlStr += '<br>Context: <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#'+(AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB")+'"d="M12,0H2C0.896,0,0,0.896,0,2v7c0,1.104,0.896,2,2,2h1v3l3-3h6c1.104,0,2-0.896,2-2V2C14,0.896,13.104,0,12,0z"/><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>' +
-                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None: <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#'+(AVE.Utils.CSSstyle === "dark" ? "444" : "f2f2f2" )+'" d="M12,0H2C0.896,0,0,0.896,0,2v7c0,1.104,0.896,2,2,2h1v3l3-3h6c1.104,0,2-0.896,2-2V2C14,0.896,13.104,0,12,0z"/><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>' +
-                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Edit: <svg title="Edit" style="cursor:pointer;" version="1.1" id="editContext" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + '" d="M1,10l-1,4l4-1l7-7L8,3L1,10z M11,0L9,2l3,3l2-2L11,0z"/><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>' +
+            htmlStr += '<br>Context: <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#'+(AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB")+'"d="M12,0H2C0.896,0,0,0.896,0,2v7c0,1.104,0.896,2,2,2h1v3l3-3h6c1.104,0,2-0.896,2-2V2C14,0.896,13.104,0,12,0z"/></svg>' +
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None: <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#'+(AVE.Utils.CSSstyle === "dark" ? "444" : "f2f2f2" )+'" d="M12,0H2C0.896,0,0,0.896,0,2v7c0,1.104,0.896,2,2,2h1v3l3-3h6c1.104,0,2-0.896,2-2V2C14,0.896,13.104,0,12,0z"/></svg>' +
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Edit: <svg title="Edit" style="cursor:pointer;" version="1.1" id="editContext" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + '" d="M1,10l-1,4l4-1l7-7L8,3L1,10z M11,0L9,2l3,3l2-2L11,0z"/></svg>' +
                 '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Peek: <svg version="1.1" id="peakContext" title="A comment or an URL would be here"  style="cursor:help;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path style="fill:#' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + ';" d="M7,2C3,2,0,7,0,7s3,5,7,5s7-5,7-5S11,2,7,2z M7,10c-1.657,0-3-1.344-3-3c0-1.657,1.343-3,3-3 s3,1.343,3,3C10,8.656,8.657,10,7,10z M7,6C6.448,6,6,6.447,6,7c0,0.553,0.448,1,1,1s1-0.447,1-1C8,6.447,7.552,6,7,6z"/></svg>' +
                 '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Open link: <svg title="Open in new tab" style="cursor:alias;" version="1.1" id="openInTab" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path style="fill:#' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + ';" d="M13,4L9,0v3C6,3,1,4,1,8c0,5,7,6,7,6v-2c0,0-5-1-5-4s6-3,6-3v3L13,4z"/></svg>' +
                 '</div>';
@@ -861,7 +925,7 @@ table#formTable{\
 
                     var context = JqId.attr("title");
 
-                    boxHtml += '<svg title="Edit" style="cursor:pointer;" version="1.1" id="editContext" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + '" d="M1,10l-1,4l4-1l7-7L8,3L1,10z M11,0L9,2l3,3l2-2L11,0z"/><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>';
+                    boxHtml += '<svg title="Edit" style="cursor:pointer;" version="1.1" id="editContext" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path fill="#' + (AVE.Utils.CSSstyle === "dark" ? "ABABAB" : "BBB") + '" d="M1,10l-1,4l4-1l7-7L8,3L1,10z M11,0L9,2l3,3l2-2L11,0z"/></svg>';
 
                     if(context){
                         var url;
@@ -936,6 +1000,29 @@ table#formTable{\
 
                     $(_this.CSSselector).trigger("click");
                 });
+
+            var JqIdOpt = $("fieldset#AVE_Dashboard_usertags_options");
+            JqIdOpt.find("legend").off().on("click", function () {
+               if ($(this).parent().find("input:first").is(':hidden')){
+                   $(this).parent().find("*").show();
+               } else {
+                   $(this).parent().find("*").hide();
+               }
+                $(this).show();
+            }).trigger("click");
+            JqIdOpt.find("a#save").off().on("click", function () {
+
+                _this.ShowVoteBalance = JqIdOpt.find("input#balance").is(":checked");
+                _this.ShowIgnore = JqIdOpt.find("input#ignore").is(":checked");
+                _this.ShowTag = JqIdOpt.find("input#tag").is(":checked");
+                _this.tagsperpage = parseInt(JqIdOpt.find("input#elperpage").val(), 10) || 20;
+
+                if (_this.tagsperpage < 1) {_this.tagsperpage = 20;}
+
+                _this.SaveOptions();
+                $(_this.CSSselector).trigger("click");
+            });
+
             $(document)
                 .off()
                 .on("keyup", function (event) {
@@ -1036,9 +1123,13 @@ table#formTable{\
 
                 obj = JSON.parse(this.usertags[i]);
 
-                colour = AVE.Utils.GetRGBvalues(obj.col);
-                r = colour[0]; g = colour[1]; b = colour[2];
-                bestColour = AVE.Utils.GetBestFontColour(r, g, b);
+                if (obj.col){
+                    colour = AVE.Utils.GetRGBvalues(obj.col);
+                    r = colour[0]; g = colour[1]; b = colour[2];
+                    bestColour = AVE.Utils.GetBestFontColour(r, g, b);
+                } else {
+                    bestColour = "white";
+                }
 
                 var VoteColour = "";
                 if (this.module.Options.ShowBalanceWithColourGradient.Value && obj.b){
@@ -1056,12 +1147,16 @@ table#formTable{\
 
                 htmlStr += '<tr username="'+obj.name+'">';
                 htmlStr +=      '<td><a target="_blank" href="/user/'+obj.name+'" >'+obj.name+'</a></td>' +
-                                '<td data="tag"><span title="'+obj.t+'">'+obj.t+'</span></td>' +
-                                '<td data="colour" style="background-color:'+obj.col+'; color:'+bestColour+';">'+obj.col+'</td>' +
-                                '<td data="ignore">'+obj.i+'</td>' +
+                                '<td data="tag"><span title="'+obj.t+'">'+(obj.t || "")+'</span></td>';
+                if (obj.col){
+                    htmlStr +=  '<td data="colour" style="background-color:'+obj.col+';color:'+bestColour+';">'+obj.col+'</td>';
+                } else {
+                    htmlStr +=  '<td data="colour" title="You need to set a tag before choosing a colour" style="cursor:not-allowed;background-color:rgba(0,0,0,0);;color:'+bestColour+';">None</td>';
+                }
+                htmlStr +=      '<td data="ignore">'+obj.i+'</td>' +
                                 '<td data="balance" style="'+VoteColour+'">'+obj.b+'</td>' +
                                 '<td data="context" '+ (obj.con ? ('title="'+obj.con+'"') : '') +'></td>' +
-                                '<td><span id="PreviewBox" style="background-color:'+obj.col+';color:'+bestColour+';">'+obj.t+'</span></td>' +
+                                '<td><span id="PreviewBox" style="background-color:'+obj.col+';color:'+bestColour+';">'+(obj.t || "None")+'</span></td>' +
                                 '<td role="remove_icon"></td>';
                 htmlStr += "</tr>";
             }

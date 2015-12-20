@@ -59,7 +59,11 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.29.9.12",
+        "V2.29.10.13",
+        "   Usertags:",
+        "       Dashboard:",
+        "           Fixed issue with tags having no colour value (e.g. only an ignore value)",
+        "           Added options to display data",
         "   Utils:",
         "       Fixed bug that prevented AVE from detecting the current page if it was a userpage of someone with an hyphen",
         "   DomainFilter:",
