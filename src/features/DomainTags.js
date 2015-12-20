@@ -4,7 +4,7 @@ AVE.Modules['DomainTags'] = {
     Desc: 'Choose tags to characterize domains.',
     Category: 'Domains',
 
-    Index: 100,
+    Index: 200,
     Enabled: false,
 
     Store: {},
@@ -223,6 +223,19 @@ AVE.Modules['DomainTags'] = {
                     box.find("svg:first").attr("title", $(this).val() || "No tag");
                 });
                 box.find("svg:last").off().on("click", function () {
+                    var Opt;
+                    if (!AVE.Modules['DomainFilter'].Enabled){
+                        if (!confirm("This feature relies on DomainFilter to work, but this module is disabled.\nDo you want to activate it?")){
+                            return;
+                        } else {
+                            Opt = JSON.parse(_this.Store.GetValue(_this.Store.Prefix + AVE.Modules['DomainFilter'].ID, "{}"));
+                            Opt.Enabled = true;
+                            _this.Store.SetValue(_this.Store.Prefix + AVE.Modules['DomainFilter'].ID, JSON.stringify(Opt));
+                            AVE.Modules['DomainFilter'].Enabled = true;
+                            print("AVE: turned on DomainFilter");
+                        }
+                    }
+
                     var poly = $(this).find("polyline");
                     poly.css("stroke-width", poly.css("stroke-width") !== "2px" ? "2px" : "0px");
                 });

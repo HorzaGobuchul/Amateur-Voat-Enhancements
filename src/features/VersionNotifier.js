@@ -59,7 +59,10 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.29.9.9",
+        "V2.29.9.11",
+        "   DomainFilter:",
+        "       Moved to the Domains tab in the prefmanager",
+        "       Linked to the DomainTags module for the ignore feature",
         "   Shorcuts:",
         "       Dashboard support",
         "       Adding your first subverse into the list now replaces the default ones",

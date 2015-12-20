@@ -338,7 +338,7 @@ AVE.Modules['Shortcuts'] = {
             var len = subs.length;
 
             htmlStr += '<div id="AVE_Dashboard_shortcuts_buttons">' +
-                '<input class="form-control valid" style="width:400px;display: inline;" type="text" />' +
+                '<input placeholder="Enter here a list of subverses separated by commas" class="form-control valid" style="width:400px;display: inline;" type="text" />' +
                 '<a href="javascript:void(0);" title="Add new subverse names to the shortcut list" role="append" class="btn-whoaverse-paging btn-xs btn-default" style="margin-left:10px;margin-right:15px;">Append</a>' +
                 '<a href="javascript:void(0);" title="Replace the shortcut list with a new one" role="set" class="btn-whoaverse-paging btn-xs btn-default" style="margin-right:15px;">Set</a>' +
                 '<a href="javascript:void(0);" title="Export list as a string of subverse names separated by commas" role="export" class="btn-whoaverse-paging btn-xs btn-default">Export</a>' +
@@ -389,7 +389,7 @@ AVE.Modules['Shortcuts'] = {
             });
 
             JqId.find("svg[role='add']").off().on("click", function () {
-                var subname = $.trim(prompt("Enter below the subverse's name you want to add."));
+                var subname = $.trim(prompt("Enter below the subverse's name you want to add"));
                 if (subname === ""){return false;}
 
                 _this.module.AddToShortcuts(subname);

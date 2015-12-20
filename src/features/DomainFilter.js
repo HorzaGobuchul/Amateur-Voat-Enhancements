@@ -2,7 +2,7 @@ AVE.Modules['DomainFilter'] = {
     ID: 'DomainFilter',
     Name: 'Domain filter',
     Desc: 'Use filters to remove submissions linking to particular domains.',
-    Category: 'Subverse',
+    Category: 'Domains',
 
     Index: 101,
     Enabled: false,
@@ -18,8 +18,10 @@ AVE.Modules['DomainFilter'] = {
             Type: 'array',
             Desc: "Example of filter",
             Value: [] //not JSONified
-        },
+        }
     },
+
+    filters: [],
 
     Filter: function (id, keyword, sub) {
         this.Id = id || 0;
@@ -60,7 +62,7 @@ AVE.Modules['DomainFilter'] = {
             }
         });
 
-        print(JSON.stringify( _this.Options.Filters.Value))
+        //print(JSON.stringify( _this.Options.Filters.Value));
 
         this.Store.SetValue(this.Store.Prefix + this.ID,
             JSON.stringify(
@@ -89,6 +91,7 @@ AVE.Modules['DomainFilter'] = {
     },
 
     Load: function () {
+        var _this = this;
         this.Store = AVE.Storage;
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
@@ -98,19 +101,30 @@ AVE.Modules['DomainFilter'] = {
         }
 
         if (this.Enabled) {
+            this.filters = jQuery.extend([], _this.Options.Filters.Value);
+
+            if (AVE.Modules['DomainTags'].Enabled){
+                var id = _this.Options.Filters.Value.length;
+                $.each(AVE.Modules['DomainTags'].DomainTags, function (name, tag) {
+                    if (tag.i){
+                        _this.filters.push(new _this.Filter(id++, [name.toLowerCase()]));
+                    }
+                });
+            }
+
             this.Start();
         }
     },
 
     Start: function () {
         var _this = this;
-        //When a submission is filtered it is removed, so no need to check anything special when the update method is triggered.
+        //When a submission is filtered it is simply removed, so no need to check anything special when the update method is triggered.
 
         var re, found;
         $("div.entry > p.title > span.domain > a").each(function () {
             var DomainRef = $(this);
             var DomainStr = DomainRef.text().toLowerCase(); //if str == self.(SubName) continue
-            $.each(_this.Options.Filters.Value, function () {
+            $.each(_this.filters, function () {
                 found = false;
                 if (this.ApplyToSub.length === 0 || $.inArray(AVE.Utils.subverseName, this.ApplyToSub) !== -1) {
                     $.each(this.Keywords, function () {
