@@ -1,6 +1,6 @@
-AVE.Modules['ThemeSwichter'] = {
-    ID: 'ThemeSwichter',
-    Name: 'Theme swichter',
+AVE.Modules['ThemeSwitcher'] = {
+    ID: 'ThemeSwitcher',
+    Name: 'Theme switcher',
     Desc: 'Switch between the light and dark themes without reloading',
     Category: 'Style',
 
@@ -60,6 +60,12 @@ AVE.Modules['ThemeSwichter'] = {
                         $("body").attr("class", newstyle);
 
                         AVE.Utils.CSSstyle = AVE.Utils.CSS_Style();
+                        if (AVE.Modules['HeaderFixedPos'] && AVE.Modules['HeaderFixedPos'].Enabled){
+                            AVE.Modules['HeaderFixedPos'].SetAltBackground();
+                        }
+                        if (AVE.Modules['UserInfoFixedPos'] && AVE.Modules['UserInfoFixedPos'].Enabled){
+                            AVE.Modules['UserInfoFixedPos'].SetAltBackground();
+                        }
                     }
                 });
             });

@@ -156,7 +156,7 @@ AVE.Modules['DomainTags'] = {
                 tag = _this.DomainTags[domain].t;
                 colour = _this.DomainTags[domain].c;
             }
-            //Commented out so that we can tag subverses (self-text submissions) too.
+            //Commented out so that we can tag subverses too (self-text submissions).
             //if (/self\.[a-zA-Z0-9]?/.test(domain)){return true;}
 
             if ($(this).parent().find("div.AVE_Domain_tag").length === 0) {
@@ -217,7 +217,7 @@ AVE.Modules['DomainTags'] = {
                         .trigger("click")
                         .on("change", function () {
                             dot.css("background-color", $(this).val());
-                            dot.parent().find("svg > path").css("fill", $(this).val());
+                            dot.parent().find("svg:first").find("path").css("fill", $(this).val());
                         });
                 });
                 box.find("input[type='text']").on("input", function () {
@@ -247,7 +247,7 @@ AVE.Modules['DomainTags'] = {
                     domain = box.attr("domain");
                     tag = box.find("input[type='text']").val();
                     colour = box.find("input[type='color']").val();
-                    ignore = box.find("svg:last > polyline").css("stroke-width") === "2px";
+                    ignore = box.find("svg > polyline").css("stroke-width") === "2px";
 
                     _this.setTag(domain, tag, colour, ignore);
                     _this.updateTag(domain);
@@ -266,7 +266,7 @@ AVE.Modules['DomainTags'] = {
             box.find("input[type='text']").val(tag).select();
             box.find("input[type='color']").val(colour || (AVE.Utils.CSSstyle === "dark" ? "#438BB7" : "#4AABE7"));
             box.find("div#ColourDot").css("background-color", colour || (AVE.Utils.CSSstyle === "dark" ? "#438BB7" : "#4AABE7"));
-            box.find("svg > path:first").css("fill", colour || (AVE.Utils.CSSstyle === "dark" ? "#438BB7" : "#4AABE7"));
+            box.find("svg:first").find("path").css("fill", colour || (AVE.Utils.CSSstyle === "dark" ? "#438BB7" : "#4AABE7"));
             box.find("svg:first").attr("title", tag || "No tag");
             box.find("svg:last > polyline").css("stroke-width", ignore ? "2px" : "0px");
         });
@@ -300,6 +300,7 @@ AVE.Modules['DomainTags'] = {
             }
 
             var el = $(this).parent().find("div.AVE_Domain_tag");
+            if(!el){return;}
 
             if (!tag && !colour) {
                 el.html('<svg onmouseleave="javascript:$(this).find(\'path:first\').css(\'fill\', \'#' + (AVE.Utils.CSSstyle === "dark" ? "777" : "BBB") + '\');return false;" onmouseover="javascript:$(this).find(\'path:first\').css(\'fill\', \'#' + (AVE.Utils.CSSstyle === "dark" ? "438BB7" : "4AABE7") + '\');return false;" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="14px" height="14px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve"><path style="fill:#' + (AVE.Utils.CSSstyle === "dark" ? "777" : "BBB") + '" d="M7,0C4.791,0,3,1.791,3,4c0,2,4,10,4,10s4-8,4-10C11,1.791,9.209,0,7,0z M7,6C5.896,6,5,5.104,5,4 s0.896-2,2-2c1.104,0,2,0.896,2,2S8.104,6,7,6z"/></svg>');

@@ -13,8 +13,8 @@ AVE.Modules['Shortcuts'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
-        },
+            Value: true
+        }
     },
 
     defaultList: "newsubverses,introductions,news",
@@ -158,13 +158,14 @@ AVE.Modules['Shortcuts'] = {
     //// Special to subverse: adds a "shortcut" button for this subverse////
     AppendShortcutButton: function () {
         var _this = this;
+        var btnHTML;
 
         if (!this.isPageInShortcuts()) {
             //style="display:inline" is a fix for the Scribble custom style that tries to hide the block button, but instead hides this button.
-            var btnHTML = '\xa0<button id="AVE_Shortcut" style="display:inline" type="button" class="btn-whoaverse-paging btn-xs btn-default btn-sub">+ shortcut</button>';
+            btnHTML = '\xa0<button id="AVE_Shortcut" style="display:inline;" type="button" class="btn-whoaverse-paging btn-xs btn-default btn-sub">+ shortcut</button>';
         }
         else {
-            var btnHTML = '\xa0<button id="AVE_Shortcut" style="display:inline" type="button" class="btn-whoaverse-paging btn-xs btn-default">- shortcut</button>';
+            btnHTML = '\xa0<button id="AVE_Shortcut" style="display:inline;" type="button" class="btn-whoaverse-paging btn-xs btn-default">- shortcut</button>';
         }
 
         if ($(".btn-whoaverse-paging.btn-xs.btn-default.btn-unsub").length) {
@@ -207,7 +208,7 @@ AVE.Modules['Shortcuts'] = {
         if (SubName === "") {return;}
         var subversesArr = this.GetSubversesListRaw();
         if (subversesArr.toLowerCase().split(",").indexOf(SubName.toLowerCase()) !== -1){
-            print("AVE: AddToShortcuts > \""+SubName+"\" is already present in the shortcut list")
+            print("AVE: AddToShortcuts > \""+SubName+"\" is already present in the shortcut list");
             return;
         }
         if (subversesArr === this.defaultList){
@@ -370,16 +371,29 @@ AVE.Modules['Shortcuts'] = {
             var input = JqId.parent().find("input");
 
             JqId.find("a[role='append']").off().on("click", function () {
-                var newsubs = $.trim(input.val().replace(/\s/g, ''));
-                _this.module.AddToShortcuts(newsubs);
+                var newset = $.trim(input.val().replace(/\s/g, '')).split(",");
+                var newsubs = _this.module.GetSubversesList();
 
+                for (var i = 0; i < newset.length; i++){
+                    if (!newset[i] ||  $.inArray(newset[i], newsubs) !== -1){continue;}
+                    newsubs.push(newset[i]);
+                }
+                if (newsubs.length === 0) {return;}
+
+                _this.module.Store.SetValue(_this.module.StorageName, newsubs.join(","));
                 _this.Reload();
             });
             JqId.find("a[role='set']").off().on("click", function () {
-                var newsubs = $.trim(input.val().replace(/\s/g, ''));
-                if (newsubs === "") {return;}
-                _this.module.Store.SetValue(_this.module.StorageName, newsubs);
+                var newset = $.trim(input.val().replace(/\s/g, '')).split(",");
+                var newsubs = [];
 
+                for (var i = 0; i < newset.length; i++){
+                    if (!newset[i] ||  $.inArray(newset[i], newsubs) !== -1){continue;}
+                    newsubs.push(newset[i]);
+                }
+                if (newsubs.length === 0) {return;}
+
+                _this.module.Store.SetValue(_this.module.StorageName, newsubs.join(","));
                 _this.Reload();
             });
             JqId.find("a[role='export']").off().on("click", function () {

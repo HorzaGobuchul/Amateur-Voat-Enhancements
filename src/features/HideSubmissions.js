@@ -93,7 +93,7 @@ AVE.Modules['HideSubmissions'] = {
     },
 
     Pruning: function(){
-        var count, key;
+        var count;
         count =this.HiddenPosts.length - this.Options.MaxStorage.Value;
 
         if (count < 1) {return;}
@@ -105,24 +105,36 @@ AVE.Modules['HideSubmissions'] = {
     },
 
     AddToHiddenList: function (id, vote) {
-        if ($.inArray(id.toString(), this.HiddenPosts) !== -1){return;}
+        if ($.inArray(id.toString(), this.HiddenPosts) !== -1){this.RemoveFromHiddenList(id);return;}
 
         this.HiddenPosts.push(id);
         this.Store.SetValue(this.StorageName, JSON.stringify(this.HiddenPosts));
 
-        if (this.Options.HideRightAway.Value
+        var JqId = $("div.submission.id-"+id.toString());
+
+        if (  (!vote && this.Options.HideRightAway.Value)
             || (vote && this.Options.HideAfterVote.Value)){
-            $("div.submission.id-"+id.toString()).remove();
+            JqId.remove();
+        } else {
+            JqId.find("ul.flat-list.buttons").find("li > a#AVE_HideSubmissions_link").text("unhide");
         }
 
-        print("AVE: HideSubmissions > removing submissons with id "+id);
+        print("AVE: HideSubmissions > hiding submission with id "+id);
+    },
+
+    RemoveFromHiddenList: function (id) {
+        this.HiddenPosts.splice(this.HiddenPosts.indexOf(id), 1);
+        this.Store.SetValue(this.StorageName, JSON.stringify(this.HiddenPosts));
+
+        $("div.submission.id-"+id.toString()).find("ul.flat-list.buttons").find("li > a#AVE_HideSubmissions_link").text("hide");
+        print("AVE: HideSubmissions > unhiding submission with id "+id);
     },
 
     Start: function () {
         var _this = this;
         $("div.submission").each(function () {
             var id = $(this).attr("data-fullname");
-            if ($.inArray(id.toString(), _this.HiddenPosts) !== -1){
+            if (id && $.inArray(id.toString(), _this.HiddenPosts) !== -1){
                 $(this).remove();
             }
         });
@@ -169,7 +181,6 @@ AVE.Modules['HideSubmissions'] = {
                     var voteType = $(e.target).attr("class").split(" ")[1];
                     if( (voteType === "likes"    && _this.Options.HideUpvoted.Value) ||
                         (voteType === "dislikes" && _this.Options.HideDownvoted.Value)){
-                        print(id);
                         _this.AddToHiddenList(id, true);
                     }
                 }

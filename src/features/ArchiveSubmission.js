@@ -20,8 +20,8 @@ AVE.Modules['ArchiveSubmission'] = {
             Type: 'obj',
             Desc: 'What archiving website do you want to use?',
             Websites:
-               {'org': 'archive.org', // https://web.archive.org/web/*/website.com
-                'is' : 'archive.is'}, //
+               {'org': 'archive.org', // https://web.archive.org/web/*/URL
+                'is' : 'archive.is'}, // //https://archive.is/?run=1&url=URL
                                       // Add google-cache?
             Value: "is"
         }
@@ -56,7 +56,6 @@ AVE.Modules['ArchiveSubmission'] = {
 
         if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "search", "domain", "user-submissions", "user-comments", "saved", "threads", "search"]) === -1) {
             this.Enabled = false;
-            print("nope");
         }
 
         if (this.Enabled) {
@@ -66,7 +65,6 @@ AVE.Modules['ArchiveSubmission'] = {
 
     Start: function () {
         this.AppendToPage();
-        this.Listeners();
     },
 
     Update: function () {
@@ -82,31 +80,24 @@ AVE.Modules['ArchiveSubmission'] = {
             if($(this).parents("div.submission:first").hasClass("self")){return;} //Not a self-post
             if($(this).find("li:first > a ").text()==="permalink"){return false;} //Not a comment (will break the loop if it is)
 
-            $(this).append('<li><a id="AVE_ArchiveSubmission_link" href="javascript:void(0);">archive</a></li>');
-        });
-    },
-
-    Listeners: function () {
-        "use strict";
-
-        $("li > a#AVE_ArchiveSubmission_link").off().on("click", function () {
             var url;
-            print("Not yet implemented");
-            return;
-
             url = $(this).parents("div.entry:first").find("p.title > a.title").attr("href");
-            //Concatenate it with the archive query url
-            AVE.Utils.SendMessage({ request: "OpenInTab", url: url[0] });
+            //If link to self-post: return. The only case where the archive link will be added to a self-post submissions is with stickies.
+            if (!/^http/.test(url)) {return;}
+
+            url = 'https://archive.is/?run=1&url='+encodeURIComponent(url);
+
+            $(this).append('<li><a id="AVE_ArchiveSubmission_link" target="_blank" href="'+url+'">archive</a></li>');
         });
     },
 
-    AppendToPreferenceManager: {
+    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
         html: function () {
-            var _this = AVE.Modules['ArchiveSubmission'];
+            //var _this = AVE.Modules['ID'];
             var htmlStr = '';
+
+            htmlStr += '<div>The archiving website used is <strong>"archive.is"</strong>.<br>After opening a new page to archive.is, you may need to wait a second or two before being redirected to the archived page.<br>If you are the first to open a particular page looking for an archived version, you will need to wait for it to be processed. Please let this process finish as it will help other users after you.</div>';
             return htmlStr;
         },
-        callback: function () {
-        }
-    }
+    },
 };

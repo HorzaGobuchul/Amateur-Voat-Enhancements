@@ -59,8 +59,8 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.33.10.16",
-        "   New feature: ThemeSwichter",
+        "V2.33.11.16",
+        "   New feature: ThemeSwitcher",
         "       Switch between the light and dark themes without reloading",
         "   HeaderFixedPos & UserInfoFixedPos:",
         "       Changed rules choosing the best background colour (fallbacks in case it is transparent because of a custom style)",
@@ -73,6 +73,7 @@ AVE.Modules['VersionNotifier'] = {
         "       Hide submissions you voted on",
         "       Hide with H",
         "       Insert a \"hide\" button",
+        "       If the submissions isn't removed as soon as hidden, \"hide\" becomes \"unhide\"",
         "   New feature: SingleClickOpener",
         "       Adds '[l+c]' link to submissions, opens link and comment pages.",
         "   Usertags:",
