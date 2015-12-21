@@ -59,9 +59,13 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.31.10.15",
+        "V2.33.10.16",
+        "   New feature: ThemeSwichter",
+        "       Switch between the light and dark themes without reloading",
+        "   HeaderFixedPos & UserInfoFixedPos:",
+        "       Changed rules choosing the best background colour (fallbacks in case it is transparent because of a custom style)",
         "   New feature: ArchiveSubmission",
-        "       Add a link to an archived version of the submission",
+        "       Add a link to open an archived version of the submission link",
         "   ShortKeys:",
         "       Linked with HideSubmissions to hide posts with the keyboard (def.: h)",
         "       Automatically select the next submission after hiding one",

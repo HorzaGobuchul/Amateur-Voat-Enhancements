@@ -59,16 +59,16 @@ AVE.Modules['SingleClickOpener'] = {
     },
 
     AppendToPage: function () {
+        "use strict";
         $("ul.flat-list.buttons").each(function () {
-            "use strict";
             if ($(this).find("li > a#AVE_SingleClickOpener_link").length > 0) {return;}
+            if($(this).parents("div.submission:first").hasClass("self")){return;} //Not a self-post
             $(this).append('<li><a id="AVE_SingleClickOpener_link" href="javascript:void(0);">[l+c]</a></li>');
         });
     },
 
     Listeners: function () {
         "use strict";
-
         $("li > a#AVE_SingleClickOpener_link").off().on("click", function () {
             var url = [];
 

@@ -8,7 +8,7 @@
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.31.10.14
+// @version     2.33.10.16
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue

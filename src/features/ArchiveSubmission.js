@@ -54,6 +54,11 @@ AVE.Modules['ArchiveSubmission'] = {
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
 
+        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "search", "domain", "user-submissions", "user-comments", "saved", "threads", "search"]) === -1) {
+            this.Enabled = false;
+            print("nope");
+        }
+
         if (this.Enabled) {
             this.Start();
         }
@@ -73,9 +78,10 @@ AVE.Modules['ArchiveSubmission'] = {
     AppendToPage: function () {
         $("ul.flat-list.buttons").each(function () {
             "use strict";
-            if($(this).parents("div.submission:first").hasClass("self")){return;}
-            if($(this).find("li:first > a ").text() === "permalink"){return;}
-            if ($(this).find("li > a#AVE_ArchiveSubmission_link").length > 0) {return;}
+            if($(this).find("li > a#AVE_ArchiveSubmission_link").length>0) {return;} //Not already added
+            if($(this).parents("div.submission:first").hasClass("self")){return;} //Not a self-post
+            if($(this).find("li:first > a ").text()==="permalink"){return false;} //Not a comment (will break the loop if it is)
+
             $(this).append('<li><a id="AVE_ArchiveSubmission_link" href="javascript:void(0);">archive</a></li>');
         });
     },

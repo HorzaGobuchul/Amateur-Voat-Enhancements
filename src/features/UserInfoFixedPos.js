@@ -105,20 +105,24 @@ AVE.Modules['UserInfoFixedPos'] = {
 
         if ($("div#header-container").css("background-color") === "transparent" &&
             $("div#header-container").css("background-image") === "none") {
-            this.bg = $("#logged-in").css("background-color");
+            this.bg = $("div#header[role='banner']").css("background-color");
+            if (this.bg === "transparent") {
+                this.bg = $("#logged-in").css("background-color");
 
-            if (this.bg === "transparent" && 
-                this.bg === $("[title='Profile']").css("color")) {
-                $("[title='Profile']").css("color");
-                this.bg = $("#header-account").css("background-color");
-
-                if (this.bg === "transparent") {
-                    this.bg = $("div#header[role='banner']").css("background-color");
+                if (this.bg === "transparent" &&
+                    this.bg === $("[title='Profile']").css("color")) {
+                    $("[title='Profile']").css("color");
+                    this.bg = $("#header-account").css("background-color");
 
                     if (this.bg === "transparent") {
-                        //If there is no colour nor any image set, we set a default value
-                        this.bg = AVE.Utils.CSSstyle === "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
+                        this.bg = $("div#header[role='banner']").css("background-color");
+
+                        if (this.bg === "transparent") {
+                            //If there is no colour nor any image set, we set a default value
+                            this.bg = AVE.Utils.CSSstyle === "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
+                        }
                     }
+
                 }
             }
         }

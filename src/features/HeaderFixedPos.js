@@ -55,7 +55,10 @@ AVE.Modules['HeaderFixedPos'] = {
         var bg, border;
         //Subverse list bg
         bg = $("#sr-header-area").css("background-color");
-        if (bg === "transparent") {
+        //If alpha channel isn't 1
+        if (  bg === "transparent" ||
+              bg[3] === "a" &&
+              parseInt(bg.replace(")", "").split(",")[3], 10) !== 1){
             //general header background
             bg = $("div#header[role='banner']").css("background-color");
             if (bg === "transparent") {
