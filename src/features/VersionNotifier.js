@@ -59,6 +59,10 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.33.11.18",
+        "   ArchiveSubmission:",
+        "       No link added to posts linking to archive.is",
+        "       Added option (def.: false) to archive self-posts",
         "V2.33.11.16",
         "   New feature: ThemeSwitcher",
         "       Switch between the light and dark themes without reloading",

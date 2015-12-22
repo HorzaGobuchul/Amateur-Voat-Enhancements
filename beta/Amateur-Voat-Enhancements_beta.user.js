@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2015-12-21
+// @date        2015-12-22
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.33.11.16
+// @version     2.33.11.18
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1084,6 +1084,10 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.33.11.18",
+        "   ArchiveSubmission:",
+        "       No link added to posts linking to archive.is",
+        "       Added option (def.: false) to archive self-posts",
         "V2.33.11.16",
         "   New feature: ThemeSwitcher",
         "       Switch between the light and dark themes without reloading",
@@ -7129,12 +7133,17 @@ AVE.Modules['ArchiveSubmission'] = {
             Type: 'boolean',
             Value: true
         },
+        ArchiveSelfposts: {
+            Type: 'boolean',
+            Desc: "Archive self-posts as well.",
+            Value: false
+        },
         WebArchive: {
             Type: 'obj',
             Desc: 'What archiving website do you want to use?',
             Websites:
                {'org': 'archive.org', // https://web.archive.org/web/*/URL
-                'is' : 'archive.is'}, // //https://archive.is/?run=1&url=URL
+                'is' : 'archive.is'}, // https://archive.is/?run=1&url=URL
                                       // Add google-cache?
             Value: "is"
         }
@@ -7187,16 +7196,24 @@ AVE.Modules['ArchiveSubmission'] = {
     },
 
     AppendToPage: function () {
+        "use strict";
+        var _this = this;
         $("ul.flat-list.buttons").each(function () {
-            "use strict";
             if($(this).find("li > a#AVE_ArchiveSubmission_link").length>0) {return;} //Not already added
-            if($(this).parents("div.submission:first").hasClass("self")){return;} //Not a self-post
+            if(!_this.Options.ArchiveSelfposts.Value && $(this).parents("div.submission:first").hasClass("self")){return;} //Not a self-post
             if($(this).find("li:first > a ").text()==="permalink"){return false;} //Not a comment (will break the loop if it is)
 
             var url;
             url = $(this).parents("div.entry:first").find("p.title > a.title").attr("href");
             //If link to self-post: return. The only case where the archive link will be added to a self-post submissions is with stickies.
-            if (!/^http/.test(url)) {return;}
+
+            if (!/^http/.test(url)) { //if self-post
+                if (_this.Options.ArchiveSelfposts.Value)//recreate URL if chose to archive self-posts
+                { url = "https://" + window.location.hostname + url; }
+                else //return here otherwise (even though the function should have exited already by that point
+                { return; }
+            }
+            if (/^https?:\/\/archive\.is/.test(url)) {return;}
 
             url = 'https://archive.is/?run=1&url='+encodeURIComponent(url);
 
@@ -7206,13 +7223,16 @@ AVE.Modules['ArchiveSubmission'] = {
 
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager
         html: function () {
-            //var _this = AVE.Modules['ID'];
+            var _this = AVE.Modules['ArchiveSubmission'];
             var htmlStr = '';
 
-            htmlStr += '<div>The archiving website used is <strong>"archive.is"</strong>.<br>After opening a new page to archive.is, you may need to wait a second or two before being redirected to the archived page.<br>If you are the first to open a particular page looking for an archived version, you will need to wait for it to be processed. Please let this process finish as it will help other users after you.</div>';
+            htmlStr += '<div>The archiving website used is <strong>"archive.is"</strong>.<br>After opening a new page to archive.is, you may need to wait a second or two before being redirected to the archived page.<br>If you are the first to open a particular page looking for an archived version, you will need to wait for it to be processed. Please let this process finish as it will help other users after you.</div><br>';
+
+            htmlStr += '<input id="ArchiveSelfposts" ' + (_this.Options.ArchiveSelfposts.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ArchiveSelfposts"> ' + _this.Options.ArchiveSelfposts.Desc + '</label>';
+
             return htmlStr;
-        },
-    },
+        }
+    }
 };
 /// END Archive submissions ///
 
