@@ -19,6 +19,11 @@ AVE.Modules['ShortKeys'] = {
             Desc: 'Open comments and link pages in new tabs.',
             Value: true
         },
+        OpenInArchive: {
+            Type: 'boolean',
+            Desc: 'Open link page in <strong>archives.is</strong>.',
+            Value: false
+        },
         UpvoteKey: {
             Type: 'char',
             Value: 'a'
@@ -229,16 +234,22 @@ AVE.Modules['ShortKeys'] = {
 
             } else if (key === OpenC.toUpperCase()) { // Open comment page
                 if (!sel.parent().hasClass("submission")) { return; }
+
+                var url = "https://" + window.location.hostname +sel.find("a.comments").attr("href");
                 if (_this.Options.OpenInNewTab.Value) {
-                    AVE.Utils.SendMessage({ request: "OpenInTab", url: "https://" + window.location.hostname + sel.find("a.comments").attr("href") });
+                    AVE.Utils.SendMessage({ request: "OpenInTab", url: url });
                 } else {
-                    window.location.href = "https://" + window.location.hostname + sel.find("a.comments").attr("href");
+                    window.location.href = url;
                 }
             } else if (key === OpenL.toUpperCase()) { // Open link page
                 if (!sel.parent().hasClass("submission")) { return; }
                 var url = sel.find("a.title").attr("href");
 
                 if (!/^http/.test(url)) { url = "https://" + window.location.hostname + url; }
+
+                if (_this.Options.OpenInArchive.Value && !/^https?:\/\/archive\.is/.test(url)){
+                    url = 'https://archive.is/?run=1&url='+encodeURIComponent(url);
+                }
 
                 if (_this.Options.OpenInNewTab.Value) {
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url });
@@ -257,6 +268,9 @@ AVE.Modules['ShortKeys'] = {
                 if (url[0] && url[0] === url[1]) {
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[0] });
                 } else {
+                    if (_this.Options.OpenInArchive.Value && !/^https?:\/\/archive\.is/.test(url[0])){
+                        url[0] = 'https://archive.is/?run=1&url='+encodeURIComponent(url[0]);
+                    }
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[0] });
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[1] });
                 }
@@ -377,7 +391,8 @@ AVE.Modules['ShortKeys'] = {
             htmlStr += '</tr>';
 
             htmlStr += '</table>';
-            htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br />';
+            htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br>';
+            htmlStr += '<input id="OpenInArchive" ' + (_this.Options.OpenInArchive.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInArchive"> ' + _this.Options.OpenInArchive.Desc + '</label><br>';
             return htmlStr;
         }
     }

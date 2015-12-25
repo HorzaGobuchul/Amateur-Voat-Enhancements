@@ -18,12 +18,12 @@ AVE.Modules['HideSubmissions'] = {
         },
         HideDownvoted: {
             Type: 'boolean',
-            Desc: "Hide submissions you downvote",
+            Desc: "Hide submissions you downvote.",
             Value: false
         },
         HideUpvoted: {
             Type: 'boolean',
-            Desc: "Hide submissions you upvote",
+            Desc: "Hide submissions you upvote.",
             Value: false
         },
         HideRightAway: {
@@ -33,18 +33,18 @@ AVE.Modules['HideSubmissions'] = {
         },
         HideAfterVote: {
             Type: 'boolean',
-            Desc: "Hide the submission right after the vote is registered",
+            Desc: "Hide the submission right after the vote is registered.",
             Value: false
         },
         AddHideButton: {
             Type: 'boolean',
-            Desc: "Insert a \"hide\" button",
+            Desc: "Insert a \"hide\" button.",
             Value: true
         },
         MaxStorage: {
             Type: 'int',
             Range: [1,5000],
-            Desc: "Max number of submissions to remember",
+            Desc: "Max number of submissions to remember.",
             Value: 400
         }
     },
@@ -199,7 +199,13 @@ AVE.Modules['HideSubmissions'] = {
             htmlStr += '<input id="HideUpvoted" ' + (_this.Options.HideUpvoted.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideUpvoted"> ' + _this.Options.HideUpvoted.Desc + '</label><br>';
             htmlStr += '<input id="HideDownvoted" ' + (_this.Options.HideDownvoted.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideDownvoted"> ' + _this.Options.HideDownvoted.Desc + '</label><br>';
             htmlStr += '<input id="HideAfterVote" ' + (_this.Options.HideAfterVote.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideAfterVote"> ' + _this.Options.HideAfterVote.Desc + '</label><br><br>';
-            htmlStr += '<input id="HideRightAway" ' + (_this.Options.HideRightAway.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideRightAway"> ' + _this.Options.HideRightAway.Desc + '</label><br>';
+            htmlStr += '<input id="HideRightAway" ' + (_this.Options.HideRightAway.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideRightAway"> ' + _this.Options.HideRightAway.Desc + '</label>';
+            if (AVE.Modules['ShortKeys']){
+                var key = AVE.Modules['ShortKeys'].Options.HidePost.Value || "Enter/Return";
+                htmlStr += ' ("<strong>'+key+'</strong>").<br>';
+            } else {
+                htmlStr += ' (disabled).<br>';
+            }
             htmlStr += '<input id="AddHideButton" ' + (_this.Options.AddHideButton.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="AddHideButton"> ' + _this.Options.AddHideButton.Desc + '</label><br>';
 
             return htmlStr;

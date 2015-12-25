@@ -13,7 +13,7 @@ AVE.Modules['PreferenceManager'] = {
             Type: 'boolean',
             Desc: "Show a warning if you are trying to exit the Preference Manager after having modified one or more preferences.",
             Value: true
-        },
+        }
     },
 
     SavePref: function (POST) {
@@ -67,6 +67,7 @@ AVE.Modules['PreferenceManager'] = {
                 top: 0px;\
                 position:fixed;\
                 font-size: 14px;\
+                border-radius: 3px;\
             }\
             div.MngWinHeader{\
                 margin: 0px 0px;\
@@ -75,6 +76,8 @@ AVE.Modules['PreferenceManager'] = {
                 background: #' + (AVE.Utils.CSSstyle === "dark" ? "333" : "FFF") + ';\
                 border: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "292929" : "F4F4F4") + ';\
                 border-bottom:0px;\
+                border-bottom-right-radius: 0px;\
+                border-bottom-left-radius: 0px;\
             }\
             span.MngrWinTitle{\
                 margin-left:5px;\

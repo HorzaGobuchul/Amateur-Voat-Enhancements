@@ -59,6 +59,11 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.33.12.19",
+        "   ShortKeys:",
+        "       Added option to open external link with archive.is",
+        "   ArchiveSubmission:",
+        "       Enabled in threadsvoat",
         "V2.33.11.18",
         "   ArchiveSubmission:",
         "       No link added to posts linking to archive.is",

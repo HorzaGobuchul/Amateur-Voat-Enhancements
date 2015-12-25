@@ -59,7 +59,7 @@ AVE.Modules['ArchiveSubmission'] = {
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
 
-        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "search", "domain", "user-submissions", "user-comments", "saved", "threads", "search"]) === -1) {
+        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "thread", "domain", "user-submissions", "user-comments", "saved", "search"]) === -1) {
             this.Enabled = false;
         }
 
@@ -93,7 +93,7 @@ AVE.Modules['ArchiveSubmission'] = {
             if (!/^http/.test(url)) { //if self-post
                 if (_this.Options.ArchiveSelfposts.Value)//recreate URL if chose to archive self-posts
                 { url = "https://" + window.location.hostname + url; }
-                else //return here otherwise (even though the function should have exited already by that point
+                else //return here otherwise. Even though the function should have exited already by that point (only if not a sticky)
                 { return; }
             }
             if (/^https?:\/\/archive\.is/.test(url)) {return;}
