@@ -59,7 +59,11 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.33.12.19",
+        "V2.33.13.20",
+        "   General:",
+        "       Added support for the new guest frontpage",
+        "   HideSubmissions:",
+        "       Added reference to the key used to hide posts in the preference manager",
         "   ShortKeys:",
         "       Added option to open external link with archive.is",
         "   ArchiveSubmission:",

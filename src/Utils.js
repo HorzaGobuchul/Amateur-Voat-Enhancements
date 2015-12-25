@@ -5,6 +5,7 @@ AVE.Utils = {
     isPageSubverse: "",
     CSSstyle: "",
     currentPageType: "",
+    peculiarities: [],
     
     LateSet: function () {
         this.CSSstyle = this.CSS_Style();
@@ -25,12 +26,13 @@ AVE.Utils = {
 
     Page: function () {
         var RegExpTypes = {
-            frontpage: /voat.co\/?(new)?(\?page=[0-9]*)?(\#[^\\\/]*)?$/i,
+            frontpage: /voat.co\/?(new)?(\?page=[0-9]*)?(#[^\\\/]*)?$/i,
+            front_guest: /voat.co\/?(new)?(\?frontpage=guest)?(#[^\\\/]*)?$/i,
             submissions: /voat.co\/user\/[\w\d-]*\/submissions/i,
             subverse: /voat.co\/v\/[a-z]*\/?(\?page=[0-9]*)?/i,
             comments: /voat.co\/user\/[\w\d-]*\/comments/i,
             thread: /voat.co\/v\/[a-z]*\/comments\/\d*/i,
-            sub_rel: /voat.co\/v\/[a-z]*\/[a-z]{1,}/i,
+            sub_rel: /voat.co\/v\/[a-z]*\/[a-z]+/i,
             register: /voat.co\/account\/register/i,
             userShort: /voat.co\/u\/[\w\d-]*\/?$/i,
             modlog: /voat.co\/v\/[a-z]*\/modlog/i,
@@ -50,11 +52,12 @@ AVE.Utils = {
             set: /voat.co\/set\/\d*/i,
             mySet: /voat.co\/mysets/i,
             sets: /voat.co\/sets/i,
-            api: /voat.co\/api/i,
+            api: /voat.co\/api/i
         };
         var url = window.location.href;
 
         if (RegExpTypes.frontpage.test(url)) { return "frontpage"; }
+        if (RegExpTypes.front_guest.test(url)) { this.peculiarities.push("guest-frontpage"); return "frontpage"; }
         if (RegExpTypes.api.test(url)) { return "api"; }
         if (RegExpTypes.thread.test(url)) { return "thread"; }
         if (RegExpTypes.sub_new.test(url)) { return "subverse"; }

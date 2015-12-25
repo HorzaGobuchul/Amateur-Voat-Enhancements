@@ -85,6 +85,8 @@ AVE.Init = {
             //$(window).load's callback isn't triggered if it is processed as the page's readystate already is "complete"
             if (document.readyState === "complete") { loadModuleOnLoadComplete(); }
             else { $(window).load(function () { loadModuleOnLoadComplete(); }); }
+        } else {
+            print("AVE: Current page > no idea, sorry. Maybe tell /u/HorzaDeservedBetter about it? Pretty please.");
         }
     },
 

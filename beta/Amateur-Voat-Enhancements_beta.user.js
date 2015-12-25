@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2015-12-22
+// @date        2015-12-25
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.33.11.18
+// @version     2.33.13.20
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -110,6 +110,8 @@ AVE.Init = {
             //$(window).load's callback isn't triggered if it is processed as the page's readystate already is "complete"
             if (document.readyState === "complete") { loadModuleOnLoadComplete(); }
             else { $(window).load(function () { loadModuleOnLoadComplete(); }); }
+        } else {
+            print("AVE: Current page > no idea, sorry. Maybe tell /u/HorzaDeservedBetter about it? Pretty please.");
         }
     },
 
@@ -150,6 +152,7 @@ AVE.Utils = {
     isPageSubverse: "",
     CSSstyle: "",
     currentPageType: "",
+    peculiarities: [],
     
     LateSet: function () {
         this.CSSstyle = this.CSS_Style();
@@ -170,12 +173,13 @@ AVE.Utils = {
 
     Page: function () {
         var RegExpTypes = {
-            frontpage: /voat.co\/?(new)?(\?page=[0-9]*)?(\#[^\\\/]*)?$/i,
+            frontpage: /voat.co\/?(new)?(\?page=[0-9]*)?(#[^\\\/]*)?$/i,
+            front_guest: /voat.co\/?(new)?(\?frontpage=guest)?(#[^\\\/]*)?$/i,
             submissions: /voat.co\/user\/[\w\d-]*\/submissions/i,
             subverse: /voat.co\/v\/[a-z]*\/?(\?page=[0-9]*)?/i,
             comments: /voat.co\/user\/[\w\d-]*\/comments/i,
             thread: /voat.co\/v\/[a-z]*\/comments\/\d*/i,
-            sub_rel: /voat.co\/v\/[a-z]*\/[a-z]{1,}/i,
+            sub_rel: /voat.co\/v\/[a-z]*\/[a-z]+/i,
             register: /voat.co\/account\/register/i,
             userShort: /voat.co\/u\/[\w\d-]*\/?$/i,
             modlog: /voat.co\/v\/[a-z]*\/modlog/i,
@@ -195,11 +199,12 @@ AVE.Utils = {
             set: /voat.co\/set\/\d*/i,
             mySet: /voat.co\/mysets/i,
             sets: /voat.co\/sets/i,
-            api: /voat.co\/api/i,
+            api: /voat.co\/api/i
         };
         var url = window.location.href;
 
         if (RegExpTypes.frontpage.test(url)) { return "frontpage"; }
+        if (RegExpTypes.front_guest.test(url)) { this.peculiarities.push("guest-frontpage"); return "frontpage"; }
         if (RegExpTypes.api.test(url)) { return "api"; }
         if (RegExpTypes.thread.test(url)) { return "thread"; }
         if (RegExpTypes.sub_new.test(url)) { return "subverse"; }
@@ -450,7 +455,7 @@ AVE.Modules['PreferenceManager'] = {
             Type: 'boolean',
             Desc: "Show a warning if you are trying to exit the Preference Manager after having modified one or more preferences.",
             Value: true
-        },
+        }
     },
 
     SavePref: function (POST) {
@@ -504,6 +509,7 @@ AVE.Modules['PreferenceManager'] = {
                 top: 0px;\
                 position:fixed;\
                 font-size: 14px;\
+                border-radius: 3px;\
             }\
             div.MngWinHeader{\
                 margin: 0px 0px;\
@@ -512,6 +518,8 @@ AVE.Modules['PreferenceManager'] = {
                 background: #' + (AVE.Utils.CSSstyle === "dark" ? "333" : "FFF") + ';\
                 border: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "292929" : "F4F4F4") + ';\
                 border-bottom:0px;\
+                border-bottom-right-radius: 0px;\
+                border-bottom-left-radius: 0px;\
             }\
             span.MngrWinTitle{\
                 margin-left:5px;\
@@ -1084,6 +1092,15 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.33.13.20",
+        "   General:",
+        "       Added support for the new guest frontpage",
+        "   HideSubmissions:",
+        "       Added reference to the key used to hide posts in the preference manager",
+        "   ShortKeys:",
+        "       Added option to open external link with archive.is",
+        "   ArchiveSubmission:",
+        "       Enabled in threadsvoat",
         "V2.33.11.18",
         "   ArchiveSubmission:",
         "       No link added to posts linking to archive.is",
@@ -2819,12 +2836,12 @@ AVE.Modules['HideSubmissions'] = {
         },
         HideDownvoted: {
             Type: 'boolean',
-            Desc: "Hide submissions you downvote",
+            Desc: "Hide submissions you downvote.",
             Value: false
         },
         HideUpvoted: {
             Type: 'boolean',
-            Desc: "Hide submissions you upvote",
+            Desc: "Hide submissions you upvote.",
             Value: false
         },
         HideRightAway: {
@@ -2834,18 +2851,18 @@ AVE.Modules['HideSubmissions'] = {
         },
         HideAfterVote: {
             Type: 'boolean',
-            Desc: "Hide the submission right after the vote is registered",
+            Desc: "Hide the submission right after the vote is registered.",
             Value: false
         },
         AddHideButton: {
             Type: 'boolean',
-            Desc: "Insert a \"hide\" button",
+            Desc: "Insert a \"hide\" button.",
             Value: true
         },
         MaxStorage: {
             Type: 'int',
             Range: [1,5000],
-            Desc: "Max number of submissions to remember",
+            Desc: "Max number of submissions to remember.",
             Value: 400
         }
     },
@@ -3000,7 +3017,13 @@ AVE.Modules['HideSubmissions'] = {
             htmlStr += '<input id="HideUpvoted" ' + (_this.Options.HideUpvoted.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideUpvoted"> ' + _this.Options.HideUpvoted.Desc + '</label><br>';
             htmlStr += '<input id="HideDownvoted" ' + (_this.Options.HideDownvoted.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideDownvoted"> ' + _this.Options.HideDownvoted.Desc + '</label><br>';
             htmlStr += '<input id="HideAfterVote" ' + (_this.Options.HideAfterVote.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideAfterVote"> ' + _this.Options.HideAfterVote.Desc + '</label><br><br>';
-            htmlStr += '<input id="HideRightAway" ' + (_this.Options.HideRightAway.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideRightAway"> ' + _this.Options.HideRightAway.Desc + '</label><br>';
+            htmlStr += '<input id="HideRightAway" ' + (_this.Options.HideRightAway.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideRightAway"> ' + _this.Options.HideRightAway.Desc + '</label>';
+            if (AVE.Modules['ShortKeys']){
+                var key = AVE.Modules['ShortKeys'].Options.HidePost.Value || "Enter/Return";
+                htmlStr += ' ("<strong>'+key+'</strong>").<br>';
+            } else {
+                htmlStr += ' (disabled).<br>';
+            }
             htmlStr += '<input id="AddHideButton" ' + (_this.Options.AddHideButton.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="AddHideButton"> ' + _this.Options.AddHideButton.Desc + '</label><br>';
 
             return htmlStr;
@@ -3204,6 +3227,11 @@ AVE.Modules['ShortKeys'] = {
             Type: 'boolean',
             Desc: 'Open comments and link pages in new tabs.',
             Value: true
+        },
+        OpenInArchive: {
+            Type: 'boolean',
+            Desc: 'Open link page in <strong>archives.is</strong>.',
+            Value: false
         },
         UpvoteKey: {
             Type: 'char',
@@ -3415,16 +3443,22 @@ AVE.Modules['ShortKeys'] = {
 
             } else if (key === OpenC.toUpperCase()) { // Open comment page
                 if (!sel.parent().hasClass("submission")) { return; }
+
+                var url = "https://" + window.location.hostname +sel.find("a.comments").attr("href");
                 if (_this.Options.OpenInNewTab.Value) {
-                    AVE.Utils.SendMessage({ request: "OpenInTab", url: "https://" + window.location.hostname + sel.find("a.comments").attr("href") });
+                    AVE.Utils.SendMessage({ request: "OpenInTab", url: url });
                 } else {
-                    window.location.href = "https://" + window.location.hostname + sel.find("a.comments").attr("href");
+                    window.location.href = url;
                 }
             } else if (key === OpenL.toUpperCase()) { // Open link page
                 if (!sel.parent().hasClass("submission")) { return; }
                 var url = sel.find("a.title").attr("href");
 
                 if (!/^http/.test(url)) { url = "https://" + window.location.hostname + url; }
+
+                if (_this.Options.OpenInArchive.Value && !/^https?:\/\/archive\.is/.test(url)){
+                    url = 'https://archive.is/?run=1&url='+encodeURIComponent(url);
+                }
 
                 if (_this.Options.OpenInNewTab.Value) {
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url });
@@ -3443,6 +3477,9 @@ AVE.Modules['ShortKeys'] = {
                 if (url[0] && url[0] === url[1]) {
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[0] });
                 } else {
+                    if (_this.Options.OpenInArchive.Value && !/^https?:\/\/archive\.is/.test(url[0])){
+                        url[0] = 'https://archive.is/?run=1&url='+encodeURIComponent(url[0]);
+                    }
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[0] });
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[1] });
                 }
@@ -3563,7 +3600,8 @@ AVE.Modules['ShortKeys'] = {
             htmlStr += '</tr>';
 
             htmlStr += '</table>';
-            htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br />';
+            htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br>';
+            htmlStr += '<input id="OpenInArchive" ' + (_this.Options.OpenInArchive.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInArchive"> ' + _this.Options.OpenInArchive.Desc + '</label><br>';
             return htmlStr;
         }
     }
@@ -4823,11 +4861,16 @@ AVE.Modules['NeverEndingVoat'] = {
         $("a#AVE_loadmorebutton").text(this.Labels[1]);
         var nextPageURL = window.location.href;
         if (nextPageURL.indexOf("?page=") !== -1) {
-            nextPageURL = nextPageURL.replace(/\?page\=[0-9]*/, "?page=" + (this.currentPage + 1));
+            nextPageURL = nextPageURL.replace(/\?page=[0-9]*/, "?page=" + (this.currentPage + 1));
         } else {
             nextPageURL = "https://" + window.location.hostname + window.location.pathname + "?page=" + (this.currentPage + 1);
         }
-        print("AVE: loading page: " + nextPageURL);
+
+        if($.inArray('guest-frontpage', AVE.Utils.peculiarities) !== -1){
+            nextPageURL += "&frontpage=guest";
+        }
+
+        print('AVE: loading page > ' + nextPageURL);
         $.ajax({
             url: nextPageURL,
             cache: false,
@@ -7176,7 +7219,7 @@ AVE.Modules['ArchiveSubmission'] = {
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
 
-        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "search", "domain", "user-submissions", "user-comments", "saved", "threads", "search"]) === -1) {
+        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "thread", "domain", "user-submissions", "user-comments", "saved", "search"]) === -1) {
             this.Enabled = false;
         }
 
@@ -7210,7 +7253,7 @@ AVE.Modules['ArchiveSubmission'] = {
             if (!/^http/.test(url)) { //if self-post
                 if (_this.Options.ArchiveSelfposts.Value)//recreate URL if chose to archive self-posts
                 { url = "https://" + window.location.hostname + url; }
-                else //return here otherwise (even though the function should have exited already by that point
+                else //return here otherwise. Even though the function should have exited already by that point (only if not a sticky)
                 { return; }
             }
             if (/^https?:\/\/archive\.is/.test(url)) {return;}

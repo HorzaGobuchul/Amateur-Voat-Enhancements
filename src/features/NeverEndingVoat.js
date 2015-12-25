@@ -131,11 +131,16 @@ AVE.Modules['NeverEndingVoat'] = {
         $("a#AVE_loadmorebutton").text(this.Labels[1]);
         var nextPageURL = window.location.href;
         if (nextPageURL.indexOf("?page=") !== -1) {
-            nextPageURL = nextPageURL.replace(/\?page\=[0-9]*/, "?page=" + (this.currentPage + 1));
+            nextPageURL = nextPageURL.replace(/\?page=[0-9]*/, "?page=" + (this.currentPage + 1));
         } else {
             nextPageURL = "https://" + window.location.hostname + window.location.pathname + "?page=" + (this.currentPage + 1);
         }
-        print("AVE: loading page: " + nextPageURL);
+
+        if($.inArray('guest-frontpage', AVE.Utils.peculiarities) !== -1){
+            nextPageURL += "&frontpage=guest";
+        }
+
+        print('AVE: loading page > ' + nextPageURL);
         $.ajax({
             url: nextPageURL,
             cache: false,
