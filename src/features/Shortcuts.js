@@ -428,7 +428,6 @@ AVE.Modules['Shortcuts'] = {
 
                 var subversesArr = _this.module.GetSubversesList();
                 var idx = $(this).parent().index() -1;
-                print(idx);
                 AVE.Utils.move(subversesArr, idx, idx+1);
 
                 _this.module.Store.SetValue(_this.module.StorageName, subversesArr.join(","));

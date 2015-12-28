@@ -5,16 +5,19 @@ AVE.Utils = {
     isPageSubverse: "",
     CSSstyle: "",
     currentPageType: "",
-    peculiarities: [],
+    DevMode: false,
+    POSTinfo: {},
     
     LateSet: function () {
         this.CSSstyle = this.CSS_Style();
     },
 
     EarlySet: function () {
+        this.DevMode = this.GetDevMode();
         this.subverseName = this.GetSubverseName();
         this.isPageSubverse = this.GetPageSubverse();
         this.currentPageType = this.Page();
+        this.ParsePOSTinfo();
     },
 
     CSS_Style: function () {
@@ -26,8 +29,8 @@ AVE.Utils = {
 
     Page: function () {
         var RegExpTypes = {
-            frontpage: /voat.co\/?(new)?(\?page=[0-9]*)?(#[^\\\/]*)?$/i,
-            front_guest: /voat.co\/?(new)?(\?frontpage=guest)?(#[^\\\/]*)?$/i,
+            frontpage: /voat.co\/?(new)?(\?[^#]+)*(#[^\\\/]*)?$/i,
+            //front_guest: /voat.co\/?(new)?(\?frontpage=guest)?(\?page=[0-9]*)?(#[^\\\/]*)?$/i,
             submissions: /voat.co\/user\/[\w\d-]*\/submissions/i,
             subverse: /voat.co\/v\/[a-z]*\/?(\?page=[0-9]*)?/i,
             comments: /voat.co\/user\/[\w\d-]*\/comments/i,
@@ -57,7 +60,7 @@ AVE.Utils = {
         var url = window.location.href;
 
         if (RegExpTypes.frontpage.test(url)) { return "frontpage"; }
-        if (RegExpTypes.front_guest.test(url)) { this.peculiarities.push("guest-frontpage"); return "frontpage"; }
+        //if (RegExpTypes.front_guest.test(url)) { return "frontpage"; }
         if (RegExpTypes.api.test(url)) { return "api"; }
         if (RegExpTypes.thread.test(url)) { return "thread"; }
         if (RegExpTypes.sub_new.test(url)) { return "subverse"; }
@@ -85,6 +88,26 @@ AVE.Utils = {
         if (RegExpTypes.account_rel.test(url)) { return "account-related"; }
 
         return "none";
+    },
+
+    ParsePOSTinfo: function () {
+        var url, l, _this;
+        _this = this;
+        url = window.location.href.split("?");
+
+        if (url.length == 1){return;}
+
+        url = url[1].split("#")[0];
+        url = url.split("&");
+
+        $.each(url, function (idx, str) {
+            l = str.split("=");
+            _this.POSTinfo[l[0]] = l[1];
+        });
+    },
+
+    GetDevMode: function () {
+        return AVE.Storage.GetValue(AVE.Storage.Prefix+"DevMode", "0") === "1" ? true : false;
     },
 
     GetPageSubverse: function () {
@@ -178,7 +201,7 @@ AVE.Utils = {
         }
     };
 }($));
-function print(str) { console.log(str); }
+function print(str, dev) {if(dev && !AVE.Utils.DevMode){return;} console.log(str); }
 //Thanks to Paolo Bergantino https://stackoverflow.com/questions/965816/what-jquery-selector-excludes-items-with-a-parent-that-matches-a-given-selector#answer-965962
 jQuery.expr[':'].parents = function (a, i, m) { return jQuery(a).parents(m[3]).length < 1; };
 //Thanks to Narnian https://stackoverflow.com/questions/6673777/select-link-by-text-exact-match#answer-8447189

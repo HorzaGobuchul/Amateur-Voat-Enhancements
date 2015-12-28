@@ -19,6 +19,13 @@ AVE.Modules['PreferenceManager'] = {
     SavePref: function (POST) {
         var _this = this;
 
+        delete POST[_this.ID]["AVE_DevMode"];
+        delete POST[_this.ID]["Enabled"];
+        delete POST[_this.ID]["AVE_ExportToJSON"];
+        delete POST[_this.ID]["AVE_ImportFromJSON"];
+        delete POST[_this.ID]["AVE_ResetAllData"];
+        delete POST[_this.ID]["AVE_file_ImportFromJSON"];
+
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
@@ -32,7 +39,7 @@ AVE.Modules['PreferenceManager'] = {
                 try{
                     _this.Options[key].Value = value;
                 } catch (e){
-                    //print("AVE ["+_this.ID+"]: option \""+key+"\" couldn't be found and assigned to.")
+                    print("AVE: prefmngr > ["+_this.ID+"]: option \""+key+"\" couldn't be found and assigned to.", true)
                 }
             });
         }
@@ -492,6 +499,7 @@ AVE.Modules['PreferenceManager'] = {
             var htmlStr = "";
 
             htmlStr += '<input ' + (_this.Options.LossChangeNotification.Value ? 'checked="true"' : "") + ' id="LossChangeNotification" type="checkbox"/><label style="display: inline;" for="LossChangeNotification"> ' + _this.Options.LossChangeNotification.Desc + '</label><br />';
+            htmlStr += '<input ' + (AVE.Utils.DevMode ? 'checked="true"' : "") + ' id="AVE_DevMode" type="checkbox"/><label style="display: inline;" for="AVE_DevMode"> Enable Dev Mode.</label><br />';
 
             htmlStr += '<br />Export all stored data as a JSON file: <input style="font-weight:bold;" value="Export" id="AVE_ExportToJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON">';
             htmlStr += '<br />Import settings/data from a JSON file: <input style="font-weight:bold;" value="Import" id="AVE_ImportFromJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON">\
@@ -503,6 +511,20 @@ AVE.Modules['PreferenceManager'] = {
         },
         callback: function () {
             var _this = AVE.Modules['PreferenceManager'];
+
+            $("input#AVE_DevMode").on("change", function () {
+                var v = $(this).is(":checked");
+                AVE.Storage.SetValue(AVE.Storage.Prefix+"DevMode", v ? "1": "0");
+
+                var lab = $(this).next("label:first");
+
+                lab.css("backgroundColor", "rgba(89, 204, 85, 0.5)");
+                setTimeout(function () {
+                    lab.css("backgroundColor", "");
+                }, 1500);
+
+
+            });
             $("input#AVE_ExportToJSON").on("click", function () {
                 _this.ExportToJSON();
             });

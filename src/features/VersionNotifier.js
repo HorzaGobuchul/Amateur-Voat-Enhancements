@@ -59,6 +59,14 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.33.14.20",
+        "   General:",
+        "       Implemented DevMode console.log option",
+        "   NeverEndingVoat:",
+        "       Added support for POST info in general",
+        "           Next loaded page will remember info like \"time\", \"page\", \"frontpage=guest\", etc.",
+        "   Utils:",
+        "       Implemented POST info parser",
         "V2.33.13.20",
         "   General:",
         "       Added support for the new guest frontpage",
@@ -67,7 +75,7 @@ AVE.Modules['VersionNotifier'] = {
         "   ShortKeys:",
         "       Added option to open external link with archive.is",
         "   ArchiveSubmission:",
-        "       Enabled in threadsvoat",
+        "       Enabled in threads",
         "V2.33.11.18",
         "   ArchiveSubmission:",
         "       No link added to posts linking to archive.is",

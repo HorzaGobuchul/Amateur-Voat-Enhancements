@@ -133,6 +133,5 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
 
 
         print(voteEl.length + " - " + voteEl.is(":hidden")+ " - "+voteEl.text());
-
-    },
+    }
 };

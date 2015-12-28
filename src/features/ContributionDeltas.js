@@ -110,19 +110,19 @@ AVE.Modules['ContributionDeltas'] = {
 
         if ((_now - _this.StoredDeltas[_this.Username]["page"].ts) > epsilon){//page
             change = true;
-            //print("AVE: ContribDelta -> Updated \"Page\"");
+            print("AVE: ContribDelta > Updated \"Page\"", true);
             _this.StoredDeltas[_this.Username]["page"] = {ts: _now, S: _this.SCP, C: _this.CCP};
 
             dateDiff = (_now - _this.StoredDeltas[_this.Username]["hour"].ts) /1000;
             if (dateDiff > 3600) { //Hour
-                //print("AVE: ContribDelta -> Updated \"hour\"");
+                print("AVE: ContribDelta > Updated \"hour\"", true);
 
                 newTs = new Date (_now).setMinutes(0, 0);
                 _this.StoredDeltas[_this.Username]["hour"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
 
                 dateDiff = (_now - _this.StoredDeltas[_this.Username]["6 hours"].ts) / 1000;
                 if (dateDiff > 21600) { //6 hours
-                    //print("AVE: ContribDelta -> Updated \"6 hours\"");
+                    print("AVE: ContribDelta > Updated \"6 hours\"", true);
 
                     var newTsHour = new Date (newTs).getHours();
                     newTs = new Date (newTs).setHours(
@@ -136,7 +136,7 @@ AVE.Modules['ContributionDeltas'] = {
 
                     dateDiff = (_now - _this.StoredDeltas[_this.Username]["12 hours"].ts) / 1000;
                     if (dateDiff > 43200) { //12 hours
-                        //print("AVE: ContribDelta -> Updated \"12 hours\"");
+                        print("AVE: ContribDelta > Updated \"12 hours\"", true);
 
                         newTs = new Date (newTs).setHours(newTsHour < 12 ? 0 : 12);
                         _this.StoredDeltas[_this.Username]["12 hours"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
@@ -145,7 +145,7 @@ AVE.Modules['ContributionDeltas'] = {
                 //Only check for days once per hour (and only check for week once per day)
                 dateDiff = (_now - _this.StoredDeltas[_this.Username]["day"].ts) / 1000;
                 if (dateDiff > 86400) { //day
-                    //print("AVE: ContribDelta -> Updated \"Day\"");
+                    print("AVE: ContribDelta > Updated \"Day\"", true);
 
                     newTs = new Date (newTs).setHours(6);
 
@@ -153,7 +153,7 @@ AVE.Modules['ContributionDeltas'] = {
 
                     dateDiff = (_now - _this.StoredDeltas[_this.Username]["week"].ts) / 1000;
                     if (dateDiff > 604800) { //week
-                        //print("AVE: ContribDelta -> Updated \"Week\"");
+                        print("AVE: ContribDelta > Updated \"Week\"", true);
                         newTs -= 86400000 * ((new Date (newTs)).getDay() - 1);
                         _this.StoredDeltas[_this.Username]["week"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
 

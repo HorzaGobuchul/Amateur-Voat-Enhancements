@@ -198,8 +198,8 @@ AVE.Modules['DomainFilter'] = {
 
                 $("div#DomainFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click");
                 $("div#DomainFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").on("click", function () {
-                    //print("Remove link: " + $(this).attr("id"));
-                    //print("Remove span: " + $(this).prev("span.AVE_Domain_Filter").attr("id"));
+                    print("Remove link: " + $(this).attr("id"), true);
+                    print("Remove span: " + $(this).prev("span.AVE_Domain_Filter").attr("id"), true);
                     $(this).next("br").remove();
                     $(this).prev("span.AVE_Domain_Filter").remove();
                     $(this).remove();

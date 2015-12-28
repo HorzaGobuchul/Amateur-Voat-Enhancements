@@ -93,9 +93,7 @@ AVE.Modules['NeverEndingVoat'] = {
             _this.PostsIDs.push($(this).attr("data-fullname"));
         });
 
-        this.currentPage = window.location.href.match(/\?page\=([0-9]*)/);
-        if (!this.currentPage) { this.currentPage = 0; }
-        else { this.currentPage = parseInt(this.currentPage[1], 10); }
+        this.currentPage = parseInt(AVE.Utils.POSTinfo["page"]) || 0;
 
         this.AppendToPage();
         this.Listeners();
@@ -136,9 +134,10 @@ AVE.Modules['NeverEndingVoat'] = {
             nextPageURL = "https://" + window.location.hostname + window.location.pathname + "?page=" + (this.currentPage + 1);
         }
 
-        if($.inArray('guest-frontpage', AVE.Utils.peculiarities) !== -1){
-            nextPageURL += "&frontpage=guest";
-        }
+        $.each(AVE.Utils.POSTinfo, function (key, val) {
+            if (key.toLowerCase() === "page"){return true;}
+            nextPageURL +=  "&"+key+"="+val;
+        });
 
         print('AVE: loading page > ' + nextPageURL);
         $.ajax({

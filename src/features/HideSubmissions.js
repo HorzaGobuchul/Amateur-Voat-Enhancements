@@ -115,7 +115,7 @@ AVE.Modules['HideSubmissions'] = {
         if (  (!vote && this.Options.HideRightAway.Value)
             || (vote && this.Options.HideAfterVote.Value)){
             JqId.remove();
-        } else {
+        } else if(this.Options.AddHideButton.Value) {
             JqId.find("ul.flat-list.buttons").find("li > a#AVE_HideSubmissions_link").text("unhide");
         }
 
@@ -126,7 +126,10 @@ AVE.Modules['HideSubmissions'] = {
         this.HiddenPosts.splice(this.HiddenPosts.indexOf(id), 1);
         this.Store.SetValue(this.StorageName, JSON.stringify(this.HiddenPosts));
 
-        $("div.submission.id-"+id.toString()).find("ul.flat-list.buttons").find("li > a#AVE_HideSubmissions_link").text("hide");
+        if (this.Options.AddHideButton.Value){
+            $("div.submission.id-"+id.toString()).find("ul.flat-list.buttons").find("li > a#AVE_HideSubmissions_link").text("hide");
+        }
+
         print("AVE: HideSubmissions > unhiding submission with id "+id);
     },
 

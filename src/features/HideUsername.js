@@ -37,14 +37,12 @@ AVE.Modules['HideUsername'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var _this = this;
         POST = POST[this.ID];
 
         this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
     },
 
     ResetPref: function () {
-        var _this = this;
         this.Options = JSON.parse(this.OriginalOptions);
     },
 
@@ -101,11 +99,11 @@ AVE.Modules['HideUsername'] = {
 
             htmlStr += '<input id="RemoveInLoginBlock" ' + (_this.Options.RemoveInLoginBlock.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="RemoveInLoginBlock"> ' + _this.Options.RemoveInLoginBlock.Desc + '</label>';
             htmlStr += '<br /><input id="ReplaceEverywhere" ' + (_this.Options.ReplaceEverywhere.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ReplaceEverywhere"> ' + _this.Options.ReplaceEverywhere.Desc + '</label>';
-            htmlStr += '<br />' + _this.Options.NewName.Desc + '<input id="NewName" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.NewName.Value + '"></input>';
+            htmlStr += '<br />' + _this.Options.NewName.Desc + '<input id="NewName" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.NewName.Value + '"/>';
 
             return htmlStr;
         },
         callback: function () {
-        },
-    },
+        }
+    }
 };

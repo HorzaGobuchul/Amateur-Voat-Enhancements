@@ -132,16 +132,17 @@ div#header-container {z-index: 2;}\
     SetAltBackground: function () {
         if(!AVE.Modules['InjectCustomStyle'] || !AVE.Modules['InjectCustomStyle'].Enabled){return;}
 
-        this.bg = $("div#header-container").css("background-color") + " " +
-                $("div#header-container").css("background-image") + " " +
-                $("div#header-container").css("background-repeat") + " " +
-                $("div#header-container").css("background-attachment") + " " +
-                $("div#header-container").css("background-position") + " " +
-                $("div#header-container").css("background-clip") + " " +
-                $("div#header-container").css("background-origin");
+        var JqId = $("div#header-container");
+        this.bg = JqId.css("background-color") + " " +
+                  JqId.css("background-image") + " " +
+                  JqId.css("background-repeat") + " " +
+                  JqId.css("background-attachment") + " " +
+                  JqId.css("background-position") + " " +
+                  JqId.css("background-clip") + " " +
+                  JqId.css("background-origin");
 
-        if ($("div#header-container").css("background-color") === "transparent" &&
-            $("div#header-container").css("background-image") === "none") {
+        if (JqId.css("background-color") === "transparent" &&
+            JqId.css("background-image") === "none") {
             this.bg = $("div#header[role='banner']").css("background-color");
             if (this.bg === "transparent") {
                 this.bg = $("#logged-in").css("background-color");
@@ -175,12 +176,13 @@ div#header-container {z-index: 2;}\
 
     Listeners: function () {
         $("div#AVE_ToggleUserBlock").on("click", function () {//
-            if ($("div#AVE_ToggleUserBlock").hasClass("collapsed")) {//If user block is already hidden
+            var JqId = $("div#AVE_ToggleUserBlock");
+            if (JqId.hasClass("collapsed")) {//If user block is already hidden
                 //Show expand icon
-                $("div#AVE_ToggleUserBlock").removeClass("collapsed");
-                $("div#AVE_ToggleUserBlock").addClass("expanded");
+                JqId.removeClass("collapsed");
+                JqId.addClass("expanded");
                 //Change element's title
-                $("div#AVE_ToggleUserBlock").attr("title", "Hide user block");
+                JqId.attr("title", "Hide user block");
                 //Show user block
                 $('div#header-account > div.logged-in,div.logged-out').show();
                 //Restore #header-account's default size
@@ -188,10 +190,10 @@ div#header-container {z-index: 2;}\
                                        .css("height", "");
             } else {//If user block is visible
                 //Show collapse icon
-                $("div#AVE_ToggleUserBlock").removeClass("expanded");
-                $("div#AVE_ToggleUserBlock").addClass("collapsed");
+                JqId.removeClass("expanded");
+                JqId.addClass("collapsed");
                 //Change element's title
-                $("div#AVE_ToggleUserBlock").attr("title", "Show user block");
+                JqId.attr("title", "Show user block");
                 //Hide user block
                 $('div#header-account > div.logged-in,div.logged-out').hide();
                 //Set #header-account's size to be that of the toggle icon

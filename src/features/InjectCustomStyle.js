@@ -253,7 +253,7 @@ AVE.Modules['InjectCustomStyle'] = {
                         }
                     })
                     .fail(function () {
-                        _this.ShowInfo("Error while loading CSS file. Check the URL", "#68c16b");
+                        _this.ShowInfo("Error while loading CSS file. Check the URL", "#dd5454");
                     });
                 }
             });
@@ -274,7 +274,7 @@ AVE.Modules['InjectCustomStyle'] = {
                 $(JqId).text("");
             }, 3300);
 
-        },
+        }
     },
 
     //If the applied custom style messed everything up, so much that you can't toggle the module off:
@@ -286,7 +286,7 @@ AVE.Modules['InjectCustomStyle'] = {
             Enabled: false,
             CustomStyleName: _this.Options.CustomStyleName.Value,
             CustomStyleUrl: _this.Options.CustomStyleUrl.Value,
-            ApplyEverywhere: _this.Options.ApplyEverywhere.Value,
+            ApplyEverywhere: _this.Options.ApplyEverywhere.Value
         };
         this.SavePref(POST);
 

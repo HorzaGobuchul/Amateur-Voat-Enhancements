@@ -93,7 +93,7 @@ AVE.Modules['ToggleMedia'] = {
                                         && ($(this).find("span.link-expando-type").length > 0);
                                 });
                                 
-            //print("ToggleMedia "+this.sel.length);
+            print("AVE: ToggleMedia > "+this.sel.length.toString(), true);
 
             this.AppendToPage();
             this.Listeners();

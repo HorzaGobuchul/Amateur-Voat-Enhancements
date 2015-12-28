@@ -326,6 +326,7 @@ AVE.Modules['DomainTags'] = {
     removeTag: function (domain) {
         "use strict";
         delete this.DomainTags[domain];
+        this.Store.SetValue(this.StorageName, JSON.stringify(this.DomainTags));
     },
 
     AppendToPreferenceManager: {
@@ -503,7 +504,7 @@ AVE.Modules['DomainTags'] = {
                 .on("click", function () {
                     var name = $(this).parent().attr("domain");
                     if (confirm("Are you sure you want to delete the tag attached to \""+name+"\"?")){
-                        _this.module.RemoveTag(name);
+                        _this.module.removeTag(name);
                         $(_this.CSSselector).trigger("click");
                     }
                 });
@@ -674,10 +675,10 @@ AVE.Modules['DomainTags'] = {
                 r = colour[0]; g = colour[1]; b = colour[2];
                 bestColour = AVE.Utils.GetBestFontColour(r, g, b);
 
-                direct = /self\.[a-zA-Z0-9]?/.test(obj.name);
+                direct = /v\/[a-zA-Z0-9]?/.test(obj.name);
 
                 htmlStr += '<tr domain="'+obj.name+'">';
-                htmlStr += '<td><a target="_blank" href="/'+ (direct ? "v/"+obj.name.replace("self.", "") : "domains/"+obj.name)+'" >'+obj.name + '</a></td>' +
+                htmlStr += '<td><a target="_blank" href="/'+ (direct ? obj.name : "domains/"+obj.name)+'" >'+obj.name + '</a></td>' +
                     '<td data="tag"><span title="'+obj.t+'">'+obj.t+'</span></td>' +
                     '<td data="colour" style="background-color:'+obj.c+'; color:'+bestColour+';">'+obj.c+'</td>' +
                     '<td data="ignore">'+obj.i+'</td>' +

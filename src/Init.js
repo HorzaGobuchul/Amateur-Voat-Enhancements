@@ -17,6 +17,9 @@ AVE.Init = {
 
         AVE.Utils.EarlySet();
 
+        print("AVE: Devmode > " + AVE.Utils.DevMode, true);
+        print("AVE: POST > "+JSON.stringify(AVE.Utils.POSTinfo), true);
+
         if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) === -1) {
 
             $.each(AVE.Modules, function () {
@@ -57,7 +60,7 @@ AVE.Init = {
             $(document).ready(function () {
 
                 print("AVE: Current page > " + AVE.Utils.currentPageType);
-                //print("AVE: Current style > " + AVE.Utils.CSSstyle);
+                print("AVE: Current style > " + AVE.Utils.CSSstyle, true);
 
                 //By /u/Jammi: voat.co/v/AVE/comments/421861
                 if (document.title === 'Checking your bits' || document.title === 'Play Pen Improvements') {
@@ -86,21 +89,23 @@ AVE.Init = {
             if (document.readyState === "complete") { loadModuleOnLoadComplete(); }
             else { $(window).load(function () { loadModuleOnLoadComplete(); }); }
         } else {
-            print("AVE: Current page > no idea, sorry. Maybe tell /u/HorzaDeservedBetter about it? Pretty please.");
+            print("AVE: Current page > no idea, sorry. Maybe tell /u/HorzaDeservedBetter about it?");
         }
     },
 
     LoadModules: function (ID) {
         //var module = AVE.Modules[ID];s
         //print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")");
-        
-        //AVE.Modules[ID].Load();
 
-        //var ntime = 0; var time = Date.now();
-        try { AVE.Modules[ID].Load(); }
-        catch (e) {print("AVE: Error loading " + ID);}
-        //ntime =  Date.now();
-        //print("updated > " + AVE.Modules[ID].ID + " (" + (ntime - time) + "ms)");
+        if (AVE.Utils.DevMode){
+            AVE.Modules[ID].Load();
+        } else {
+            //var ntime = 0; var time = Date.now();
+            try { AVE.Modules[ID].Load(); }
+            catch (e) {print("AVE: Error loading " + ID);}
+            //ntime =  Date.now();
+            //print("updated > " + AVE.Modules[ID].ID + " (" + (ntime - time) + "ms)");
+        }
     },
 
     UpdateModules: function () {

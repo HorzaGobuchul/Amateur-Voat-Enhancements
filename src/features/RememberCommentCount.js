@@ -173,9 +173,9 @@ AVE.Modules['RememberCommentCount'] = {
                         });
                     }
 
-                    //print("AVE: RememberCommentCount > updating "+ _id);
+                    print("AVE: RememberCommentCount > updating "+ _id, true);
                 } else {
-                    //print("AVE: RememberCommentCount > adding "+ _id);
+                    print("AVE: RememberCommentCount > adding "+ _id, true);
                 }
 
                 if (!this.Init) {//We have no reason to update this again after loading more comments
