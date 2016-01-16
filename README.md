@@ -27,7 +27,7 @@ It adds to Voat.co the possiblity to:
 
 ---
 
-## [Chrome extension](https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/raw/master/Chrome/Amateur_Voat_Enhancements.crx) (beta).
+## [Chrome extension](https://chrome.google.com/webstore/detail/amateur-voat-enhancements/clnkijlaikabdbjejkikchdhkfkehhnf/related) (beta).
 
 ---
 
