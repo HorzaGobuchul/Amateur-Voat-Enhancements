@@ -59,7 +59,11 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.33.14.23",
+        "V2.33.14.26",
+        "   Many linguistical improvements",
+        "       by LudwikJaniuk",
+        "   General:",
+        "       Changed some print instances to use the DevMode",
         "   FixContainerWidth:",
         "       Will now start at container DOM ready",
         "   Domaintag:",
