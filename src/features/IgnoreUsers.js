@@ -1,7 +1,7 @@
 AVE.Modules['IgnoreUsers'] = {
     ID: 'IgnoreUsers',
     Name: 'Ignore users',
-    Desc: 'Lets you tag users as Ignored. Replacing all their comments\' content with [Ignored User].',
+    Desc: 'Lets you tag users as Ignored. When tagged, a user\'s comments will be replaced with [Ignored User].',
     Category: 'General',
 
     Index: 100, //must be called after the UserTagging module.
@@ -16,7 +16,7 @@ AVE.Modules['IgnoreUsers'] = {
         },
         HardIgnore: {
             Type: 'boolean',
-            Desc: 'Remove entirely from the page posts and chain comments made by the ignored users.',
+            Desc: 'Entirely remove posts and chain comments made by ignored users.',
             Value: false
         },
     },

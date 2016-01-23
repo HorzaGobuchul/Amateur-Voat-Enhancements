@@ -1,7 +1,7 @@
 AVE.Modules['InjectCustomStyle'] = {
     ID: 'InjectCustomStyle',
     Name: 'Inject custom style',
-    Desc: 'Apply your custom style of choice everywhere on Voat.<br />For the best result check "Disable custom subverse styles" in your preferences.',
+    Desc: 'Apply your custom CSS style of choice everywhere on Voat.<br />For the best result check "Disable custom subverse styles" in your preferences.',
     Category: 'Style',
 
     Index: 50,
@@ -96,7 +96,7 @@ AVE.Modules['InjectCustomStyle'] = {
         SlimDark: "https://cdn.rawgit.com/KinOfMany/SlimDark/master/style.css?AVE",
         Typogra: "https://cdn.rawgit.com/Nurdoidz/Typogra-Voat/master/Typogra.min.css?AVE",
     },
-    
+
     CustomCSSContainerCount: 0,
 
     Start: function () {
@@ -240,7 +240,7 @@ AVE.Modules['InjectCustomStyle'] = {
 
             $("a#AVE_CheckCSSFile").on("click", function () {
                 var URL = $("div.AVE_ModuleCustomInput > input#CustomStyleUrl").val();
-                
+
                 if (URL) {
                     $.ajax({
                         url: URL,

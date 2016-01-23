@@ -1,7 +1,7 @@
 AVE.Modules['NeverEndingVoat'] = {
     ID: 'NeverEndingVoat',
     Name: 'Never Ending Voat',
-    Desc: 'Browse an entire subverse in one page.',
+    Desc: 'Browse voat as one page, loading more posts when you hit the bottom.',
     Category: 'Subverse',
 
     Index: 100,
@@ -80,9 +80,9 @@ AVE.Modules['NeverEndingVoat'] = {
 
     Labels: ["Load more",
              "Sit tight...",
-             "Sorry, I couldn't find more content",
+             "Sorry, I couldn't find more content.",
              "Something went wrong. Maybe try again?",
-             "An error occured. No point in trying again I'm afraid"],
+             "An error occured. No point in trying again I'm afraid."],
     PostsIDs: [],
     SepStyle: '',
     currentPage: 0,
@@ -169,7 +169,7 @@ AVE.Modules['NeverEndingVoat'] = {
                     error = true;
                 }
             });
-            
+
             if (!error) {
                 $("a#AVE_loadmorebutton").text(_this.Labels[0]);
             } else if (error === "sticky") {
@@ -202,11 +202,11 @@ AVE.Modules['NeverEndingVoat'] = {
                     }
                 }
             }
-            
+
             setTimeout(AVE.Init.UpdateModules, 500);
             window.location.hash = 'p=' + _this.currentPage;
 
-            //Next lines are needed because the front page (^voat.co$) is a bit different from subverses' pages. div.pagination-container isn't normally inside div.sitetable 
+            //Next lines are needed because the front page (^voat.co$) is a bit different from subverses' pages. div.pagination-container isn't normally inside div.sitetable
             if ($("div.sitetable").find("div.pagination-container").length > 0) {
                 $("div.pagination-container").appendTo($("div.sitetable"));
                 $("div.sitetable > a[href='/random']").appendTo($("div.sitetable"));

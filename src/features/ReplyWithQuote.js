@@ -1,7 +1,7 @@
 AVE.Modules['ReplyWithQuote'] = {
     ID: 'ReplyWithQuote',
     Name: 'Reply with quote',
-    Desc: 'Insert selected/highlighted text (in a comment) into the reply box toggled by "reply".',
+    Desc: 'Insert selected/highlighted text in a comment into the reply box toggled by "reply".',
     Category: 'Thread',
 
     Enabled: false,

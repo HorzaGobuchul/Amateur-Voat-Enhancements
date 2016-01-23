@@ -21,7 +21,7 @@ AVE.Modules['CommentFilter'] = {
         },
         RemoveFiltered: {
             Type: 'boolean',
-            Desc: "Remove altogether the comment and child comments.",
+            Desc: "Remove the comment and its child comments altogether.",
             Value: false
         }
     },
@@ -121,7 +121,7 @@ AVE.Modules['CommentFilter'] = {
             { return true; }
             //else
             _this.Processed.push($(this).find("input#CommentId").val());
-            
+
             $.each(_this.Options.Filters.Value, function () {
                 found = false;
                 if (this.ApplyToSub.length === 0 || $.inArray(AVE.Utils.subverseName, this.ApplyToSub) !== -1) {
@@ -135,7 +135,7 @@ AVE.Modules['CommentFilter'] = {
                             } else {
                                 print("AVE: hid Comment by \"" + authorStr + "\" (kw: \"" + this + "\")");
                                 commentRef.find("div.md:first").hide();
-                                
+
                                 var commentContainer = commentRef.find("div.md:first").parent();//div.usertext-body#commentContent-id
                                 commentContainer.append('<a href="javascript:void(0)" title="Show comment" AVE="HiddenComment">Comment filtered (kw: "' + this + '"). Click to display.</a>');
                                 commentContainer.find("a[AVE='HiddenComment']")

@@ -1,7 +1,7 @@
 AVE.Modules['FixExpandImage'] = {
     ID: 'FixExpandImage',
     Name: 'Fix expanding images',
-    Desc: 'Let images expand over the sidebar and disallow the selection/highlight of the image.',
+    Desc: 'Let images expand over the sidebar and disallow the selection/highlighting of the image.',
     Category: 'Fixes',
 
     Enabled: false,
@@ -55,7 +55,7 @@ AVE.Modules['FixExpandImage'] = {
             this.Start();
         }
     },
-    
+
     ImgMedia: "a[title='JPG'],a[title='PNG'],a[title='GIF']",//These are the only media that are resizable
 
     Start: function () {
