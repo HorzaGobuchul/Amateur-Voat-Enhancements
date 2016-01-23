@@ -94,17 +94,17 @@ AVE.Init = {
     },
 
     LoadModules: function (ID) {
-        //var module = AVE.Modules[ID];s
-        //print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")");
+        var module = AVE.Modules[ID];
+        print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")", true);
 
         if (AVE.Utils.DevMode){
+            var ntime; var time = Date.now();
             AVE.Modules[ID].Load();
+            ntime =  Date.now();
+            print("updated > " + ID + " (" + (ntime - time) + "ms)");
         } else {
-            //var ntime = 0; var time = Date.now();
             try { AVE.Modules[ID].Load(); }
             catch (e) {print("AVE: Error loading " + ID);}
-            //ntime =  Date.now();
-            //print("updated > " + AVE.Modules[ID].ID + " (" + (ntime - time) + "ms)");
         }
     },
 

@@ -59,7 +59,12 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.33.14.20",
+        "V2.33.14.23",
+        "   FixContainerWidth:",
+        "       Will now start at container DOM ready",
+        "   Domaintag:",
+        "       Forgot to implement the removeTag function",
+        "       Updated code for links to subverse domains (used to be self.sub, now v/sub)",
         "   General:",
         "       Implemented DevMode console.log option",
         "   NeverEndingVoat:",

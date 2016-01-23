@@ -94,7 +94,7 @@ AVE.Modules['InjectCustomStyle'] = {
         Scribble: "https://cdn.rawgit.com/ScribbleForVoat/Scribble/master/base.min.css?AVE",
         Simplegoats: "https://cdn.rawgit.com/relaxedzombie/simplegoats/master/simplegoats.min.css?AVE",
         SlimDark: "https://cdn.rawgit.com/KinOfMany/SlimDark/master/style.css?AVE",
-        Typogra: "https://cdn.rawgit.com/Nurdoidz/Typogra-Voat/master/Typogra.min.css?AVE",
+        Typogra: "https://cdn.rawgit.com/Nurdoidz/Typogra-Voat/master/Typogra.min.css?AVE"
     },
 
     CustomCSSContainerCount: 0,

@@ -9,6 +9,8 @@ AVE.Modules['FixContainerWidth'] = {
 
     Store: {},
 
+    RunAt: "container",
+
     Options: {
         Enabled: {
             Type: 'boolean',
@@ -22,7 +24,7 @@ AVE.Modules['FixContainerWidth'] = {
         Justify: {
             Type: 'boolean',
             Value: false
-        },
+        }
     },
 
     OriginalOptions: "",
