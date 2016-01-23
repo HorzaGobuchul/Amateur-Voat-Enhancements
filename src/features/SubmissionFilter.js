@@ -1,7 +1,7 @@
 AVE.Modules['SubmissionFilter'] = {
     ID: 'SubmissionFilter',
     Name: 'Submission Filter',
-    Desc: 'Remove submissions which title matches one of the filters. Additionally, you can specify a subverse, where a filter will only be applied.',
+    Desc: 'Remove submissions whose titles matche one of the filters. Additionally, filters can be applied to a specific subverse only.',
     Category: 'Subverse',
 
     Index: 100,

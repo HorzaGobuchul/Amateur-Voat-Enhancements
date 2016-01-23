@@ -1,7 +1,7 @@
 AVE.Modules['AccountSwitcher'] = {
     ID: 'AccountSwitcher',
     Name: 'Account Switcher',
-    Desc: 'Store several account information and switch between them quickly.',
+    Desc: 'Store information for several accounts and switch between them quickly.',
     Category: 'Account',
 
     Index: 100,
@@ -97,14 +97,14 @@ AVE.Modules['AccountSwitcher'] = {
     // @grant       GM_setValue
     // @grant       GM_deleteValue
     // ==/UserScript==
-     
+
     var color1 = "#f00", color2 = "#000";
-     
+
     function switchColor(e, color1, color2) {
         e.addEventListener("mouseover", function(e){e.target.style.color=color1;}, false);
         e.addEventListener("mouseout", function(e){e.target.style.color=color2;}, false);
     }
-     
+
     function logIn(user, pass) {
         var token = document.querySelector('[name="__RequestVerificationToken"]');
         if(!token) {
@@ -134,7 +134,7 @@ AVE.Modules['AccountSwitcher'] = {
         form.style.display = "none";
         form.submit();
     }
-     
+
     function addLoginLink(managerMenu, name) {
         var account = document.createElement("div");
         account.appendChild(document.createTextNode(name));
@@ -174,19 +174,19 @@ AVE.Modules['AccountSwitcher'] = {
             }
         }, false);
     }
-     
+
     var q = document.querySelector("#header-account > div");
     if(q) {
         var light = document.cookie.match(/theme=dark;/) ? false : true;
         if(!light)
             color2 = "#fff";
-       
+
         var manager = document.createElement("span");
         manager.style.position = "relative";
         manager.style.display = "inline-block";
         manager.style.visibility = "visible";
         manager.style.fontSize = "12px";
-     
+
         var managerIcon = document.createElement("img");
         manager.appendChild(managerIcon);
         managerIcon.src = "/favicon.ico";
@@ -195,7 +195,7 @@ AVE.Modules['AccountSwitcher'] = {
         managerIcon.title = "Accounts";
         managerIcon.style.cursor = "pointer";
         managerIcon.style.marginRight = "0.5em";
-     
+
         var managerMenu = document.createElement("div");
         manager.appendChild(managerMenu);
         managerMenu.style.display = "none";
@@ -215,12 +215,12 @@ AVE.Modules['AccountSwitcher'] = {
             if(e.target != managerIcon)
                 managerMenu.style.display = "none";
         }, false);
-       
+
         var savedAccounts = JSON.parse(GM_getValue("savedAccounts", "[]"));
         for(var i = 0; i < savedAccounts.length; i++) {
             addLoginLink(managerMenu, savedAccounts[i].name, savedAccounts[i].pass);
         }
-     
+
         var managerAddAccount = document.createElement("div");
         managerAddAccount.appendChild(document.createTextNode("+ Add account"));
         managerMenu.appendChild(managerAddAccount);
@@ -246,7 +246,7 @@ AVE.Modules['AccountSwitcher'] = {
             addLoginLink(managerMenu, user, pass);
             managerMenu.appendChild(managerAddAccount);
         }, false);
-     
+
         if(q.className === "logged-in")
             q = q.querySelector(".user");
         q.insertBefore(manager, q.querySelector(":first-child"));

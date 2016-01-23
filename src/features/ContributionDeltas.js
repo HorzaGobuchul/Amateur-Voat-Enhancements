@@ -18,7 +18,7 @@ AVE.Modules['ContributionDeltas'] = {
         },
         AddAsToolTip: {
             Type: 'boolean',
-            Desc: 'Show deltas in a tooltip instead of inline.',
+            Desc: 'Show differences in a tooltip instead of inline.',
             Value: false
         },
         ShowColourDelta: {
@@ -28,12 +28,12 @@ AVE.Modules['ContributionDeltas'] = {
         },
         ShowMultipleDeltas: {
             Type: 'boolean',
-            Desc: 'Show multiple deltas in the tooltip (Hour, Day, Week).',
+            Desc: 'Show multiple differences in the tooltip (Hour, Day, Week).',
             Value: false
         },
         ShowSinceLast: {
             Type: 'string',
-            Desc: 'Show contribution points deltas for the last: ',
+            Desc: 'Show contribution point differences for the last: ',
             Value: 'day'
         }
     },

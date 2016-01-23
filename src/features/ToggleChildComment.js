@@ -1,7 +1,7 @@
 AVE.Modules['ToggleChildComment'] = {
     ID: 'ToggleChildComment',
     Name: 'Toggle display child comments',
-    Desc: 'Adds "Hide child comments" link to hide a chain of posts',
+    Desc: 'Adds "Hide child comments" link to hide a chain of comments',
     Category: 'Thread',
 
     Index: 100,
