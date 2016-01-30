@@ -112,24 +112,42 @@ AVE.Modules['ShortKeys'] = {
     Start: function () {
         var _this = this;
 
-        var up = this.Options.UpvoteKey.Value;
-        var down = this.Options.DownvoteKey.Value;
-        var next = this.Options.NextKey.Value;
-        var previous = this.Options.PrevKey.Value;
-        var OpenC = this.Options.OpenCommentsKey.Value;
-        var OpenL = this.Options.OpenLinkKey.Value;
-        var OpenLC = this.Options.OpenLCKey.Value;
-        var Expand = this.Options.ExpandKey.Value;
-        var TCC = this.Options.ToggleCommentChain.Value;
-        var NavTop = this.Options.NavigateTop.Value;
-        var NavBottom = this.Options.NavigateBottom.Value;
-        var HidePost = this.Options.HidePost.Value;
+        var shift, ctrl,
+            up = this.Options.UpvoteKey.Value,
+            down = this.Options.DownvoteKey.Value,
+            next = this.Options.NextKey.Value,
+            previous = this.Options.PrevKey.Value,
+            OpenC = this.Options.OpenCommentsKey.Value,
+            OpenL = this.Options.OpenLinkKey.Value,
+            OpenLC = this.Options.OpenLCKey.Value,
+            Expand = this.Options.ExpandKey.Value,
+            TCC = this.Options.ToggleCommentChain.Value,
+            NavTop = this.Options.NavigateTop.Value,
+            NavBottom = this.Options.NavigateBottom.Value,
+            HidePost = this.Options.HidePost.Value;
 
         $(document).keydown(function (event) {
+            shift = event.shiftKey;
+            ctrl = event.ctrlKey;
+
             //Exit if the focus is given to a text input
-            if ($(":input").is(":focus")) { return; }
+            if ($(":input").is(":focus")) {
+                if (ctrl && event.which === 13){
+                    var inp = $("textarea#Content.commenttextarea:focus");
+                    if (inp.length === 0){return;}
+
+                    var submitbtn = inp.nextAll("input#submitbutton:first"); //
+                    if (submitbtn.length === 0){
+                        submitbtn = inp.parent().parent().nextAll("input#submitbutton:first");;
+                    }
+
+                    submitbtn.trigger("click");
+                }
+                return;
+            }
+
             //Exit if a key modifier is pressed (ctrl, shift)
-            if (event.ctrlKey || event.shiftKey) { return; }
+            if (ctrl || shift) { return; }
 
             var sel = AVE.Utils.SelectedPost;
             var key;
@@ -275,18 +293,36 @@ AVE.Modules['ShortKeys'] = {
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[1] });
                 }
             } else if (key === Expand.toUpperCase()) { // Expand media/self-text
-                if (sel.parent().hasClass("submission")) {
-                    //In submission
-                    sel.find("div.expando-button").click();
+                var expand, media;
+                if ( sel.parent().hasClass("submission")) {
+                    //In submissions
+                    if (AVE.Utils.currentPageType === "thread" && sel.parent().hasClass("self")){
+                        expand = true;
+                        media = sel.find("div.md:visible").find("a[title]");
+
+                        media.each(function () {
+                            //Expand is false if at least one of the media is expanded
+                            if ($(this).next(".link-expando:visible").length > 0)
+                            { expand = false; return false; }
+                        });
+
+                        media.each(function () {
+                            if ($(this).find("span.link-expando-type").length > 0
+                                && expand !== $(this).next(".link-expando:visible").length > 0)
+                            { this.click(); }
+                        });
+                    } else {
+                        sel.find("div.expando-button").click();
+                    }
                 } else {
-                    //In comment
-                    var expand = true;
-                    var media = sel.find("div.md:visible").find("a[title]");
+                    //In comments
+                    expand = true;
+                    media = sel.find("div.md:visible").find("a[title]");
 
                     media.each(function () {
                         //Expand is false if at least one of the media is expanded
                         if ($(this).next(".link-expando:visible").length > 0)
-                        { expand = false; return;}
+                        { expand = false; return false; }
                         });
 
                     media.each(function () {
@@ -394,6 +430,10 @@ AVE.Modules['ShortKeys'] = {
             htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br>';
             htmlStr += '<input id="OpenInArchive" ' + (_this.Options.OpenInArchive.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInArchive"> ' + _this.Options.OpenInArchive.Desc + '</label><br>';
             return htmlStr;
+        },
+
+        callback: function () {
+
         }
     }
 };

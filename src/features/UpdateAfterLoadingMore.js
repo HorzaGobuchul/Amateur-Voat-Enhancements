@@ -37,6 +37,8 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
+        if (AVE.Utils.currentPageType !== "thread") {this.Enabled = false;}
+
         if (this.Enabled) {
             this.Start();
         }
@@ -79,6 +81,6 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
     },
 
     Update: function () {
-        this.Listeners();
-    },
+        if (AVE.Utils.currentPageType !== "thread") {this.Listeners();}
+    }
 };

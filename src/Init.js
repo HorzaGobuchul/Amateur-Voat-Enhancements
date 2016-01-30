@@ -100,8 +100,7 @@ AVE.Init = {
         if (AVE.Utils.DevMode){
             var ntime; var time = Date.now();
             AVE.Modules[ID].Load();
-            ntime =  Date.now();
-            print("updated > " + ID + " (" + (ntime - time) + "ms)");
+            print("Loaded > " + ID + " (" + (Date.now() - time) + "ms)");
         } else {
             try { AVE.Modules[ID].Load(); }
             catch (e) {print("AVE: Error loading " + ID);}
@@ -110,14 +109,12 @@ AVE.Init = {
 
     UpdateModules: function () {
         $.each(AVE.Modules, function () {
-            //var ntime = 0; var time = new Date().getTime();
+            var time = Date.now();
             
             if (typeof this.Update === "function") {
                 this.Update();
 
-                //ntime = new Date().getTime();
-                //print("updated > " + this.Name + " (" + (ntime - time) + "ms)");
-                //time = ntime;
+                print("updated > " + this.Name + " (" + (Date.now() - time) + "ms)", true);
             }
         });
     }

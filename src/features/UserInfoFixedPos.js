@@ -2,7 +2,7 @@ AVE.Modules['UserInfoFixedPos'] = {
     ID: 'UserInfoFixedPos',
     Name: 'User-block fixes',
     Desc: 'Minor fixes to the userblock.',
-    Category: 'Fixes',
+    Category: 'Misc',
 
     Index: 100,
     Enabled: false,

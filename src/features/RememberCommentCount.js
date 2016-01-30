@@ -213,9 +213,10 @@ AVE.Modules['RememberCommentCount'] = {
         } else if (AVE.Utils.currentPageType === "user-comments"){//Comments and link to submissions in user-comments page
             $("div.thread").each(function () {
                 _id = $(this).find("p.parent >  a.title").attr("href").split("/");
-                _count = $(this).find("ul.flat-list.buttons > li:last-child > a").text().split(/(\(|\))/) || 0;
-
                 _id = _id[_id.length - 1];
+                if ($.inArray(_id, _this.Processed) !== -1){return true;}
+
+                _count = $(this).find("ul.flat-list.buttons > li:last-child > a").text().split(/(\(|\))/) || 0;
                 _count = _count[_count.length -3];
 
                 if (_count > 0) {
@@ -223,6 +224,7 @@ AVE.Modules['RememberCommentCount'] = {
                         $(this).find("ul.flat-list.buttons > li:last-child > a").append('&nbsp;<span style="font-weight:bold;color:#4189B1;">(+' + (_count - _this.Data[_id][0]) + ')</span>');
                     }
                 }
+                _this.Processed.push(_id)
             });
         }
     },

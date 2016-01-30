@@ -223,7 +223,7 @@ AVE.Modules['PreferenceManager'] = {
     MngWinHTML: '',
     ModuleHTML: '',
 
-    Categories: ["General", "Subverse", "Thread", "Posts", "Domains", "Manager", "Account", "Style", "Fixes"],//Available Categories to show
+    Categories: ["General", "Subverse", "Thread", "Posts", "Domains", "Account", "Style", "Misc", "Manager", "Modtools"],//Available Categories to show
     Modules: [],//List of modules
     ModifiedModules: [],
 
@@ -606,5 +606,5 @@ AVE.Modules['PreferenceManager'] = {
         $.each(_this.Store.Data, function (k, v) { data[k] = v; });
         var blob = new Blob([JSON.stringify(data)], { type: "application/json;charset=utf-8" });
         saveAs(blob, "AVE_Data_" + (new Date().toLocaleDateString().replace(/\//g, "_")) + ".json");
-    },
+    }
 };

@@ -40,6 +40,8 @@ AVE.Modules['NeverEndingVoat'] = {
 
     OriginalOptions: "",
 
+    NSFWlink: false,
+
     SavePref: function (POST) {
         var _this = this;
         POST = POST[_this.ID];
@@ -67,7 +69,7 @@ AVE.Modules['NeverEndingVoat'] = {
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
 
-        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse"]) === -1 ||
+        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "user-comments", "user-submissions"]) === -1 ||
             $("div.pagination-container").find("li.btn-whoaverse-paging").length === 0) {
             this.Enabled = false;
         }
@@ -82,7 +84,7 @@ AVE.Modules['NeverEndingVoat'] = {
              "Sit tight...",
              "Sorry, I couldn't find more content.",
              "Something went wrong. Maybe try again?",
-             "An error occured. No point in trying again I'm afraid."],
+             "An error occured. No point in trying again right now I'm afraid."],
     PostsIDs: [],
     SepStyle: '',
     currentPage: 0,
@@ -103,6 +105,14 @@ AVE.Modules['NeverEndingVoat'] = {
         if ($("a#AVE_loadmorebutton").length === 0 && $("div.pagination-container").find("li.btn-whoaverse-paging").length > 0) {
             var LoadBtn = '<a href="javascript:void(0)" style="margin: 5px 0px;" class="btn-whoaverse btn-block" id="AVE_loadmorebutton">' + this.Labels[0] + '</a>';
             $("div.pagination-container").html(LoadBtn);
+        }
+
+        var sitetable = $("div.sitetable");
+        var nsfwlink = $("div.sitetable > a[href='/randomnsfw']");
+        if (nsfwlink.length > 0){
+            $("<div id='AVE_randomlinks'></div>").appendTo(sitetable);
+            sitetable.contents().slice(-5, -2).appendTo("div#AVE_randomlinks");
+            this.NSFWlink = true;
         }
     },
 
@@ -145,7 +155,8 @@ AVE.Modules['NeverEndingVoat'] = {
             cache: false,
         }).done(function (html) {
             var error = "sticky";
-            if ($(html).find("div.submission[class*='id-']").length === 0) { $("a#AVE_loadmorebutton").text(_this.Labels[2]); return false; } //catchall for error pages
+            var content = $(html).find("div[class*='id-'][data-downs][data-ups]");
+            if (content.length === 0) { $("a#AVE_loadmorebutton").text(_this.Labels[4]); return false; } //catchall for error pages
             _this.currentPage++;
             //print($(html).find("div.submission[class*='id-']").length);
 
@@ -154,16 +165,20 @@ AVE.Modules['NeverEndingVoat'] = {
                 $("div.side").css("z-index", "100");
             }
 
-            $("div.sitetable").append('<div style="' + _this.SepStyle + '" id="AVE_page_' + (_this.currentPage) + '" class="AVE_postSeparator">Page ' + (_this.currentPage) + '</div>');
+            var sitetable = $("div.sitetable");
+            if (sitetable.length === 0){ sitetable = $("div.content-no-margin");}
+            sitetable.append('<div style="' + _this.SepStyle + '" id="AVE_page_' + (_this.currentPage) + '" class="AVE_postSeparator">Page ' + (_this.currentPage) + '</div>');
 
             //$("div.sitetable.linklisting").append('<div class="AVE_postSeparator alert-singlethread">Page ' + (_this.currentPage) + '</div>');
-            $(html).find("div.submission[class*='id-']").each(function () {
-                if ($.inArray($(this).attr("data-fullname"), _this.PostsIDs) === -1) {
+            var tempID;
+            content.each(function () {
+                tempID = $(this).attr("class").split(" ")[1];
+                if ($.inArray(tempID, _this.PostsIDs) === -1) {
                     error = null;
-                    _this.PostsIDs.push($(this).attr("data-fullname"));
-                    $("div.sitetable").append($(this));
+                    _this.PostsIDs.push(tempID);
+                    sitetable.append($(this));
                 } else if (_this.Options.DisplayDuplicates.Value && !$(this).hasClass("stickied")) {
-                    $("div.sitetable").append($(this));
+                    sitetable.append($(this));
                     $(this).css("opacity", "0.3");
                 } else if (!$(this).hasClass("stickied")){
                     error = true;
@@ -173,7 +188,7 @@ AVE.Modules['NeverEndingVoat'] = {
             if (!error) {
                 $("a#AVE_loadmorebutton").text(_this.Labels[0]);
             } else if (error === "sticky") {
-                //In a sub a page with no content will still show the sticky.
+                //In a sub, a page with no content will still show the sticky.
                 $("a#AVE_loadmorebutton").text(_this.Labels[2]);
                 $("div.AVE_postSeparator#AVE_page_" + (_this.currentPage)).remove();
                 _this.currentPage--;
@@ -186,13 +201,19 @@ AVE.Modules['NeverEndingVoat'] = {
                 return;
             }
 
+            // Update mail info
+            _this.UpdateMailInfo($(html).find("span.notification-container > a#mail").attr("class"),
+                $(html).find("span#mailcounter.notification-counter").text());
+            _this.UpdateCPInfo($(html).find("a#scp.userkarma").text(),
+                               $(html).find("a#ccp.userkarma").text());
+
             // Add expando links to the new submissions
+            // from https://github.com/voat/voat/blob/master/Voat/Voat.UI/Scripts/voat.ui.js#L163
             if (!window.wrappedJSObject || !window.wrappedJSObject.UI) { //Chrome
                 location.assign("javascript:UI.ExpandoManager.execute();void(0)");
-            } else {//firefox, because it stopped working with the location hack above
+            } else {//Firefox, because it stopped working with the location hack above
                 window.wrappedJSObject.UI.ExpandoManager.execute();
             }
-            // from https://github.com/voat/voat/blob/master/Voat/Voat.UI/Scripts/voat.ui.js#L190
 
             //Ugly, isn't it?
             if (_this.Options.ExpandNewMedia.Value) {
@@ -206,14 +227,52 @@ AVE.Modules['NeverEndingVoat'] = {
             setTimeout(AVE.Init.UpdateModules, 500);
             window.location.hash = 'p=' + _this.currentPage;
 
-            //Next lines are needed because the front page (^voat.co$) is a bit different from subverses' pages. div.pagination-container isn't normally inside div.sitetable
-            if ($("div.sitetable").find("div.pagination-container").length > 0) {
-                $("div.pagination-container").appendTo($("div.sitetable"));
-                $("div.sitetable > a[href='/random']").appendTo($("div.sitetable"));
+            //Next lines are needed because the front page (^voat.co$) is a bit different from a subverse page. div.pagination-container isn't normally inside div.sitetable
+            if (sitetable.find("div.pagination-container").length > 0) {
+                $("div.pagination-container").appendTo(sitetable);
+                if (_this.NSFWlink){
+                    $("div#AVE_randomlinks").appendTo(sitetable);
+                } else { // This default case is needed when the nsfwlink isn't displayed (as it used to be if the nsfw option was disabled in the user preferences)
+                    $("div.sitetable > a[href='/random']").appendTo(sitetable);
+                }
             }
         }).fail(function () {
             $("a#AVE_loadmorebutton").text(_this.Labels[3]);
         });
+    },
+
+    UpdateMailInfo: function (newmail, newcount) {
+        var hasmail = $("span.notification-container > a#mail"),
+            mailcounter = $("span#mailcounter.notification-counter"),
+            oldmail = hasmail.attr("class"),
+            oldcount = mailcounter.text();
+
+        if (oldmail !== newmail){
+            hasmail.removeClass(oldmail)
+                   .addClass(newmail);
+            if (newmail === "havemail"){
+                mailcounter.show();
+            } else {
+                mailcounter.hide();
+            }
+        }
+        if (oldcount !== newcount){
+            mailcounter.text(newcount);
+        }
+    },
+
+    UpdateCPInfo: function (newSCP, newCCP) {
+        var SCP = $("a#scp.userkarma"),
+            CCP = $("a#ccp.userkarma"),
+            oldSCP = SCP.text(),
+            oldCCP = CCP.text();
+
+        if (newSCP !== oldSCP){
+            SCP.text(newSCP);
+        }
+        if (newCCP !== oldCCP){
+            CCP.text(newCCP);
+        }
     },
 
     AppendToPreferenceManager: {
@@ -227,6 +286,6 @@ AVE.Modules['NeverEndingVoat'] = {
                 htmlStr += '<input id="' + this + '" ' + (_this.Options[this].Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="' + this + '"> ' + _this.Options[this].Desc + '</label><br />';
             });
             return htmlStr;
-        },
-    },
+        }
+    }
 };
