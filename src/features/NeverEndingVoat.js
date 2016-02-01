@@ -92,7 +92,7 @@ AVE.Modules['NeverEndingVoat'] = {
     Start: function () {
         var _this = this;
         $("div.submission[class*='id-']").each(function () {
-            _this.PostsIDs.push($(this).attr("data-fullname"));
+            _this.PostsIDs.push($(this).attr("class").split(" ")[1]);
         });
 
         this.currentPage = parseInt(AVE.Utils.POSTinfo["page"]) || 0;

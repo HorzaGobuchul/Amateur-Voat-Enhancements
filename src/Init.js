@@ -98,7 +98,6 @@ AVE.Init = {
         print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")", true);
 
         if (AVE.Utils.DevMode){
-            var ntime; var time = Date.now();
             AVE.Modules[ID].Load();
             print("Loaded > " + ID + " (" + (Date.now() - time) + "ms)");
         } else {

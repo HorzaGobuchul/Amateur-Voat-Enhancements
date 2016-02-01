@@ -215,7 +215,7 @@ table#formTable{\
 
     Migrate: function () {
         var _this = this;
-        data = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
+        var data = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
         
         $.each(data, function (key, val) {
             data[key] = new _this.UserTagObj(data[key].tag, data[key].colour, data[key].ignore, data[key].balance, data[key].context);
@@ -459,7 +459,7 @@ table#formTable{\
 
     //Because the .click JQuery event triggered by the shortkeys in ShortKeys.js triggers an OnAttrChange with false mutation values (oldValue, attributeName),
     //      we use a second function that keypresses in ShortKeys.js can invoke directly.
-    // Ten mimutes later it works perfectly well. Maybe, voat's current instability was to blame. I'm not changing it back, anyway...
+    // Ten minutes later it works perfectly well. Maybe, voat's current instability was to blame. I'm not changing it back, anyway...
     ChangeVoteBalance: function (target, oldValue) {
         //print("target: "+target);
         //print("oldvalue: "+oldValue);

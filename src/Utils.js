@@ -148,7 +148,7 @@ AVE.Utils = {
     AddStyle: function (StyleStr) {
         if ($("style[for='AVE']").length === 0) { $("head").append('<style for="AVE"></style>'); }
         $("style[for='AVE']").append("\n" + StyleStr);
-    },
+    }
 };
 
 (function ($) {

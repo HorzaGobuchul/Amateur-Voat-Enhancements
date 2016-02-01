@@ -56,7 +56,8 @@ AVE.Modules['HeaderFixedPos'] = {
     },
 
     SetAltBackground: function () {
-        if(!AVE.Modules['InjectCustomStyle'] || !AVE.Modules['InjectCustomStyle'].Enabled){return;}
+        // I don't remember why I added this exit condition...
+        //if(!AVE.Modules['InjectCustomStyle'] || !AVE.Modules['InjectCustomStyle'].Enabled){return;}
 
         var bg, border;
         //Subverse list bg
