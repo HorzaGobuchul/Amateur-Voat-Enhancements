@@ -522,8 +522,6 @@ AVE.Modules['PreferenceManager'] = {
                 setTimeout(function () {
                     lab.css("backgroundColor", "");
                 }, 1500);
-
-
             });
             $("input#AVE_ExportToJSON").on("click", function () {
                 _this.ExportToJSON();

@@ -9,7 +9,7 @@ AVE.Modules['AccountSwitcher'] = {
 
     Store: {},
 
-    RunAt: "ready",
+    RunAt: "banner",
 
     Options: {
         Enabled: {
@@ -81,17 +81,18 @@ AVE.Modules['AccountSwitcher'] = {
 
         AVE.Utils.AddStyle(this.style);
         this.AppendToPage();
-        this.Listeners();
     },
 
     storageName: "",
     style: "",
     savedAccounts: [],
-    hoverColour: "#e23f3f",
     normalColour: "#000",
+    hoverColour: "#e23f3f",
 
     AppendToPage: function () { //To insert content into the page
         var _this = this;
+
+        print(AVE.Utils.CSSstyle);
 
         var q = $('div#header-account > div:first'),
             qH = q.get(0).offsetHeight,
@@ -100,7 +101,7 @@ AVE.Modules['AccountSwitcher'] = {
             var light = AVE.Utils.CSSstyle === "light";
             if (!light)
             { this.normalColour = '#fff';
-              this.hovercolour = "#8c2f2f"}
+              this.hoverColour = "#8c2f2f"}
             var manager = document.createElement('span');
             manager.style.position = 'relative';
             manager.style.display = 'inline-block';
@@ -234,7 +235,7 @@ AVE.Modules['AccountSwitcher'] = {
         account.appendChild(del);
         account.appendChild(edit);
         managerMenu.appendChild(account);
-        account.style.cursor = 'pointer';
+        namelink.style.cursor = 'pointer';
         account.style.padding = '0 0.5em';
 
         this.switchColor(account);
@@ -277,7 +278,7 @@ AVE.Modules['AccountSwitcher'] = {
             });
     },
 
-    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+    AppendToPreferenceManager: {
         html: function () {
             //var _this = AVE.Modules['AccountSwitcher'];
 

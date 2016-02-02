@@ -14,8 +14,8 @@ AVE.Modules['ToggleCustomStyle'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
-        },
+            Value: true
+        }
     },
 
     SavePref: function (POST) {

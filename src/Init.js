@@ -9,6 +9,7 @@ AVE.Init = {
         ModLoad = {
             Start: [],
             HeadReady: [],
+            BannerReady: [],
             ContainerReady: [],
             DocReady: [],
             WinLoaded: []
@@ -29,9 +30,11 @@ AVE.Init = {
                     ModLoad.Start.push(this.ID);
                 } else if (this.RunAt === "head") {
                     ModLoad.HeadReady.push(this.ID);
+                } else if (this.RunAt === "banner") {
+                    ModLoad.BannerReady.push(this.ID);
                 } else if (this.RunAt === "container") {
                     ModLoad.ContainerReady.push(this.ID);
-                } else if (this.RunAt === "load") {
+                } else { //(this.RunAt === "load") {
                     ModLoad.WinLoaded.push(this.ID);
                 }
             });
@@ -43,7 +46,15 @@ AVE.Init = {
 
             //On head ready
             $("head").ready(function () {
+                AVE.Utils.LateSet();
                 $.each(ModLoad.HeadReady, function () {
+                    _this.LoadModules(this);
+                });
+            });
+
+            //On Banner ready
+            $("div#header").ready(function () {
+                $.each(ModLoad.BannerReady, function () {
                     _this.LoadModules(this);
                 });
             });
@@ -51,7 +62,6 @@ AVE.Init = {
             //On container ready
             $("div#container").ready(function () {
                 $.each(ModLoad.ContainerReady, function () {
-                    AVE.Utils.LateSet();
                     _this.LoadModules(this);
                 });
             });
@@ -98,6 +108,7 @@ AVE.Init = {
         print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")", true);
 
         if (AVE.Utils.DevMode){
+            var time = Date.now();
             AVE.Modules[ID].Load();
             print("Loaded > " + ID + " (" + (Date.now() - time) + "ms)");
         } else {

@@ -59,11 +59,15 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.35.0.1",
+        "V2.35.1.3",
+        "   New feature: httpWarning",
+        "       This module show a warning for submissions that link to HTTP URL instead of HTTPS(ecure)",
+        "   Init:",
+        "       Added loading step \"BannerReady\"",
+        "       Moved AVE.Utils.LateSet() to be triggered as soon as Head is loaded",
         "   New feature: AccountSwitcher",
         "       Store information for several accounts and switch between them quickly",
-        "   New feature: CSSEditor",
-        "       First modtool, edit your custom CSS stylesheet within the page itself (by /u/j_ and /u/dubbelnougat)",
+        "       Will start when the header/banner is ready",
         "   HeaderFixedPos:",
         "       Fixed issue that prevented this module from working when the module InjectCustomStyle was disabled",
         "V2.33.18.30",
