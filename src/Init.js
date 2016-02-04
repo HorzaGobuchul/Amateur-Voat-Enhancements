@@ -21,6 +21,8 @@ AVE.Init = {
         print("AVE: Devmode > " + AVE.Utils.DevMode, true);
         print("AVE: POST > "+JSON.stringify(AVE.Utils.POSTinfo), true);
 
+        print("AVE: Current page > " + AVE.Utils.currentPageType, true);
+
         if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) === -1) {
 
             $.each(AVE.Modules, function () {
@@ -68,8 +70,6 @@ AVE.Init = {
 
             //On doc ready
             $(document).ready(function () {
-
-                print("AVE: Current page > " + AVE.Utils.currentPageType);
                 print("AVE: Current style > " + AVE.Utils.CSSstyle, true);
 
                 //By /u/Jammi: voat.co/v/AVE/comments/421861

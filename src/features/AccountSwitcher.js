@@ -92,16 +92,15 @@ AVE.Modules['AccountSwitcher'] = {
     AppendToPage: function () { //To insert content into the page
         var _this = this;
 
-        print(AVE.Utils.CSSstyle);
-
         var q = $('div#header-account > div:first'),
             qH = q.get(0).offsetHeight,
             qW = q.get(0).offsetWidth;
         if (q.length > 0) {
             var light = AVE.Utils.CSSstyle === "light";
             if (!light)
-            { this.normalColour = '#fff';
-              this.hoverColour = "#8c2f2f"}
+            {
+                this.normalColour = '#fff'; //this.hoverColour = "#8c2f2f"
+            }
             var manager = document.createElement('span');
             manager.style.position = 'relative';
             manager.style.display = 'inline-block';

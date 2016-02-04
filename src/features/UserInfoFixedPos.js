@@ -4,40 +4,38 @@ AVE.Modules['UserInfoFixedPos'] = {
     Desc: 'Minor fixes to the userblock.',
     Category: 'Misc',
 
-    Index: 100,
+    Index: 200,
     Enabled: false,
 
-    RunAt: 'load',
+    RunAt: 'banner',
 
     Store: {},
 
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         DivideBlock: {
             Type: 'boolean',
-            Value: false,
+            Value: false
         },
         ToggleBlock: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         PersistentHide: {
             Type: 'boolean',
-            Value: false,
+            Value: false
         },
         HidePoints: {
             Type: 'boolean',
-            Value: false,
-        },
+            Value: false
+        }
     },
 
     SavePref: function (POST) {
-        var _this = this;
-
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST[this.ID]));
     },
 
     SetOptionsFromPref: function () {
@@ -63,16 +61,20 @@ AVE.Modules['UserInfoFixedPos'] = {
     },
 
     bg: "",
+    userBlockOriginalOffset: null,
+    userBlockOriginalWidth: 0,
 
     Start: function () {
         if (!AVE.Utils.ListHeaderHeight) { AVE.Utils.ListHeaderHeight = $('#sr-header-area').height(); }
 
-        var headerAccountPos = $('#header-account').offset().top;
-        this.SetAccountHeaderPosAsFixed(headerAccountPos);
+        var JqId1 = $('#header-account'),
+            JqId2 = $("div#header-account > div.logged-in");
+        //this.userBlockOriginalTopOffset = JqId1.offset().top;
+        //this.SetAccountHeaderPosAsFixed();
 
-        if (this.Options.DivideBlock.Value && $("div#header-account > div.logged-in").length > 0) {
+        if (this.Options.DivideBlock.Value && JqId2.length > 0) {
             //Align header-account's content
-            $("div#header-account > div.logged-in").css("text-align", "center");
+            JqId2.css("text-align", "center");
             //Add a line return before the icons
             $("<br />").insertAfter("div#header-account > div.logged-in > span.separator:first");
             //Remove the, now useless, separator
@@ -81,9 +83,8 @@ AVE.Modules['UserInfoFixedPos'] = {
 
         if (this.Options.ToggleBlock.Value && $('#header-account:has(div.logged-in)').length > 0) {
             //Add arrow icon element
-            $('#header-account').append('<div title="Hide user block" class="expanded" id="AVE_ToggleUserBlock"></div>');
-
-            this.Listeners();
+            JqId1.append('<div title="Hide user block" class="expanded" id="AVE_ToggleUserBlock"></div>');
+            this.ToggleBlockListener();
         }
 
         if (this.Options.PersistentHide.Value) {
@@ -163,20 +164,35 @@ div#header-container {z-index: 2;}\
                 }
             }
         }
+        $('div#header-account > div.logged-in').css("background", this.bg);
+
+        this.Listeners();
     },
 
     SetAccountHeaderPosAsFixed: function () {
-        $('div#header-account').css('position', 'fixed')
-                               .css('top', AVE.Utils.ListHeaderHeight + "px")
-                               .css('right', '0')
-                               .css("text-align", "center")
-                               .css("bottom", "auto");
-        //$('div#header-account > div.logged-in').css("background", this.bg);
+        var JqId = $('#header-account');
+        if ($(window).scrollTop() + AVE.Utils.ListHeaderHeight > this.userBlockOriginalOffset.top) {
+            JqId.css('position', 'fixed')
+                .css('top', AVE.Utils.ListHeaderHeight+"px")
+                .css('left', this.userBlockOriginalOffset.left+"px")
+                .css('right', this.userBlockOriginalOffset.right+"px")
+                .css("text-align", "center")
+                .css("height", "0px");
+            $('.logged-in').css("background", AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)");
+        } else {
+            JqId.css('position', "")
+                .css('top', "")
+                .css('left', "")
+                .css('right', "")
+                .css("text-align", "")
+                .css("height", "");
+            $('.logged-in').css("background", "");
+        }
     },
 
-    Listeners: function () {
-        $("div#AVE_ToggleUserBlock").on("click", function () {//
-            var JqId = $("div#AVE_ToggleUserBlock");
+    ToggleBlockListener: function() {
+        JqId = $("div#AVE_ToggleUserBlock");
+        JqId.on("click", function () {//
             if (JqId.hasClass("collapsed")) {//If user block is already hidden
                 //Show expand icon
                 JqId.removeClass("collapsed");
@@ -187,7 +203,7 @@ div#header-container {z-index: 2;}\
                 $('div#header-account > div.logged-in,div.logged-out').show();
                 //Restore #header-account's default size
                 $('div#header-account').css("width", "")
-                                       .css("height", "");
+                    .css("height", "");
             } else {//If user block is visible
                 //Show collapse icon
                 JqId.removeClass("expanded");
@@ -198,9 +214,38 @@ div#header-container {z-index: 2;}\
                 $('div#header-account > div.logged-in,div.logged-out').hide();
                 //Set #header-account's size to be that of the toggle icon
                 $('div#header-account').css("width", "14px")
-                                       .css("height", "14px");
+                    .css("height", "14px");
             }
         });
+    },
+
+    Listeners: function () {
+        var _this = this;
+        $(window).ready(function () { _this.UpdateBlockData(); _this.SetAccountHeaderPosAsFixed();})
+                 .on("scroll", function () { _this.SetAccountHeaderPosAsFixed();})
+                 .on("resize", function () { _this.UpdateBlockData(); _this.SetAccountHeaderPosAsFixed();});
+    },
+
+    UpdateBlockData : function () {
+        var JqId = $('#header-account');
+
+        // Reset the block for an instant so that we don't get back the offset values we ourselves set.
+        // If you don't see what I mean: comment out the next css calls, then resize the page while scrolled down
+        JqId.css('position', "")
+            .css('top', "")
+            .css('left', "")
+            .css('right', "")
+            .css("text-align", "")
+            .css("height", "");
+
+        if (!this.userBlockOriginalOffset){
+            this.userBlockOriginalOffset = JqId.offset();
+            this.userBlockOriginalWidth = JqId.outerWidth();
+        }
+        else { this.userBlockOriginalOffset.left = JqId.offset().left; }
+
+        this.userBlockOriginalOffset.right = Math.floor($(document).width() - (this.userBlockOriginalOffset.left + this.userBlockOriginalWidth + 1));
+        if (this.userBlockOriginalOffset.right < 0){this.userBlockOriginalOffset.right = 0;}
     },
 
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager
@@ -213,6 +258,6 @@ div#header-container {z-index: 2;}\
             htmlStr += '<br /><input ' + (_this.Options.HidePoints.Value ? 'checked="true"' : "") + ' id="HidePoints" type="checkbox"/><label style="display:inline;" for="HidePoints"> Hide contribution points</label>';
 
             return htmlStr;
-        },
-    },
+        }
+    }
 };

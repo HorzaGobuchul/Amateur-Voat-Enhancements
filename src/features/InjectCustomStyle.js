@@ -37,7 +37,7 @@ AVE.Modules['InjectCustomStyle'] = {
         },
         InjectLate: {
             Type: 'boolean',
-            Desc: 'Insert the new CSS file <strong>after</strong> the custom style.',
+            Desc: 'Insert the new CSS file <strong>after</strong> the original custom style.',
             Value: false
         }
     },
@@ -131,11 +131,9 @@ AVE.Modules['InjectCustomStyle'] = {
         });
         obsCustomCSS.observe();
 
-        if ($("style#custom_css").length > 0){
-            //If a custom style was added before our Observer could start, we delete it manually
-            //This will happen with slow computers or extensions (very rarely with userscripts)
-            $("style#custom_css").remove();
-        }
+        //If a custom style was added before our Observer could start, we delete it manually
+        //This will happen with slow computers or extensions (very rarely with userscripts)
+        $("style#custom_css").remove();
 
         var URL;
 
@@ -154,8 +152,8 @@ AVE.Modules['InjectCustomStyle'] = {
                     $("body").append('<link id="AVE_Inject_Style" rel="StyleSheet" href="' + URL + '" type="text/css">');
                 });
             } else {
-                $("head").append('<link rel="stylesheet" href="/Content/' + theme + '?HiFromAVE" type="text/css">');
-                $("head").append('<link id="AVE_Inject_Style" rel="StyleSheet" href="' + URL + '" type="text/css">');
+                $("head").append('<link rel="stylesheet" href="/Content/' + theme + '?HiFromAVE" type="text/css">')
+                         .append('<link id="AVE_Inject_Style" rel="StyleSheet" href="' + URL + '" type="text/css">');
             }
 
             //If I use the following method, someone could easily inject javascript code and mess with the user.
@@ -174,8 +172,8 @@ AVE.Modules['InjectCustomStyle'] = {
                 switch (this.Options.CustomStyleName.Value) {
                     case "Flatron":
                         $("div#header").ready(function () {
-                            $("#header-account").css("top", "25px");
-                            $("#header-account").css("maxHeight", "60px");
+                            $("#header-account").css("top", "25px")
+                                                .css("maxHeight", "60px");
                             $(".logged-in").css("lineHeight", "17px");
                         });
                         break;
@@ -244,7 +242,7 @@ AVE.Modules['InjectCustomStyle'] = {
                 if (URL) {
                     $.ajax({
                         url: URL,
-                        cache: true,
+                        cache: true
                     }).done(function (data, status, request) {
                         if (request.getResponseHeader('Content-type').split(";")[0] === "text/css") {
                             _this.ShowInfo("It's Ok! The file can be loaded as CSS!", "#68c16b");
@@ -286,10 +284,12 @@ AVE.Modules['InjectCustomStyle'] = {
             Enabled: false,
             CustomStyleName: _this.Options.CustomStyleName.Value,
             CustomStyleUrl: _this.Options.CustomStyleUrl.Value,
-            ApplyEverywhere: _this.Options.ApplyEverywhere.Value
+            ApplyEverywhere: _this.Options.ApplyEverywhere.Value,
+            InjectLate: _this.Options.InjectLate.Value,
+            RemoveSubverseStyle: _this.Options.RemoveSubverseStyle.Value
         };
         this.SavePref(POST);
 
         window.location.reload();
-    },
+    }
 };

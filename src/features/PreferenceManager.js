@@ -223,7 +223,7 @@ AVE.Modules['PreferenceManager'] = {
     MngWinHTML: '',
     ModuleHTML: '',
 
-    Categories: ["General", "Subverse", "Thread", "Posts", "Domains", "Account", "Style", "Misc", "Manager", "Modtools"],//Available Categories to show
+    Categories: ["General", "Subverse", "Thread", "Posts", "Domains", "Account", "Style", "Misc", "Manager", "ModTools"],//Available Categories to show
     Modules: [],//List of modules
     ModifiedModules: [],
 

@@ -9,7 +9,7 @@ AVE.Modules['httpWarning'] = {
 
     Store: {},
 
-    RunAt: "Container",
+    RunAt: "container",
 
     Options: {
         Enabled: {
@@ -21,17 +21,26 @@ AVE.Modules['httpWarning'] = {
             Desc: "Display a warning icon before HTTP submission links",
             Value: true
         },
+        ModifyStyle: {
+            Type: 'boolean',
+            Desc: "Change the titles' style with the CSS values below",
+            Value: false
+        },
         WarningStyle: {
             Type: 'array',
-            Value: ['color: #c37a7a;',
-                    'color: #d85858;']
+            Value: ['color: #e0baba;', //dark
+                    'color: #d85858;'] //light
         }
     },
 
     OriginalOptions: "",
 
     SavePref: function (POST) {
+        var style = AVE.Utils.CSSstyle === "dark" ? 0 : 1;
         POST = POST[this.ID];
+
+        this.Options.WarningStyle.Value[style] = POST.WarningStyle;
+        POST.WarningStyle = this.Options.WarningStyle.Value;
 
         this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
     },
@@ -65,7 +74,9 @@ AVE.Modules['httpWarning'] = {
     },
 
     AppendToPage: function () {
-        AVE.Utils.AddStyle('a.title.may-blank[href^="http:"] {' + this.Options.WarningStyle.Value[AVE.Utils.CSSstyle === "dark" ? 0 : 1] + '}');
+        if (this.Options.ModifyStyle.Value){
+            AVE.Utils.AddStyle('a.title.may-blank[href^="http:"] {' + this.Options.WarningStyle.Value[AVE.Utils.CSSstyle === "dark" ? 0 : 1] + '}');
+        }
         if (this.Options.WarningIcon.Value){
             AVE.Utils.AddStyle( 'a.title.may-blank[href^="http:"]:before {' +
                 '   content: "";' +
@@ -89,6 +100,7 @@ AVE.Modules['httpWarning'] = {
             var htmlStr = '';
 
             htmlStr += '<input id="WarningIcon" ' + (_this.Options.WarningIcon.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="WarningIcon"> ' + _this.Options.WarningIcon.Desc + '</label><br />';
+            htmlStr += '<input id="ModifyStyle" ' + (_this.Options.ModifyStyle.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ModifyStyle"> ' + _this.Options.ModifyStyle.Desc + '</label><br />';
 
             htmlStr += '<div style="display:inline;padding-left:15px;padding-right:15px;margin-right:10px;font-weight: bold;" id="Demo_WarningStyle">TEST</div>';
             htmlStr += '<input style="font-size:12px;display:inline;width: 65%;padding:0px;" class="form-control" type="text" Module="' + _this.ID + '" id="WarningStyle" Value="'+_this.Options.WarningStyle.Value[style]+'"/> - Warning style values<br />';

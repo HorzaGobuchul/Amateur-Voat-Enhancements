@@ -3,24 +3,23 @@ AVE.Modules['HeaderFixedPos'] = {
     Name: 'Fix header position',
     Desc: 'Set the subverse list header position as fixed.',
     Category: 'Misc',
+
     Index: 99,
     Enabled: false,
 
-    RunAt: 'load',
-
     Store: {},
+
+    RunAt: 'banner',
 
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
-        },
+            Value: true
+        }
     },
 
     SavePref: function (POST) {
-        var _this = this;
-
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST[this.ID]));
     },
 
     SetOptionsFromPref: function () {
@@ -59,9 +58,10 @@ AVE.Modules['HeaderFixedPos'] = {
         // I don't remember why I added this exit condition...
         //if(!AVE.Modules['InjectCustomStyle'] || !AVE.Modules['InjectCustomStyle'].Enabled){return;}
 
-        var bg, border;
+        var bg, border, JqId;
+        JqId = $("#sr-header-area");
         //Subverse list bg
-        bg = $("#sr-header-area").css("background-color");
+        bg = JqId.css("background-color");
         //If alpha channel isn't 1
         if (  bg === "transparent" ||
             bg[3] === "a" &&
@@ -74,28 +74,31 @@ AVE.Modules['HeaderFixedPos'] = {
             }
         }
 
-        border = $("#sr-header-area").css("borderBottomWidth") + " " +
-            $("#sr-header-area").css("borderBottomStyle") + " " +
-            $("#sr-header-area").css("borderBottomColor");
+        border = JqId.css("borderBottomWidth") + " " +
+            JqId.css("borderBottomStyle") + " " +
+            JqId.css("borderBottomColor");
 
-        $('.width-clip').css('position', 'fixed')
+        JqId = $('.width-clip');
+        JqId.css('position', 'fixed')
             .css("z-index", "1000")
             .css('border-bottom', border)//'1px solid ' + (AVE.Utils.CSSstyle == "dark" ? "#222" : "#DCDCDC"))
             .css("height", AVE.Utils.ListHeaderHeight + "px")
             .css("background-color", bg);//AVE.Utils.CSSstyle == "dark" ? "#333" : "#FFF");
 
-        $('.width-clip').find("br:last").remove();//Chrome
+        JqId.find("br:last").remove();//Chrome
 
         //If you have so many subscriptions that the "my subverses" list goes out of the screen, this is for you.
-        var li_Height = $("ul.whoaSubscriptionMenu > li > ul:first").find("li > a").outerHeight();
-        if (($(window).height() - AVE.Utils.ListHeaderHeight - li_Height) < $("ul.whoaSubscriptionMenu > li > ul:first").height()) {
-            var li_Width = $("ul.whoaSubscriptionMenu > li > ul:first").find("li > a").outerWidth();
-            var elPerCol = parseInt(($(window).height() - AVE.Utils.ListHeaderHeight) / li_Height, 10) - 1;
-            var columns = $("ul.whoaSubscriptionMenu > li > ul:first").find("li").length / elPerCol - 1;
+        JqId = $("ul.whoaSubscriptionMenu > li > ul:first");
+        var li_Height = JqId.find("li > a").outerHeight();
+        if (($(window).height() - AVE.Utils.ListHeaderHeight - li_Height) < JqId.height()) {
+            var li_Width = JqId.find("li > a").outerWidth(),
+                elPerCol = parseInt(($(window).height() - AVE.Utils.ListHeaderHeight) / li_Height, 10) - 1,
+                columns = JqId.find("li").length / elPerCol - 1,
+                el;
 
             for (var col = 0; col < columns; col++) {
                 el = $("ul.whoaSubscriptionMenu > li > ul:nth(" + col + ")").find("li:gt(" + (elPerCol - 1) + ")");
-                $('<ul style="width:' + li_Width + 'px;margin-left:' + (li_Width * (col + 1)) + 'px"></ul>')
+                $('<ul style="width:' + li_Width + 'px;margin-left:' + (li_Width * (col + 1)) + 'px;"></ul>')
                     .insertAfter("ul.whoaSubscriptionMenu > li > ul:nth(" + col + ")")
                     .append(el);
             }
