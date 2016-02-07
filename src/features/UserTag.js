@@ -43,10 +43,6 @@ AVE.Modules['UserTag'] = {
             Type: "int",
             Desc: "The colour displayed are between red/green and white. How white do you want it to be at most? (0, 255)",
             Value: 210
-        },
-        Migrated: {
-            Type: 'boolean',
-            Value: false
         }
     },
 
@@ -69,6 +65,7 @@ AVE.Modules['UserTag'] = {
 
         Opt = JSON.parse(Opt);
         $.each(Opt, function (key, value) {
+            if (!_this.Options.hasOwnProperty(key)) {return true;}
             _this.Options[key].Value = value;
         });
 
@@ -203,7 +200,7 @@ table#formTable{\
             this.StorageName = this.Store.Prefix + this.ID + "_Tags";
             //this.Store.DeleteValue(this.StorageName);
 
-            if (!this.Options.Migrated.Value){
+            if (this.Store.GetValue(this.Store.Prefix + this.ID + "_migration", "0") === "0"){
                 this.Migrate();
             }
 
@@ -237,18 +234,7 @@ table#formTable{\
         });
 
         this.Store.SetValue(this.StorageName, JSON.stringify(data));
-
-        var POST = {};
-        POST[this.ID] = {
-            Enabled: true,
-            VoteBalance: this.Options.VoteBalance.Value,
-            ShowBalanceWithColourGradient: this.Options.ShowBalanceWithColourGradient.Value,
-            ColourGradientRangePos: this.Options.ColourGradientRangePos.Value,
-            ColourGradientRangeNeg: this.Options.ColourGradientRangeNeg.Value,
-            ColourGradientMaxWhite: this.Options.ColourGradientMaxWhite.Value,
-            Migrated: true
-        };
-        this.SavePref(POST);
+        this.Store.SetValue(this.Store.Prefix + this.ID + "_migration", "1");
     },
 
     Start: function () {
