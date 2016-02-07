@@ -59,7 +59,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.2.8",
+        "V2.36.2.9",
+        "   ShortKeys:",
+        "       Fixed interference with CSSEditor",
         "   New feature: CSSEditor",
         "       First modtool, edit your custom CSS stylesheets from within the page itself (by /u/j_ and /u/dubbelnougat)",
         "   New feature: httpWarning",
@@ -77,7 +79,7 @@ AVE.Modules['VersionNotifier'] = {
         "       Will now be loaded when the banner element is ready",
         "   UserInfoFixedPos:",
         "       Added back an old feature:",
-        "           The user block smoothly follow the scrolling from its original position:",
+        "           The user block smoothly follows the scrolling from its original position:",
         "           It doesn't stick to the right side anymore, only to the top",
         "           It will adapt to custom styles modifications",
         "           It will adapt to the window being resized",

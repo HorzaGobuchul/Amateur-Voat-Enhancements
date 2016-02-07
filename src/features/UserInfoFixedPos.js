@@ -191,7 +191,7 @@ div#header-container {z-index: 2;}\
     },
 
     ToggleBlockListener: function() {
-        JqId = $("div#AVE_ToggleUserBlock");
+        var JqId = $("div#AVE_ToggleUserBlock");
         JqId.on("click", function () {//
             if (JqId.hasClass("collapsed")) {//If user block is already hidden
                 //Show expand icon

@@ -130,6 +130,9 @@ AVE.Modules['ShortKeys'] = {
             shift = event.shiftKey;
             ctrl = event.ctrlKey;
 
+            //Exit if the CSSEditor panel has the focus
+            if ($("style#custom_css.AVE_custom_css_editable").is(":focus")){return;}
+
             //Exit if the focus is given to a text input
             if ($(":input").is(":focus")) {
                 if (ctrl && event.which === 13){
@@ -140,7 +143,6 @@ AVE.Modules['ShortKeys'] = {
                     if (submitbtn.length === 0){
                         submitbtn = inp.parent().parent().nextAll("input#submitbutton:first");;
                     }
-
                     submitbtn.trigger("click");
                 }
                 return;

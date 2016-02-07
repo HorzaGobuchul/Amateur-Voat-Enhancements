@@ -835,7 +835,7 @@ table#formTable{\
 
             htmlStr += htmlTable;
 
-            htmlStr += '<div style="text-align: right;margin-bottom:10px;">Showing entries '+ (start+1) +' to '+ Math.min(this.usertags.length, start+this.tagsperpage) +' ('+this.usertags.length+' total)</div>';
+            htmlStr += '<div style="text-align:right;margin-bottom:10px;">Showing entries '+ (start+1) +' to '+ Math.min(this.usertags.length, start+this.tagsperpage) +' ('+this.usertags.length+' total)</div>';
 
             htmlStr += htmlNavButtons;
 

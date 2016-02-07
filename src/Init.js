@@ -21,7 +21,7 @@ AVE.Init = {
         print("AVE: Devmode > " + AVE.Utils.DevMode, true);
         print("AVE: POST > "+JSON.stringify(AVE.Utils.POSTinfo), true);
 
-        print("AVE: Current page > " + AVE.Utils.currentPageType, true);
+        print("AVE: Current page > " + AVE.Utils.currentPageType);
 
         if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) === -1) {
 

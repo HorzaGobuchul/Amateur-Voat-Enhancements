@@ -161,12 +161,12 @@ AVE.Modules['ToggleMedia'] = {
             var htmlString = '<div>';
             for (var i in mediaTypes) {
                 htmlString += '<span style="margin-right:20px;" >' +
-                              '<input ' + (value[i] == 1 ? 'checked="checked"' : '') + ' id="' + mediaTypes[i] + '" name="' + mediaTypes[i] + '" type="checkbox"></input>' +
+                              '<input ' + (value[i] == 1 ? 'checked="checked"' : '') + ' id="' + mediaTypes[i] + '" name="' + mediaTypes[i] + '" type="checkbox">' +
                                '<label for="' + mediaTypes[i] + '">' + mediaTypes[i] + '</label>' +
                                '</span>';
             }
 
             return htmlString + '</div>';
-        },
-    },
+        }
+    }
 };
