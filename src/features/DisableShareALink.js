@@ -13,8 +13,8 @@ AVE.Modules['DisableShareALink'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
-        },
+            Value: true
+        }
     },
 
     SavePref: function (POST) {
@@ -29,6 +29,7 @@ AVE.Modules['DisableShareALink'] = {
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
             _this.Options[key].Value = value;
         });
         _this.Enabled = _this.Options.Enabled.Value;
@@ -45,7 +46,7 @@ AVE.Modules['DisableShareALink'] = {
 
     Start: function () {
         $('div#share-a-link-overlay').remove();
-        $("body").removeAttr("ondrop");
-        $("body").removeAttr("ondragover");
-    },
+        $("body").removeAttr("ondrop")
+                 .removeAttr("ondragover");
+    }
 };

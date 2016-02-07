@@ -7,7 +7,7 @@ AVE.Modules['SelectPost'] = {
     Enabled: false,
     Index: 19, //Must be before ShortKeys
 
-    Store: AVE.storage,
+    Store: {},
 
     Options: {
         Enabled: {
@@ -33,7 +33,7 @@ AVE.Modules['SelectPost'] = {
         }
     },
 
-    OriginalOptions: {}, //For reset function
+    OriginalOptions: {},
 
     SavePref: function (POST) {
         var _this = this;
@@ -42,10 +42,10 @@ AVE.Modules['SelectPost'] = {
 
         $.each(colours, function (index, value) {
             _this.Options[value].Value[AVE.Utils.CSSstyle === "dark" ? 0 : 1] = POST[value];
+            POST[value] = _this.Options[value].Value;
         });
-        _this.Options.Enabled.Value = POST.Enabled;
 
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(_this.Options));
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
     },
 
     ResetPref: function () {
@@ -57,17 +57,34 @@ AVE.Modules['SelectPost'] = {
         var _this = this;
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID);
 
-        if (Opt != undefined) {
-            _this.Options = JSON.parse(Opt);
+        Opt = JSON.parse(Opt);
+        if (Opt.Enabled.hasOwnProperty("Value")){
+            //Migrate
+            var POST = {};
+            POST.Enabled = Opt.Enabled.Value;
+            $.each(Opt, function (key) {
+                if(key === "Enabled") {return true;}
+
+                POST[key] = Opt[key].Value;
+            });
+            this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
+            Opt = POST;
         }
+
+        $.each(Opt, function (key, value) {
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            _this.Options[key].Value = value;
+        });
 
         _this.Enabled = _this.Options.Enabled.Value;
     },
 
     Load: function () {
-        this.OriginalOptions = JSON.stringify(this.Options);
         this.Store = AVE.Storage;
+        this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
+
+        this.Enabled = true;
 
         if (this.Enabled) {
             this.Start();

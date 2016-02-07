@@ -51,6 +51,7 @@ AVE.Modules['HideUsername'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;

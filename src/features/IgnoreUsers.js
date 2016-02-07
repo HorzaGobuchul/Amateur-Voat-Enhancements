@@ -44,6 +44,7 @@ AVE.Modules['IgnoreUsers'] = {
 
         Opt = JSON.parse(Opt);
         $.each(Opt, function (key, value) {
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
             _this.Options[key].Value = value;
         });
 

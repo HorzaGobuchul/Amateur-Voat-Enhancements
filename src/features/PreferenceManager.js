@@ -36,11 +36,8 @@ AVE.Modules['PreferenceManager'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                try{
-                    _this.Options[key].Value = value;
-                } catch (e){
-                    print("AVE: prefmngr > ["+_this.ID+"]: option \""+key+"\" couldn't be found and assigned to.", true)
-                }
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                _this.Options[key].Value = value;
             });
         }
     },

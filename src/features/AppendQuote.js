@@ -38,6 +38,7 @@ AVE.Modules['AppendQuote'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -78,8 +79,8 @@ AVE.Modules['AppendQuote'] = {
     Listeners: function () {
         var _this = this;
 
-        $("a#AVE_QuotePost").off("click");
-        $("a#AVE_QuotePost").on("click", function () {
+        $("a#AVE_QuotePost").off("click")
+            .on("click", function () {
             var comment = AVE.Utils.ParseQuotedText($(this).parent().parent().parent().find('.md:first').html());
             var permaLink = $(this).parents("ul[class*='flat-list']").first().find("a[class*='bylink']").attr("href");
             if (!permaLink) { permaLink = window.location.href; }
@@ -107,7 +108,7 @@ AVE.Modules['AppendQuote'] = {
         html: function () {
             var _this = AVE.Modules['AppendQuote'];
             var htmlStr = "";
-            htmlStr += '<input style="display:inline;width:80%;padding:0px;letter-spacing:0.35px;" class="form-control" type="text" Module="'+ _this.ID +'" id="Formatting" value="' + _this.Options.Formatting.Value + '"></input>';
+            htmlStr += '<input style="display:inline;width:80%;padding:0px;letter-spacing:0.35px;" class="form-control" type="text" Module="'+ _this.ID +'" id="Formatting" value="' + _this.Options.Formatting.Value + '">';
             htmlStr += ' <button id="AutoQuoteFormatShowPreview" class="btn-whoaverse-paging" type="button">Show Preview</button>';
             htmlStr += '<div class="md" id="AutoQuoteFormatPreview" style="height:150px; background-color: #' + ( AVE.Utils.CSSstyle === "dark" ? "292929": "FFF" ) + '; position: fixed; width:430px;padding: 10px; border-radius: 6px; border: 2px solid black;display: none;overflow: auto;"></div>';
             htmlStr += "<br /> {@username}: username of the comment's author,";
@@ -122,7 +123,8 @@ AVE.Modules['AppendQuote'] = {
             $('button#AutoQuoteFormatShowPreview').on("click", function () {
                 if ($(this).text() === "Show Preview") {
                     $(this).text("Hide Preview");
-                    $("div#AutoQuoteFormatPreview").show();
+                    var JqId = $("div#AutoQuoteFormatPreview");
+                    JqId.show();
 
                     var quote = $("input[id='Formatting'][Module='" + _this.ID + "']").val().replace(/\{@username\}/gi, "Username");
                     quote = quote.replace(/\{@permaLink\}/gi, "/v/whatever/comments/111111/111111");
@@ -130,20 +132,20 @@ AVE.Modules['AppendQuote'] = {
                     quote = quote.replace(/\{@comment\}/gi, "> This is a comment.\n\n> Another line.");
                     quote = quote.replace(/\{@n\}/g, "\n");
 
-                    $("div#AutoQuoteFormatPreview").text("Loading...");
+                    JqId.text("Loading...");
                     var r = { MessageContent: quote };
                     $.ajax({
                         url: "https://voat.co/ajaxhelpers/rendersubmission/",
                         type: "post",
                         dataType: "html",
                         success: function (n) {
-                            $("div#AutoQuoteFormatPreview").html(n);
+                            JqId.html(n);
                         },
                         data: r
                     });
                 } else {
                     $(this).text("Show Preview");
-                    $("div#AutoQuoteFormatPreview").hide();
+                    JqId.hide();
                 }
             });
         }
