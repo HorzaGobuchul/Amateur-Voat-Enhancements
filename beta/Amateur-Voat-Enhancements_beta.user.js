@@ -8,7 +8,7 @@
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.36.8.12
+// @version     2.36.8.13
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1170,11 +1170,12 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.8.12",
+        "V2.36.8.13",
         "   General:",
         "       Added a failsafe in the function responsible for loading settings for each module",
         "   SelectPost:",
         "       The shortcut I took in this case to save its options was not compatible anymore with the failsafe systems",
+        "       Forgot to clean up after debugging",
         "V2.36.8.10",
         "   Init:",
         "       If a module crashes when loading it will be automatically deactivated",
@@ -3283,15 +3284,13 @@ AVE.Modules['SelectPost'] = {
             _this.Options[key].Value = value;
         });
 
-        _this.Enabled = _this.Options.Enabled.Value;
+        this.Enabled = this.Options.Enabled.Value;
     },
 
     Load: function () {
         this.Store = AVE.Storage;
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
-
-        this.Enabled = true;
 
         if (this.Enabled) {
             this.Start();

@@ -76,15 +76,13 @@ AVE.Modules['SelectPost'] = {
             _this.Options[key].Value = value;
         });
 
-        _this.Enabled = _this.Options.Enabled.Value;
+        this.Enabled = this.Options.Enabled.Value;
     },
 
     Load: function () {
         this.Store = AVE.Storage;
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
-
-        this.Enabled = true;
 
         if (this.Enabled) {
             this.Start();

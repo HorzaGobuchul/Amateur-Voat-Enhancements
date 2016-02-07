@@ -60,11 +60,12 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.8.12",
+        "V2.36.8.13",
         "   General:",
         "       Added a failsafe in the function responsible for loading settings for each module",
         "   SelectPost:",
         "       The shortcut I took in this case to save its options was not compatible anymore with the failsafe systems",
+        "       Forgot to clean up after debugging",
         "V2.36.8.10",
         "   Init:",
         "       If a module crashes when loading it will be automatically deactivated",
