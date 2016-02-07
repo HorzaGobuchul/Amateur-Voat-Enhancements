@@ -11,6 +11,7 @@ AVE.Modules['ID'] = {
 
     //   "start"     => as soon as possible
     //   "head"      => On head ready
+    //   "banner"    => On header/banner ready
     //   "container" => On container ready
     //   "ready"     => On DOMready
     //   "load"      => On DOMload

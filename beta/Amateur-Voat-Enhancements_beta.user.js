@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2015-12-25
+// @date        2016-02-07
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.33.13.20
+// @version     2.36.8.10
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -34,6 +34,7 @@ AVE.Init = {
         ModLoad = {
             Start: [],
             HeadReady: [],
+            BannerReady: [],
             ContainerReady: [],
             DocReady: [],
             WinLoaded: []
@@ -41,6 +42,11 @@ AVE.Init = {
         stopLoading = false;
 
         AVE.Utils.EarlySet();
+
+        print("AVE: Devmode > " + AVE.Utils.DevMode, true);
+        print("AVE: POST > "+JSON.stringify(AVE.Utils.POSTinfo), true);
+
+        print("AVE: Current page > " + AVE.Utils.currentPageType);
 
         if ($.inArray(AVE.Utils.currentPageType, ["none", "api"]) === -1) {
 
@@ -51,9 +57,11 @@ AVE.Init = {
                     ModLoad.Start.push(this.ID);
                 } else if (this.RunAt === "head") {
                     ModLoad.HeadReady.push(this.ID);
+                } else if (this.RunAt === "banner") {
+                    ModLoad.BannerReady.push(this.ID);
                 } else if (this.RunAt === "container") {
                     ModLoad.ContainerReady.push(this.ID);
-                } else if (this.RunAt === "load") {
+                } else { //(this.RunAt === "load") {
                     ModLoad.WinLoaded.push(this.ID);
                 }
             });
@@ -65,7 +73,15 @@ AVE.Init = {
 
             //On head ready
             $("head").ready(function () {
+                AVE.Utils.LateSet();
                 $.each(ModLoad.HeadReady, function () {
+                    _this.LoadModules(this);
+                });
+            });
+
+            //On Banner ready
+            $("div#header").ready(function () {
+                $.each(ModLoad.BannerReady, function () {
                     _this.LoadModules(this);
                 });
             });
@@ -73,16 +89,13 @@ AVE.Init = {
             //On container ready
             $("div#container").ready(function () {
                 $.each(ModLoad.ContainerReady, function () {
-                    AVE.Utils.LateSet();
                     _this.LoadModules(this);
                 });
             });
 
             //On doc ready
             $(document).ready(function () {
-
-                print("AVE: Current page > " + AVE.Utils.currentPageType);
-                //print("AVE: Current style > " + AVE.Utils.CSSstyle);
+                print("AVE: Current style > " + AVE.Utils.CSSstyle, true);
 
                 //By /u/Jammi: voat.co/v/AVE/comments/421861
                 if (document.title === 'Checking your bits' || document.title === 'Play Pen Improvements') {
@@ -111,33 +124,38 @@ AVE.Init = {
             if (document.readyState === "complete") { loadModuleOnLoadComplete(); }
             else { $(window).load(function () { loadModuleOnLoadComplete(); }); }
         } else {
-            print("AVE: Current page > no idea, sorry. Maybe tell /u/HorzaDeservedBetter about it? Pretty please.");
+            print("AVE: Current page > no idea, sorry. Maybe tell /u/HorzaDeservedBetter about it?");
         }
     },
 
     LoadModules: function (ID) {
-        //var module = AVE.Modules[ID];s
-        //print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")");
-        
-        //AVE.Modules[ID].Load();
+        var module = AVE.Modules[ID];
+        print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")", true);
 
-        //var ntime = 0; var time = Date.now();
-        try { AVE.Modules[ID].Load(); }
-        catch (e) {print("AVE: Error loading " + ID);}
-        //ntime =  Date.now();
-        //print("updated > " + AVE.Modules[ID].ID + " (" + (ntime - time) + "ms)");
+        if (AVE.Utils.DevMode){
+            var time = Date.now();
+            AVE.Modules[ID].Load();
+            print("Loaded > " + ID + " (" + (Date.now() - time) + "ms)");
+        } else {
+            try { AVE.Modules[ID].Load(); }
+            catch (e) {
+                print("AVE: Error loading " + ID);
+                var Opt = JSON.parse(AVE.Storage.GetValue(AVE.Storage.Prefix + ID, "{}"));
+                Opt.Enabled = false;
+                AVE.Storage.SetValue(AVE.Storage.Prefix + ID, JSON.stringify(Opt));
+                alert("AVE: Error loading module \"" + ID +"\"\nIt has been disabled, reload for the change to be effective");
+            }
+        }
     },
 
     UpdateModules: function () {
         $.each(AVE.Modules, function () {
-            //var ntime = 0; var time = new Date().getTime();
+            var time = Date.now();
             
             if (typeof this.Update === "function") {
                 this.Update();
 
-                //ntime = new Date().getTime();
-                //print("updated > " + this.Name + " (" + (ntime - time) + "ms)");
-                //time = ntime;
+                print("updated > " + this.Name + " (" + (Date.now() - time) + "ms)", true);
             }
         });
     }
@@ -152,16 +170,19 @@ AVE.Utils = {
     isPageSubverse: "",
     CSSstyle: "",
     currentPageType: "",
-    peculiarities: [],
+    DevMode: false,
+    POSTinfo: {},
     
     LateSet: function () {
         this.CSSstyle = this.CSS_Style();
     },
 
     EarlySet: function () {
+        this.DevMode = this.GetDevMode();
         this.subverseName = this.GetSubverseName();
         this.isPageSubverse = this.GetPageSubverse();
         this.currentPageType = this.Page();
+        this.ParsePOSTinfo();
     },
 
     CSS_Style: function () {
@@ -173,8 +194,8 @@ AVE.Utils = {
 
     Page: function () {
         var RegExpTypes = {
-            frontpage: /voat.co\/?(new)?(\?page=[0-9]*)?(#[^\\\/]*)?$/i,
-            front_guest: /voat.co\/?(new)?(\?frontpage=guest)?(#[^\\\/]*)?$/i,
+            frontpage: /voat.co\/?(new)?(\?[^#]+)*(#[^\\\/]*)?$/i,
+            //front_guest: /voat.co\/?(new)?(\?frontpage=guest)?(\?page=[0-9]*)?(#[^\\\/]*)?$/i,
             submissions: /voat.co\/user\/[\w\d-]*\/submissions/i,
             subverse: /voat.co\/v\/[a-z]*\/?(\?page=[0-9]*)?/i,
             comments: /voat.co\/user\/[\w\d-]*\/comments/i,
@@ -204,7 +225,7 @@ AVE.Utils = {
         var url = window.location.href;
 
         if (RegExpTypes.frontpage.test(url)) { return "frontpage"; }
-        if (RegExpTypes.front_guest.test(url)) { this.peculiarities.push("guest-frontpage"); return "frontpage"; }
+        //if (RegExpTypes.front_guest.test(url)) { return "frontpage"; }
         if (RegExpTypes.api.test(url)) { return "api"; }
         if (RegExpTypes.thread.test(url)) { return "thread"; }
         if (RegExpTypes.sub_new.test(url)) { return "subverse"; }
@@ -232,6 +253,26 @@ AVE.Utils = {
         if (RegExpTypes.account_rel.test(url)) { return "account-related"; }
 
         return "none";
+    },
+
+    ParsePOSTinfo: function () {
+        var url, l, _this;
+        _this = this;
+        url = window.location.href.split("?");
+
+        if (url.length == 1){return;}
+
+        url = url[1].split("#")[0];
+        url = url.split("&");
+
+        $.each(url, function (idx, str) {
+            l = str.split("=");
+            _this.POSTinfo[l[0]] = l[1];
+        });
+    },
+
+    GetDevMode: function () {
+        return AVE.Storage.GetValue(AVE.Storage.Prefix+"DevMode", "0") === "1" ? true : false;
     },
 
     GetPageSubverse: function () {
@@ -272,7 +313,7 @@ AVE.Utils = {
     AddStyle: function (StyleStr) {
         if ($("style[for='AVE']").length === 0) { $("head").append('<style for="AVE"></style>'); }
         $("style[for='AVE']").append("\n" + StyleStr);
-    },
+    }
 };
 
 (function ($) {
@@ -325,7 +366,7 @@ AVE.Utils = {
         }
     };
 }($));
-function print(str) { console.log(str); }
+function print(str, dev) {if(dev && !AVE.Utils.DevMode){return;} console.log(str); }
 //Thanks to Paolo Bergantino https://stackoverflow.com/questions/965816/what-jquery-selector-excludes-items-with-a-parent-that-matches-a-given-selector#answer-965962
 jQuery.expr[':'].parents = function (a, i, m) { return jQuery(a).parents(m[3]).length < 1; };
 //Thanks to Narnian https://stackoverflow.com/questions/6673777/select-link-by-text-exact-match#answer-8447189
@@ -401,7 +442,9 @@ var OnAttrChange = (function () {
 
     return cls;
 }());
-/// END Utils ////// Storage ///
+/// END Utils ///
+
+/// Storage ///
 AVE.Storage = {
     Prefix: "AVE_",
 
@@ -461,6 +504,13 @@ AVE.Modules['PreferenceManager'] = {
     SavePref: function (POST) {
         var _this = this;
 
+        delete POST[_this.ID]["AVE_DevMode"];
+        delete POST[_this.ID]["Enabled"];
+        delete POST[_this.ID]["AVE_ExportToJSON"];
+        delete POST[_this.ID]["AVE_ImportFromJSON"];
+        delete POST[_this.ID]["AVE_ResetAllData"];
+        delete POST[_this.ID]["AVE_file_ImportFromJSON"];
+
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
@@ -474,7 +524,7 @@ AVE.Modules['PreferenceManager'] = {
                 try{
                     _this.Options[key].Value = value;
                 } catch (e){
-                    //print("AVE ["+_this.ID+"]: option \""+key+"\" couldn't be found and assigned to.")
+                    print("AVE: prefmngr > ["+_this.ID+"]: option \""+key+"\" couldn't be found and assigned to.", true)
                 }
             });
         }
@@ -598,8 +648,14 @@ AVE.Modules['PreferenceManager'] = {
                 font-size:12px;\
                 border-bottom: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "222" : "DDD") + ';\
             }\
-            span.ModuleTitle{\
+            label.ModuleTitle{\
                 font-size:14px;\
+            }\
+            .dark label.ModuleTitle{\
+                color: #967aff;\
+            }\
+            .light label.ModuleTitle{\
+                color: #4aabe7;\
             }\
             span.ModuleState{\
                 font-size:10px;\
@@ -658,9 +714,9 @@ AVE.Modules['PreferenceManager'] = {
     MngWinHTML: '',
     ModuleHTML: '',
 
-    Categories: ["General", "Subverse", "Thread", "Posts", "Domains", "Manager", "Account", "Style", "Fixes"],//Available Categories to show
+    Categories: ["General", "Subverse", "Thread", "Posts", "Domains", "Account", "Style", "Misc", "Manager", "ModTools"],//Available Categories to show
     Modules: [],//List of modules
-    ModifiedModules: [],
+    ModifiedModules: [],//Modules whose options have been modified and should be saved
 
     AppendToPage: function () {
         AVE.Utils.AddStyle(this.MngWinStyle);
@@ -823,8 +879,10 @@ AVE.Modules['PreferenceManager'] = {
 
             $(module).find(":input").each(function () {
                 var key = $(this).prop("id");
-                if (key === "") { return true; }
-                if ($(this).attr("type") && $(this).attr("type").toLowerCase() === "checkbox") {
+
+                if (key === AVE.Modules[ModKey].Name) {POST[ModKey].Enabled = $(this).is(":checked");}
+                else if (key === "") { /* continue/pass */ }
+                else if ($(this).attr("type") && $(this).attr("type").toLowerCase() === "checkbox") {
                     POST[ModKey][key] = $(this).is(":checked");
                 } else {
                     POST[ModKey][key] = $(this).val();
@@ -867,11 +925,12 @@ AVE.Modules['PreferenceManager'] = {
             enabled = true;
             alwaysEnabled = true;
         }
+
         var html =
             '<div id="' + module.ID + '" class="ModuleBlock">\
                 <div class="ModuleTitleBlock">\
-                    <input id="Enabled" ' + (alwaysEnabled ? 'disabled="true"' : '') + ' type="checkbox" class="ToggleEnable" ' + ((enabled || alwaysEnabled) ? 'Checked="true"' : '') + ' /> \
-                    <span class="ModuleTitle alert-title">' + module.Name + '</span> \
+                    <input id="' + module.Name + '" ' + (alwaysEnabled ? 'disabled="true"' : '') + ' type="checkbox" class="ToggleEnable" ' + ((enabled || alwaysEnabled) ? 'Checked="true"' : '') + ' /> \
+                    <label for="' + module.Name + '" class="ModuleTitle">' + module.Name + '</label> \
                     <span class="ModuleState ' + ((enabled || alwaysEnabled) ? 'Enabled' : 'Disabled') + '"></span>\
                 </div>\
                 <span class="ModuleDesc">' + module.Desc + '</span>\
@@ -895,11 +954,19 @@ AVE.Modules['PreferenceManager'] = {
         //Get special form element from the modules themselves.
         if (typeof module.AppendToPreferenceManager === "object") {
             if (typeof module.AppendToPreferenceManager.html === "function") {
-                $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']").append('<div class=AVE_ModuleCustomInput></div>');
-                $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']").find("div.AVE_ModuleCustomInput").append(module.AppendToPreferenceManager.html());
-            }
-            if (typeof module.AppendToPreferenceManager.callback === "function") {
-                module.AppendToPreferenceManager.callback();
+                var JqId = $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']");
+                JqId.append('<div class=AVE_ModuleCustomInput></div>');
+                try {
+                    html = module.AppendToPreferenceManager.html();
+                    JqId.find("div.AVE_ModuleCustomInput").append(html);
+                    if (typeof module.AppendToPreferenceManager.callback === "function") {
+                        module.AppendToPreferenceManager.callback();
+                    }
+                }
+                catch (e) {
+                    print("AVE: PreferenceManager > Error importing custom settings for " + module.ID +"! Aborting.");
+                    JqId.find("div.AVE_ModuleCustomInput").html('<span style="font-size:18px;font-weight:bold;">Error importing custom settings. Operation aborted.</span>');
+                }
             }
         }
 
@@ -934,6 +1001,7 @@ AVE.Modules['PreferenceManager'] = {
             var htmlStr = "";
 
             htmlStr += '<input ' + (_this.Options.LossChangeNotification.Value ? 'checked="true"' : "") + ' id="LossChangeNotification" type="checkbox"/><label style="display: inline;" for="LossChangeNotification"> ' + _this.Options.LossChangeNotification.Desc + '</label><br />';
+            htmlStr += '<input ' + (AVE.Utils.DevMode ? 'checked="true"' : "") + ' id="AVE_DevMode" type="checkbox"/><label style="display: inline;" for="AVE_DevMode"> Enable Dev Mode.</label><br />';
 
             htmlStr += '<br />Export all stored data as a JSON file: <input style="font-weight:bold;" value="Export" id="AVE_ExportToJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON">';
             htmlStr += '<br />Import settings/data from a JSON file: <input style="font-weight:bold;" value="Import" id="AVE_ImportFromJSON" class="btn-whoaverse-paging btn-xs btn-default" type="button" title="Export Stored Data as JSON">\
@@ -945,6 +1013,18 @@ AVE.Modules['PreferenceManager'] = {
         },
         callback: function () {
             var _this = AVE.Modules['PreferenceManager'];
+
+            $("input#AVE_DevMode").on("change", function () {
+                var v = $(this).is(":checked");
+                AVE.Storage.SetValue(AVE.Storage.Prefix+"DevMode", v ? "1": "0");
+
+                var lab = $(this).next("label:first");
+
+                lab.css("backgroundColor", "rgba(89, 204, 85, 0.5)");
+                setTimeout(function () {
+                    lab.css("backgroundColor", "");
+                }, 1500);
+            });
             $("input#AVE_ExportToJSON").on("click", function () {
                 _this.ExportToJSON();
             });
@@ -1026,7 +1106,7 @@ AVE.Modules['PreferenceManager'] = {
         $.each(_this.Store.Data, function (k, v) { data[k] = v; });
         var blob = new Blob([JSON.stringify(data)], { type: "application/json;charset=utf-8" });
         saveAs(blob, "AVE_Data_" + (new Date().toLocaleDateString().replace(/\//g, "_")) + ".json");
-    },
+    }
 };
 /// END Preference manager ///
 
@@ -1092,6 +1172,78 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.36.8.10",
+        "   Init:",
+        "       If a module crashes when loading it will be automatically deactivated",
+        "   UserTag:",
+        "       Corrected an embarrassing bug that essentially would have prevented new users from using the beta version with a fresh install",
+        "       Fixed an error with the way the migration value was saved (would reset occasionally)",
+        "   HideSubmissions:",
+        "       option to hide a submission after clicking its link",
+        "   ShowSubmissionVoatBalance:",
+        "       Finally working thanks to a script by /u/dubbelnougat",
+        "   PreferenceManager:",
+        "       If a module encounters an error when importing its custom options it will show an error instead of crashing the whole preference manager",
+        "       It is now possible to enable/disable a module by clicking its title",
+        "   ShortKeys:",
+        "       Fixed interference with CSSEditor",
+        "   New feature: CSSEditor",
+        "       First modtool, edit your custom CSS stylesheets from within the page itself (by /u/j_ and /u/dubbelnougat)",
+        "   New feature: httpWarning",
+        "       This module shows a warning for submissions that link to HTTP URL instead of HTTPS(ecure)",
+        "       Added option to choose to show a warning icon and/or change the titles' CSS style",
+        "   Init:",
+        "       Added loading step \"BannerReady\"",
+        "       Moved AVE.Utils.LateSet() to be triggered as soon as Head is loaded",
+        "   New feature: AccountSwitcher",
+        "       Store information for several accounts and switch between them quickly",
+        "       Will start when the header/banner is ready",
+        "   HeaderFixedPos:",
+        "       Fixed issue that prevented this module from working when the module InjectCustomStyle was disabled",
+        "       Optimized JQuery's selectors",
+        "       Will now be loaded when the banner element is ready",
+        "   UserInfoFixedPos:",
+        "       Added back an old feature:",
+        "           The user block smoothly follows the scrolling from its original position,",
+        "           It doesn't stick to the right side anymore, only to the top",
+        "           It will adapt to custom style modifications",
+        "           It will adapt to the window being resized",
+        "       Optimized JQuery's selectors",
+        "       Will now be loaded when the banner element is ready",
+        "V2.33.18.30",
+        "   New module category: Modtools",
+        "       Misc tools made for helping our dedicated mods (all disabled by default)",
+        "   PreferenceManager:",
+        "       Added category Modtools",
+        "       Renamed category \"Fixes\" to \"Misc\"",
+        "   NeverEndingVoat",
+        "       Parses fetched page and updates the current mail status and CCP/SCP (Module ContributionDeltas is not updated with the new info)",
+        "       \" or a NSFW random subverse\" part is no longer left behind",
+        "       This module will now also activate in user-comments and user-submissions",
+        "   RememberCommentCount:",
+        "       Since user-comments pages can now be read with NeverEndingVoat the process can no longer be repeated twice for the same post ID",
+        "   UpdateAfterLoadingMore:",
+        "       Will now only start and update when the current page is a thread",
+        "   Shortkey:",
+        "       Pressing the expand key in a thread with the OP's self-text submission selected will toggle all media within it",
+        "       Ctrl+Return can be used to submit comments (key non-configurable)",
+        "V2.33.14.26",
+        "   Many linguistical improvements",
+        "       by LudwikJaniuk",
+        "   General:",
+        "       Changed some print instances to use DevMode",
+        "   FixContainerWidth:",
+        "       Will now start at container DOM ready",
+        "   Domaintag:",
+        "       Forgot to implement the removeTag function",
+        "       Updated code for links to subverse domains (used to be self.sub, now v/sub)",
+        "   General:",
+        "       Implemented DevMode console.log option",
+        "   NeverEndingVoat:",
+        "       Added support for POST info in general",
+        "           Next loaded page will remember info like \"time\", \"page\", \"frontpage=guest\", etc.",
+        "   Utils:",
+        "       Implemented POST info parser",
         "V2.33.13.20",
         "   General:",
         "       Added support for the new guest frontpage",
@@ -1100,7 +1252,7 @@ AVE.Modules['VersionNotifier'] = {
         "   ShortKeys:",
         "       Added option to open external link with archive.is",
         "   ArchiveSubmission:",
-        "       Enabled in threadsvoat",
+        "       Enabled in threads",
         "V2.33.11.18",
         "   ArchiveSubmission:",
         "       No link added to posts linking to archive.is",
@@ -1420,6 +1572,8 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
+        if (AVE.Utils.currentPageType !== "thread") {this.Enabled = false;}
+
         if (this.Enabled) {
             this.Start();
         }
@@ -1462,8 +1616,8 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
     },
 
     Update: function () {
-        this.Listeners();
-    },
+        if (AVE.Utils.currentPageType !== "thread") {this.Listeners();}
+    }
 };
 /// END Update after loading more ///
 
@@ -1513,12 +1667,9 @@ AVE.Modules['UserTag'] = {
             Type: "int",
             Desc: "The colour displayed are between red/green and white. How white do you want it to be at most? (0, 255)",
             Value: 210
-        },
-        Migrated: {
-            Type: 'boolean',
-            Value: false
         }
     },
+
     //Possible issues with the fact that the username in the profil overview is in lower case
     UserTagObj: function (tag, colour, ignored, balance, context) {
         this.t = tag.toString();
@@ -1529,9 +1680,7 @@ AVE.Modules['UserTag'] = {
     },
 
     SavePref: function (POST) {
-        var _this = this;
-
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST[this.ID]));
     },
 
     SetOptionsFromPref: function () {
@@ -1540,6 +1689,7 @@ AVE.Modules['UserTag'] = {
 
         Opt = JSON.parse(Opt);
         $.each(Opt, function (key, value) {
+            if (!_this.Options.hasOwnProperty(key)) {return true;}
             _this.Options[key].Value = value;
         });
 
@@ -1674,7 +1824,7 @@ table#formTable{\
             this.StorageName = this.Store.Prefix + this.ID + "_Tags";
             //this.Store.DeleteValue(this.StorageName);
 
-            if (!this.Options.Migrated.Value){
+            if (this.Store.GetValue(this.Store.Prefix + this.ID + "_migration", "0") === "0"){
                 this.Migrate();
             }
 
@@ -1685,9 +1835,12 @@ table#formTable{\
 
     Migrate: function () {
         var _this = this;
-        data = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
+        var data = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
+
+        print("AVE: UserTag > migrating (a one-time process)");
         
         $.each(data, function (key, val) {
+            if(val.hasOwnProperty("t") || !val.hasOwnProperty("tag") || Object.keys(val).length === 0){return true;}
             data[key] = new _this.UserTagObj(data[key].tag, data[key].colour, data[key].ignore, data[key].balance, data[key].context);
             if(!val.tag){
                 delete data[key].t;
@@ -1700,19 +1853,12 @@ table#formTable{\
                 delete data[key].i;
             }
             if (!val.context){
-                delete  data[key].con;
+                delete data[key].con;
             }
         });
-        this.Store.SetValue(this.StorageName, JSON.stringify(data));
 
-        var POST = {};
-        POST[this.ID] = {
-            Enabled: true,
-            VoteBalance: this.Options.VoteBalance.Value,
-            ShowBalanceWithColourGradient: this.Options.ShowBalanceWithColourGradient.Value,
-            Migrated: true
-        };
-        this.SavePref(POST);
+        this.Store.SetValue(this.StorageName, JSON.stringify(data));
+        this.Store.SetValue(this.Store.Prefix + this.ID + "_migration", "1");
     },
 
     Start: function () {
@@ -1929,7 +2075,7 @@ table#formTable{\
 
     //Because the .click JQuery event triggered by the shortkeys in ShortKeys.js triggers an OnAttrChange with false mutation values (oldValue, attributeName),
     //      we use a second function that keypresses in ShortKeys.js can invoke directly.
-    // Ten mimutes later it works perfectly well. Maybe, voat's current instability was to blame. I'm not changing it back, anyway...
+    // Ten minutes later it works perfectly well. Maybe, voat's current instability was to blame. I'm not changing it back, anyway...
     ChangeVoteBalance: function (target, oldValue) {
         //print("target: "+target);
         //print("oldvalue: "+oldValue);
@@ -2305,7 +2451,7 @@ table#formTable{\
 
             htmlStr += htmlTable;
 
-            htmlStr += '<div style="text-align: right;margin-bottom:10px;">Showing entries '+ (start+1) +' to '+ Math.min(this.usertags.length, start+this.tagsperpage) +' ('+this.usertags.length+' total)</div>';
+            htmlStr += '<div style="text-align:right;margin-bottom:10px;">Showing entries '+ (start+1) +' to '+ Math.min(this.usertags.length, start+this.tagsperpage) +' ('+this.usertags.length+' total)</div>';
 
             htmlStr += htmlNavButtons;
 
@@ -2736,7 +2882,7 @@ AVE.Modules['ToggleMedia'] = {
                                         && ($(this).find("span.link-expando-type").length > 0);
                                 });
                                 
-            //print("ToggleMedia "+this.sel.length);
+            print("AVE: ToggleMedia count > "+this.sel.length.toString(), true);
 
             this.AppendToPage();
             this.Listeners();
@@ -2804,14 +2950,14 @@ AVE.Modules['ToggleMedia'] = {
             var htmlString = '<div>';
             for (var i in mediaTypes) {
                 htmlString += '<span style="margin-right:20px;" >' +
-                              '<input ' + (value[i] == 1 ? 'checked="checked"' : '') + ' id="' + mediaTypes[i] + '" name="' + mediaTypes[i] + '" type="checkbox"></input>' +
+                              '<input ' + (value[i] == 1 ? 'checked="checked"' : '') + ' id="' + mediaTypes[i] + '" name="' + mediaTypes[i] + '" type="checkbox">' +
                                '<label for="' + mediaTypes[i] + '">' + mediaTypes[i] + '</label>' +
                                '</span>';
             }
 
             return htmlString + '</div>';
-        },
-    },
+        }
+    }
 };
 /// END Toggle media ///
 
@@ -2822,7 +2968,7 @@ AVE.Modules['HideSubmissions'] = {
     Desc: 'Hide vote with the keyboard or automatically after voting on it.',
     Category: 'Subverse',
 
-    Index: 10, //early so that other module don't do unnecessary processing on submissions that will get removed
+    Index: 10, //early so that other modules don't do unnecessary processing on submissions that will get removed
     Enabled: false,
 
     Store: {},
@@ -2852,6 +2998,11 @@ AVE.Modules['HideSubmissions'] = {
         HideAfterVote: {
             Type: 'boolean',
             Desc: "Hide the submission right after the vote is registered.",
+            Value: false
+        },
+        HideAfterView: {
+            Type: 'boolean',
+            Desc: "Hide the submission after viewing it (opening its link).",
             Value: false
         },
         AddHideButton: {
@@ -2930,10 +3081,11 @@ AVE.Modules['HideSubmissions'] = {
 
         var JqId = $("div.submission.id-"+id.toString());
 
-        if (  (!vote && this.Options.HideRightAway.Value)
-            || (vote && this.Options.HideAfterVote.Value)){
+        if (   (vote === false && this.Options.HideRightAway.Value)
+            || (vote === true && this.Options.HideAfterVote.Value)){
             JqId.remove();
-        } else {
+            print("AVE: HideSubmissions > removing submission with id "+id);
+        } else if(this.Options.AddHideButton.Value) {
             JqId.find("ul.flat-list.buttons").find("li > a#AVE_HideSubmissions_link").text("unhide");
         }
 
@@ -2944,7 +3096,10 @@ AVE.Modules['HideSubmissions'] = {
         this.HiddenPosts.splice(this.HiddenPosts.indexOf(id), 1);
         this.Store.SetValue(this.StorageName, JSON.stringify(this.HiddenPosts));
 
-        $("div.submission.id-"+id.toString()).find("ul.flat-list.buttons").find("li > a#AVE_HideSubmissions_link").text("hide");
+        if (this.Options.AddHideButton.Value){
+            $("div.submission.id-"+id.toString()).find("ul.flat-list.buttons").find("li > a#AVE_HideSubmissions_link").text("hide");
+        }
+
         print("AVE: HideSubmissions > unhiding submission with id "+id);
     },
 
@@ -2954,6 +3109,7 @@ AVE.Modules['HideSubmissions'] = {
             var id = $(this).attr("data-fullname");
             if (id && $.inArray(id.toString(), _this.HiddenPosts) !== -1){
                 $(this).remove();
+                print("AVE: HideSubmissions > removing submission with id "+id);
             }
         });
 
@@ -2980,13 +3136,23 @@ AVE.Modules['HideSubmissions'] = {
     obsVoteChange: null,
 
     Listeners: function () {
-        "use strict";
         var _this = this;
 
         if (this.Options.AddHideButton.Value) {
             $("li > a#AVE_HideSubmissions_link").off().on("click", function () {
                 var id = $(this).parents("div.submission:first").attr("data-fullname");
                 _this.AddToHiddenList(id);
+            });
+        }
+
+        if (this.Options.HideAfterView.Value){
+            var id;
+            $("a.title.may-blank").off().on("mouseup", function (e) {
+                if (e.which > 2) {return;} //Left or middle click
+                id = $(this).parents("div.submission:first").attr("data-fullname");
+
+                if ($.inArray(id.toString(), this.HiddenPosts) !== -1){return;}
+                _this.AddToHiddenList(id, "spe");
             });
         }
 
@@ -3016,7 +3182,7 @@ AVE.Modules['HideSubmissions'] = {
 
             htmlStr += '<input id="HideUpvoted" ' + (_this.Options.HideUpvoted.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideUpvoted"> ' + _this.Options.HideUpvoted.Desc + '</label><br>';
             htmlStr += '<input id="HideDownvoted" ' + (_this.Options.HideDownvoted.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideDownvoted"> ' + _this.Options.HideDownvoted.Desc + '</label><br>';
-            htmlStr += '<input id="HideAfterVote" ' + (_this.Options.HideAfterVote.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideAfterVote"> ' + _this.Options.HideAfterVote.Desc + '</label><br><br>';
+            htmlStr += '<input id="HideAfterVote" ' + (_this.Options.HideAfterVote.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideAfterVote"> ' + _this.Options.HideAfterVote.Desc + '</label><br>';
             htmlStr += '<input id="HideRightAway" ' + (_this.Options.HideRightAway.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideRightAway"> ' + _this.Options.HideRightAway.Desc + '</label>';
             if (AVE.Modules['ShortKeys']){
                 var key = AVE.Modules['ShortKeys'].Options.HidePost.Value || "Enter/Return";
@@ -3024,6 +3190,8 @@ AVE.Modules['HideSubmissions'] = {
             } else {
                 htmlStr += ' (disabled).<br>';
             }
+            htmlStr += '<input id="HideAfterView" ' + (_this.Options.HideAfterView.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideAfterView"> ' + _this.Options.HideAfterView.Desc + '</label><br><br>';
+
             htmlStr += '<input id="AddHideButton" ' + (_this.Options.AddHideButton.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="AddHideButton"> ' + _this.Options.AddHideButton.Desc + '</label><br>';
 
             return htmlStr;
@@ -3321,24 +3489,44 @@ AVE.Modules['ShortKeys'] = {
     Start: function () {
         var _this = this;
 
-        var up = this.Options.UpvoteKey.Value;
-        var down = this.Options.DownvoteKey.Value;
-        var next = this.Options.NextKey.Value;
-        var previous = this.Options.PrevKey.Value;
-        var OpenC = this.Options.OpenCommentsKey.Value;
-        var OpenL = this.Options.OpenLinkKey.Value;
-        var OpenLC = this.Options.OpenLCKey.Value;
-        var Expand = this.Options.ExpandKey.Value;
-        var TCC = this.Options.ToggleCommentChain.Value;
-        var NavTop = this.Options.NavigateTop.Value;
-        var NavBottom = this.Options.NavigateBottom.Value;
-        var HidePost = this.Options.HidePost.Value;
+        var shift, ctrl,
+            up = this.Options.UpvoteKey.Value,
+            down = this.Options.DownvoteKey.Value,
+            next = this.Options.NextKey.Value,
+            previous = this.Options.PrevKey.Value,
+            OpenC = this.Options.OpenCommentsKey.Value,
+            OpenL = this.Options.OpenLinkKey.Value,
+            OpenLC = this.Options.OpenLCKey.Value,
+            Expand = this.Options.ExpandKey.Value,
+            TCC = this.Options.ToggleCommentChain.Value,
+            NavTop = this.Options.NavigateTop.Value,
+            NavBottom = this.Options.NavigateBottom.Value,
+            HidePost = this.Options.HidePost.Value;
 
         $(document).keydown(function (event) {
+            shift = event.shiftKey;
+            ctrl = event.ctrlKey;
+
+            //Exit if the CSSEditor panel has the focus
+            if ($("style#custom_css.AVE_custom_css_editable").is(":focus")){return;}
+
             //Exit if the focus is given to a text input
-            if ($(":input").is(":focus")) { return; }
+            if ($(":input").is(":focus")) {
+                if (ctrl && event.which === 13){
+                    var inp = $("textarea#Content.commenttextarea:focus");
+                    if (inp.length === 0){return;}
+
+                    var submitbtn = inp.nextAll("input#submitbutton:first"); //
+                    if (submitbtn.length === 0){
+                        submitbtn = inp.parent().parent().nextAll("input#submitbutton:first");;
+                    }
+                    submitbtn.trigger("click");
+                }
+                return;
+            }
+
             //Exit if a key modifier is pressed (ctrl, shift)
-            if (event.ctrlKey || event.shiftKey) { return; }
+            if (ctrl || shift) { return; }
 
             var sel = AVE.Utils.SelectedPost;
             var key;
@@ -3484,18 +3672,36 @@ AVE.Modules['ShortKeys'] = {
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[1] });
                 }
             } else if (key === Expand.toUpperCase()) { // Expand media/self-text
-                if (sel.parent().hasClass("submission")) {
-                    //In submission
-                    sel.find("div.expando-button").click();
+                var expand, media;
+                if ( sel.parent().hasClass("submission")) {
+                    //In submissions
+                    if (AVE.Utils.currentPageType === "thread" && sel.parent().hasClass("self")){
+                        expand = true;
+                        media = sel.find("div.md:visible").find("a[title]");
+
+                        media.each(function () {
+                            //Expand is false if at least one of the media is expanded
+                            if ($(this).next(".link-expando:visible").length > 0)
+                            { expand = false; return false; }
+                        });
+
+                        media.each(function () {
+                            if ($(this).find("span.link-expando-type").length > 0
+                                && expand !== $(this).next(".link-expando:visible").length > 0)
+                            { this.click(); }
+                        });
+                    } else {
+                        sel.find("div.expando-button").click();
+                    }
                 } else {
-                    //In comment
-                    var expand = true;
-                    var media = sel.find("div.md:visible").find("a[title]");
+                    //In comments
+                    expand = true;
+                    media = sel.find("div.md:visible").find("a[title]");
 
                     media.each(function () {
                         //Expand is false if at least one of the media is expanded
                         if ($(this).next(".link-expando:visible").length > 0)
-                        { expand = false; return;}
+                        { expand = false; return false; }
                         });
 
                     media.each(function () {
@@ -3603,16 +3809,20 @@ AVE.Modules['ShortKeys'] = {
             htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br>';
             htmlStr += '<input id="OpenInArchive" ' + (_this.Options.OpenInArchive.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInArchive"> ' + _this.Options.OpenInArchive.Desc + '</label><br>';
             return htmlStr;
+        },
+
+        callback: function () {
+
         }
     }
 };
 /// END Shortcut keys ///
 
-/// Inject custom style:  Apply your custom style of choice everywhere on Voat.<br />For the best result check "Disable custom subverse styles" in your preferences. ///
+/// Inject custom style:  Apply your custom CSS style of choice everywhere on Voat.<br />For the best result check "Disable custom subverse styles" in your preferences. ///
 AVE.Modules['InjectCustomStyle'] = {
     ID: 'InjectCustomStyle',
     Name: 'Inject custom style',
-    Desc: 'Apply your custom style of choice everywhere on Voat.<br />For the best result check "Disable custom subverse styles" in your preferences.',
+    Desc: 'Apply your custom CSS style of choice everywhere on Voat.<br />For the best result check "Disable custom subverse styles" in your preferences.',
     Category: 'Style',
 
     Index: 50,
@@ -3648,7 +3858,7 @@ AVE.Modules['InjectCustomStyle'] = {
         },
         InjectLate: {
             Type: 'boolean',
-            Desc: 'Insert the new CSS file <strong>after</strong> the custom style.',
+            Desc: 'Insert the new CSS file <strong>after</strong> the original custom style.',
             Value: false
         }
     },
@@ -3705,9 +3915,9 @@ AVE.Modules['InjectCustomStyle'] = {
         Scribble: "https://cdn.rawgit.com/ScribbleForVoat/Scribble/master/base.min.css?AVE",
         Simplegoats: "https://cdn.rawgit.com/relaxedzombie/simplegoats/master/simplegoats.min.css?AVE",
         SlimDark: "https://cdn.rawgit.com/KinOfMany/SlimDark/master/style.css?AVE",
-        Typogra: "https://cdn.rawgit.com/Nurdoidz/Typogra-Voat/master/Typogra.min.css?AVE",
+        Typogra: "https://cdn.rawgit.com/Nurdoidz/Typogra-Voat/master/Typogra.min.css?AVE"
     },
-    
+
     CustomCSSContainerCount: 0,
 
     Start: function () {
@@ -3742,11 +3952,9 @@ AVE.Modules['InjectCustomStyle'] = {
         });
         obsCustomCSS.observe();
 
-        if ($("style#custom_css").length > 0){
-            //If a custom style was added before our Observer could start, we delete it manually
-            //This will happen with slow computers or extensions (very rarely with userscripts)
-            $("style#custom_css").remove();
-        }
+        //If a custom style was added before our Observer could start, we delete it manually
+        //This will happen with slow computers or extensions (very rarely with userscripts)
+        $("style#custom_css").remove();
 
         var URL;
 
@@ -3765,8 +3973,8 @@ AVE.Modules['InjectCustomStyle'] = {
                     $("body").append('<link id="AVE_Inject_Style" rel="StyleSheet" href="' + URL + '" type="text/css">');
                 });
             } else {
-                $("head").append('<link rel="stylesheet" href="/Content/' + theme + '?HiFromAVE" type="text/css">');
-                $("head").append('<link id="AVE_Inject_Style" rel="StyleSheet" href="' + URL + '" type="text/css">');
+                $("head").append('<link rel="stylesheet" href="/Content/' + theme + '?HiFromAVE" type="text/css">')
+                         .append('<link id="AVE_Inject_Style" rel="StyleSheet" href="' + URL + '" type="text/css">');
             }
 
             //If I use the following method, someone could easily inject javascript code and mess with the user.
@@ -3785,8 +3993,8 @@ AVE.Modules['InjectCustomStyle'] = {
                 switch (this.Options.CustomStyleName.Value) {
                     case "Flatron":
                         $("div#header").ready(function () {
-                            $("#header-account").css("top", "25px");
-                            $("#header-account").css("maxHeight", "60px");
+                            $("#header-account").css("top", "25px")
+                                                .css("maxHeight", "60px");
                             $(".logged-in").css("lineHeight", "17px");
                         });
                         break;
@@ -3827,7 +4035,7 @@ AVE.Modules['InjectCustomStyle'] = {
             });
             htmlStr += '</select>';
 
-            htmlStr += '<br /><br />' + _this.Options.CustomStyleUrl.Desc + '<br /><input id="CustomStyleUrl" style="width:85%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.CustomStyleUrl.Value + '"></input>';
+            htmlStr += '<br /><br />' + _this.Options.CustomStyleUrl.Desc + '<br /><input id="CustomStyleUrl" style="width:85%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.CustomStyleUrl.Value + '">';
             htmlStr += '&nbsp; <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-unsub" id="AVE_CheckCSSFile">Check</a>';
 
             htmlStr += '<br /> <a target="_blank" href="https://userstyles.org/styles/browse/voat">Try a usertstyle<a/>: add ".css" at the end of the userstyle\'s url and paste it above.';
@@ -3851,11 +4059,11 @@ AVE.Modules['InjectCustomStyle'] = {
 
             $("a#AVE_CheckCSSFile").on("click", function () {
                 var URL = $("div.AVE_ModuleCustomInput > input#CustomStyleUrl").val();
-                
+
                 if (URL) {
                     $.ajax({
                         url: URL,
-                        cache: true,
+                        cache: true
                     }).done(function (data, status, request) {
                         if (request.getResponseHeader('Content-type').split(";")[0] === "text/css") {
                             _this.ShowInfo("It's Ok! The file can be loaded as CSS!", "#68c16b");
@@ -3864,7 +4072,7 @@ AVE.Modules['InjectCustomStyle'] = {
                         }
                     })
                     .fail(function () {
-                        _this.ShowInfo("Error while loading CSS file. Check the URL", "#68c16b");
+                        _this.ShowInfo("Error while loading CSS file. Check the URL", "#dd5454");
                     });
                 }
             });
@@ -3885,7 +4093,7 @@ AVE.Modules['InjectCustomStyle'] = {
                 $(JqId).text("");
             }, 3300);
 
-        },
+        }
     },
 
     //If the applied custom style messed everything up, so much that you can't toggle the module off:
@@ -3898,11 +4106,13 @@ AVE.Modules['InjectCustomStyle'] = {
             CustomStyleName: _this.Options.CustomStyleName.Value,
             CustomStyleUrl: _this.Options.CustomStyleUrl.Value,
             ApplyEverywhere: _this.Options.ApplyEverywhere.Value,
+            InjectLate: _this.Options.InjectLate.Value,
+            RemoveSubverseStyle: _this.Options.RemoveSubverseStyle.Value
         };
         this.SavePref(POST);
 
         window.location.reload();
-    },
+    }
 };
 /// END Inject custom style ///
 
@@ -3923,8 +4133,8 @@ AVE.Modules['ToggleCustomStyle'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
-        },
+            Value: true
+        }
     },
 
     SavePref: function (POST) {
@@ -4079,25 +4289,24 @@ AVE.Modules['HeaderFixedPos'] = {
     ID: 'HeaderFixedPos',
     Name: 'Fix header position',
     Desc: 'Set the subverse list header position as fixed.',
-    Category: 'Fixes',
+    Category: 'Misc',
+
     Index: 99,
     Enabled: false,
 
-    RunAt: 'load',
-
     Store: {},
+
+    RunAt: 'banner',
 
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
-        },
+            Value: true
+        }
     },
 
     SavePref: function (POST) {
-        var _this = this;
-
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST[this.ID]));
     },
 
     SetOptionsFromPref: function () {
@@ -4133,11 +4342,13 @@ AVE.Modules['HeaderFixedPos'] = {
     },
 
     SetAltBackground: function () {
-        if(!AVE.Modules['InjectCustomStyle'] || !AVE.Modules['InjectCustomStyle'].Enabled){return;}
+        // I don't remember why I added this exit condition...
+        //if(!AVE.Modules['InjectCustomStyle'] || !AVE.Modules['InjectCustomStyle'].Enabled){return;}
 
-        var bg, border;
+        var bg, border, JqId;
+        JqId = $("#sr-header-area");
         //Subverse list bg
-        bg = $("#sr-header-area").css("background-color");
+        bg = JqId.css("background-color");
         //If alpha channel isn't 1
         if (  bg === "transparent" ||
             bg[3] === "a" &&
@@ -4150,28 +4361,31 @@ AVE.Modules['HeaderFixedPos'] = {
             }
         }
 
-        border = $("#sr-header-area").css("borderBottomWidth") + " " +
-            $("#sr-header-area").css("borderBottomStyle") + " " +
-            $("#sr-header-area").css("borderBottomColor");
+        border = JqId.css("borderBottomWidth") + " " +
+            JqId.css("borderBottomStyle") + " " +
+            JqId.css("borderBottomColor");
 
-        $('.width-clip').css('position', 'fixed')
+        JqId = $('.width-clip');
+        JqId.css('position', 'fixed')
             .css("z-index", "1000")
             .css('border-bottom', border)//'1px solid ' + (AVE.Utils.CSSstyle == "dark" ? "#222" : "#DCDCDC"))
             .css("height", AVE.Utils.ListHeaderHeight + "px")
             .css("background-color", bg);//AVE.Utils.CSSstyle == "dark" ? "#333" : "#FFF");
 
-        $('.width-clip').find("br:last").remove();//Chrome
+        JqId.find("br:last").remove();//Chrome
 
         //If you have so many subscriptions that the "my subverses" list goes out of the screen, this is for you.
-        var li_Height = $("ul.whoaSubscriptionMenu > li > ul:first").find("li > a").outerHeight();
-        if (($(window).height() - AVE.Utils.ListHeaderHeight - li_Height) < $("ul.whoaSubscriptionMenu > li > ul:first").height()) {
-            var li_Width = $("ul.whoaSubscriptionMenu > li > ul:first").find("li > a").outerWidth();
-            var elPerCol = parseInt(($(window).height() - AVE.Utils.ListHeaderHeight) / li_Height, 10) - 1;
-            var columns = $("ul.whoaSubscriptionMenu > li > ul:first").find("li").length / elPerCol - 1;
+        JqId = $("ul.whoaSubscriptionMenu > li > ul:first");
+        var li_Height = JqId.find("li > a").outerHeight();
+        if (($(window).height() - AVE.Utils.ListHeaderHeight - li_Height) < JqId.height()) {
+            var li_Width = JqId.find("li > a").outerWidth(),
+                elPerCol = parseInt(($(window).height() - AVE.Utils.ListHeaderHeight) / li_Height, 10) - 1,
+                columns = JqId.find("li").length / elPerCol - 1,
+                el;
 
             for (var col = 0; col < columns; col++) {
                 el = $("ul.whoaSubscriptionMenu > li > ul:nth(" + col + ")").find("li:gt(" + (elPerCol - 1) + ")");
-                $('<ul style="width:' + li_Width + 'px;margin-left:' + (li_Width * (col + 1)) + 'px"></ul>')
+                $('<ul style="width:' + li_Width + 'px;margin-left:' + (li_Width * (col + 1)) + 'px;"></ul>')
                     .insertAfter("ul.whoaSubscriptionMenu > li > ul:nth(" + col + ")")
                     .append(el);
             }
@@ -4204,7 +4418,7 @@ AVE.Modules['CommentFilter'] = {
         },
         RemoveFiltered: {
             Type: 'boolean',
-            Desc: "Remove altogether the comment and child comments.",
+            Desc: "Remove the comment and its child comments altogether.",
             Value: false
         }
     },
@@ -4304,7 +4518,7 @@ AVE.Modules['CommentFilter'] = {
             { return true; }
             //else
             _this.Processed.push($(this).find("input#CommentId").val());
-            
+
             $.each(_this.Options.Filters.Value, function () {
                 found = false;
                 if (this.ApplyToSub.length === 0 || $.inArray(AVE.Utils.subverseName, this.ApplyToSub) !== -1) {
@@ -4318,7 +4532,7 @@ AVE.Modules['CommentFilter'] = {
                             } else {
                                 print("AVE: hid Comment by \"" + authorStr + "\" (kw: \"" + this + "\")");
                                 commentRef.find("div.md:first").hide();
-                                
+
                                 var commentContainer = commentRef.find("div.md:first").parent();//div.usertext-body#commentContent-id
                                 commentContainer.append('<a href="javascript:void(0)" title="Show comment" AVE="HiddenComment">Comment filtered (kw: "' + this + '"). Click to display.</a>');
                                 commentContainer.find("a[AVE='HiddenComment']")
@@ -4422,11 +4636,11 @@ AVE.Modules['CommentFilter'] = {
 };
 /// END Comment Filter ///
 
-/// Toggle display child comments:  Adds "Hide child comments" link to hide a chain of posts ///
+/// Toggle display child comments:  Adds "Hide child comments" link to hide a chain of comments ///
 AVE.Modules['ToggleChildComment'] = {
     ID: 'ToggleChildComment',
     Name: 'Toggle display child comments',
-    Desc: 'Adds "Hide child comments" link to hide a chain of posts',
+    Desc: 'Adds "Hide child comments" link to hide a chain of comments',
     Category: 'Thread',
 
     Index: 100,
@@ -4510,11 +4724,11 @@ AVE.Modules['ToggleChildComment'] = {
 };
 /// END Toggle display child comments ///
 
-/// Show submission\'s actual vote balance:  This module displays the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote.<br /><strong>Warning: the vote count will not be accurate if you change a vote already registered by Voat.</strong><br /><strong>This feature is disabled because it is still in development.</strong> ///
+/// Show submission\'s actual vote balance:  This module displays the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote. ///
 AVE.Modules['ShowSubmissionVoatBalance'] = {
     ID: 'ShowSubmissionVoatBalance',
     Name: 'Show submission\'s actual vote balance',
-    Desc: 'This module displays the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote.<br /><strong>Warning: the vote count will not be accurate if you change a vote already registered by Voat.</strong><br /><strong>This feature is disabled because it is still in development.</strong>',
+    Desc: 'This module displays the actual balance of down/upvotes for a submission you voted on, instead of only the up or downvote count depending on your vote.',
     Category: 'Subverse',
 
     Index: 100,
@@ -4522,46 +4736,33 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
 
     Store: {},
 
-    Options: { //Forced disable
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: false
+        }
     },
-    //Options: {
-    //    Enabled: {
-    //        Type: 'boolean',
-    //        Value: false,
-    //    },
-    //    // Add option to show (+1|-1) between the vote arrows and remove element in the tagline
-    //},
 
     Processed: [], //Ids of comments that have already been processed
 
-    //OriginalOptions: "",
+    SavePref: function (POST) {
+        POST = POST[this.ID];
 
-    //SavePref: function (POST) {
-    //    var _this = this;
-    //    POST = POST[this.ID];
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
+    },
+    SetOptionsFromPref: function () {
+        var _this = this;
+        var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
-    //    this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
-    //},
-
-    //ResetPref: function () {
-    //    var _this = this;
-    //    this.Options = JSON.parse(this.OriginalOptions);
-    //},
-
-    //SetOptionsFromPref: function () {
-    //    var _this = this;
-    //    var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
-
-    //    $.each(JSON.parse(Opt), function (key, value) {
-    //        _this.Options[key].Value = value;
-    //    });
-    //    this.Enabled = this.Options.Enabled.Value;
-    //},
+        $.each(JSON.parse(Opt), function (key, value) {
+            _this.Options[key].Value = value;
+        });
+        this.Enabled = this.Options.Enabled.Value;
+    },
 
     Load: function () {
         this.Store = AVE.Storage;
-        this.OriginalOptions = JSON.stringify(this.Options);
-        //this.SetOptionsFromPref();
+        this.SetOptionsFromPref();
 
         if (this.Enabled) {
             this.Start();
@@ -4572,17 +4773,17 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
         if (this.Enabled) {
             this.Start();
         }
-        //If update all will processed another time. This shouldn't happen
     },
 
     Start: function () {
         var _this = this;
 
-        $("div.score").remove();
-        $('<div style="display:block !important;" class="score unvoted" id="AVE_VoatBalance">0</div>').insertAfter("div.submission > div.midcol > div[aria-label='upvote']");
-
-        $("div#AVE_VoatBalance").each(function () {
-            _this.ShowVoteBalance($(this).parent());
+        var s = $(".submission");
+        s.each(function(index){
+            if (s[index]) {
+                _this.showUnvoted($(s[index]).find(".midcol:first"),
+                                  $(s[index]).attr("data-fullname"));
+            }
         });
 
         this.Listeners();
@@ -4590,64 +4791,52 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
 
     Listeners: function () {
         var _this = this;
-        $("div.submission > div.midcol > div[aria-label='upvote'],div[aria-label='downvote']").off();//We don't want duplicates of this listener created because of "Update"
-        $("div.submission > div.midcol > div[aria-label='upvote'],div[aria-label='downvote']").on("click", function (event) {
-            _this.ShowVoteBalance($(this).parent(), true, $(this).attr("aria-label"));
-        });
+        $("div[onclick^=\"voteUpSubmission\"],div[onclick^=\"voteDownSubmission\"]")
+            .on("click",
+                function(){
+                    var el = this;
+                    setTimeout(
+                        function(){
+                            _this.showUnvoted($(el).parent());
+                        }, 1000);
+                }
+            );
     },
 
-    ShowVoteBalance: function (target, click, voteClick) {
-        var vote, status;
-
-        vote = target.prop("class").split(" ")[1];  //Get vote status
-        
-        var newClass;
-        if (voteClick == "upvote") {
-            if (vote == "unvoted") {
-                newClass = "likes";
-            } else if (vote == "likes") {
-                newClass = "unvoted";
-            } else if (vote == "dislikes") {
-                newClass = "dislikes";
+    showUnvoted: function (m, id) {
+        if (id){
+            if ($.inArray(id, this.Processed) === -1) {
+                this.Processed.push(id);
+            } else {
+                return;
             }
-        } else if (voteClick == "downvote") {
-            if (vote == "unvoted") {
-                newClass = "dislikes";
-            } else if (vote == "likes") {
-                newClass = "likes";
-            } else if (vote == "dislikes") {
-                newClass = "unvoted";
-            }
-        } else { newClass = vote; }
-
-        status = target.find("div.score." + vote);  //Get element currently displaying the vote balance
-        vote = ["unvoted", "likes"].indexOf(vote);  //Get vote value from status(-1, 0, 1)
-
-        //If the user did not just click to vote, this means it was done in the past and the vote is counted in the up/downvote counts
-        if (!click) { vote = 0; }
-
-        //We get the current vote values from the tagline or Score tab in a thread
-        var up, down;
-        if (AVE.Utils.currentPageType !== "thread") {
-            up = parseInt(target.parent().find("span.commentvotesratio > span.post_upvotes").text()) || 0;
-            down = parseInt(target.parent().find("span.commentvotesratio > span.post_downvotes").text()) || 0;
-        } else {
-            var val = $("div.submission-score-box:nth-child(6)").find("b");
-            up = parseInt(val.eq(1).text()) || 0;
-            down = -1 * parseInt(val.eq(2).text()) || 0;
         }
 
-        print("Vote: " + vote + ", up:  " + up + ", down: " + down + " => " + (vote + up + down));
-        print("score " + newClass);
+        if(m.length>0) {
+            var u = m.find(".score.unvoted"),
+                l = m.find(".score.likes"),
+                d = m.find(".score.dislikes");
 
-        var voteEl = target.find("div#AVE_VoatBalance");
-        voteEl.text(vote + up + down);
-        voteEl.attr("class", "score " + newClass);
+            if (m.find(".arrow-upvoted").length > 0) {
+                u.css("color", l.css('color'));
+            } else if (m.find(".arrow-downvoted").length > 0) {
+                u.css("color", d.css('color'));
+            } else {
+                u.css("color", "");
+            }
 
-
-        print(voteEl.length + " - " + voteEl.is(":hidden")+ " - "+voteEl.text());
-
+            u.text(l.text() - d.text());
+            u.css("display", "block");
+            l.css("display", "none");
+            d.css("display", "none");
+        }
     },
+
+    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+        html: function () {
+            return 'Feature written by <a href="https://voat.co/u/dubbelnougat">/u/dubbelnougat</a>';
+        }
+    }
 };
 /// END Show submission\'s actual vote balance ///
 
@@ -4704,14 +4893,14 @@ AVE.Modules['ThemeSwitcher'] = {
                     type: "POST",
                     url: "/account/togglenightmode/",
                     complete: function () {
-                        print("AVE: ThemeSwichter > toggled night mode");
+                        print("AVE: ThemeSwichter > toggled theme style");
                         var prevstyle = AVE.Utils.CSSstyle;
                         prevstyle = prevstyle.substr(0,1).toUpperCase() + prevstyle.substr(1, prevstyle.length);
 
                         var newstyle = prevstyle === "Dark" ? "Light" : "Dark";
                         var csslink = $('link[rel="stylesheet"][href^="/Content/'+prevstyle+'"]');
                         csslink.attr("href", csslink.attr("href").replace(prevstyle, newstyle));
-                        $("body").attr("class", newstyle);
+                        $("body").attr("class", newstyle.toLowerCase());
 
                         AVE.Utils.CSSstyle = AVE.Utils.CSS_Style();
                         if (AVE.Modules['HeaderFixedPos'] && AVE.Modules['HeaderFixedPos'].Enabled){
@@ -4727,11 +4916,11 @@ AVE.Modules['ThemeSwitcher'] = {
 };
 /// END Theme switcher ///
 
-/// Never Ending Voat:  Browse an entire subverse in one page. ///
+/// Never Ending Voat:  Browse voat as one page, loading more posts when you hit the bottom. ///
 AVE.Modules['NeverEndingVoat'] = {
     ID: 'NeverEndingVoat',
     Name: 'Never Ending Voat',
-    Desc: 'Browse an entire subverse in one page.',
+    Desc: 'Browse voat as one page, loading more posts when you hit the bottom.',
     Category: 'Subverse',
 
     Index: 100,
@@ -4770,6 +4959,8 @@ AVE.Modules['NeverEndingVoat'] = {
 
     OriginalOptions: "",
 
+    NSFWlink: false,
+
     SavePref: function (POST) {
         var _this = this;
         POST = POST[_this.ID];
@@ -4797,7 +4988,7 @@ AVE.Modules['NeverEndingVoat'] = {
         this.OriginalOptions = JSON.stringify(this.Options);
         this.SetOptionsFromPref();
 
-        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse"]) === -1 ||
+        if ($.inArray(AVE.Utils.currentPageType, ["frontpage", "set", "subverse", "user-comments", "user-submissions"]) === -1 ||
             $("div.pagination-container").find("li.btn-whoaverse-paging").length === 0) {
             this.Enabled = false;
         }
@@ -4810,9 +5001,9 @@ AVE.Modules['NeverEndingVoat'] = {
 
     Labels: ["Load more",
              "Sit tight...",
-             "Sorry, I couldn't find more content",
+             "Sorry, I couldn't find more content.",
              "Something went wrong. Maybe try again?",
-             "An error occured. No point in trying again I'm afraid"],
+             "An error occured. No point in trying again right now I'm afraid."],
     PostsIDs: [],
     SepStyle: '',
     currentPage: 0,
@@ -4820,12 +5011,10 @@ AVE.Modules['NeverEndingVoat'] = {
     Start: function () {
         var _this = this;
         $("div.submission[class*='id-']").each(function () {
-            _this.PostsIDs.push($(this).attr("data-fullname"));
+            _this.PostsIDs.push($(this).attr("class").split(" ")[1]);
         });
 
-        this.currentPage = window.location.href.match(/\?page\=([0-9]*)/);
-        if (!this.currentPage) { this.currentPage = 0; }
-        else { this.currentPage = parseInt(this.currentPage[1], 10); }
+        this.currentPage = parseInt(AVE.Utils.POSTinfo["page"]) || 0;
 
         this.AppendToPage();
         this.Listeners();
@@ -4835,6 +5024,14 @@ AVE.Modules['NeverEndingVoat'] = {
         if ($("a#AVE_loadmorebutton").length === 0 && $("div.pagination-container").find("li.btn-whoaverse-paging").length > 0) {
             var LoadBtn = '<a href="javascript:void(0)" style="margin: 5px 0px;" class="btn-whoaverse btn-block" id="AVE_loadmorebutton">' + this.Labels[0] + '</a>';
             $("div.pagination-container").html(LoadBtn);
+        }
+
+        var sitetable = $("div.sitetable");
+        var nsfwlink = $("div.sitetable > a[href='/randomnsfw']");
+        if (nsfwlink.length > 0){
+            $("<div id='AVE_randomlinks'></div>").appendTo(sitetable);
+            sitetable.contents().slice(-5, -2).appendTo("div#AVE_randomlinks");
+            this.NSFWlink = true;
         }
     },
 
@@ -4866,9 +5063,10 @@ AVE.Modules['NeverEndingVoat'] = {
             nextPageURL = "https://" + window.location.hostname + window.location.pathname + "?page=" + (this.currentPage + 1);
         }
 
-        if($.inArray('guest-frontpage', AVE.Utils.peculiarities) !== -1){
-            nextPageURL += "&frontpage=guest";
-        }
+        $.each(AVE.Utils.POSTinfo, function (key, val) {
+            if (key.toLowerCase() === "page"){return true;}
+            nextPageURL +=  "&"+key+"="+val;
+        });
 
         print('AVE: loading page > ' + nextPageURL);
         $.ajax({
@@ -4876,7 +5074,8 @@ AVE.Modules['NeverEndingVoat'] = {
             cache: false,
         }).done(function (html) {
             var error = "sticky";
-            if ($(html).find("div.submission[class*='id-']").length === 0) { $("a#AVE_loadmorebutton").text(_this.Labels[2]); return false; } //catchall for error pages
+            var content = $(html).find("div[class*='id-'][data-downs][data-ups]");
+            if (content.length === 0) { $("a#AVE_loadmorebutton").text(_this.Labels[4]); return false; } //catchall for error pages
             _this.currentPage++;
             //print($(html).find("div.submission[class*='id-']").length);
 
@@ -4885,26 +5084,30 @@ AVE.Modules['NeverEndingVoat'] = {
                 $("div.side").css("z-index", "100");
             }
 
-            $("div.sitetable").append('<div style="' + _this.SepStyle + '" id="AVE_page_' + (_this.currentPage) + '" class="AVE_postSeparator">Page ' + (_this.currentPage) + '</div>');
+            var sitetable = $("div.sitetable");
+            if (sitetable.length === 0){ sitetable = $("div.content-no-margin");}
+            sitetable.append('<div style="' + _this.SepStyle + '" id="AVE_page_' + (_this.currentPage) + '" class="AVE_postSeparator">Page ' + (_this.currentPage) + '</div>');
 
             //$("div.sitetable.linklisting").append('<div class="AVE_postSeparator alert-singlethread">Page ' + (_this.currentPage) + '</div>');
-            $(html).find("div.submission[class*='id-']").each(function () {
-                if ($.inArray($(this).attr("data-fullname"), _this.PostsIDs) === -1) {
+            var tempID;
+            content.each(function () {
+                tempID = $(this).attr("class").split(" ")[1];
+                if ($.inArray(tempID, _this.PostsIDs) === -1) {
                     error = null;
-                    _this.PostsIDs.push($(this).attr("data-fullname"));
-                    $("div.sitetable").append($(this));
+                    _this.PostsIDs.push(tempID);
+                    sitetable.append($(this));
                 } else if (_this.Options.DisplayDuplicates.Value && !$(this).hasClass("stickied")) {
-                    $("div.sitetable").append($(this));
+                    sitetable.append($(this));
                     $(this).css("opacity", "0.3");
                 } else if (!$(this).hasClass("stickied")){
                     error = true;
                 }
             });
-            
+
             if (!error) {
                 $("a#AVE_loadmorebutton").text(_this.Labels[0]);
             } else if (error === "sticky") {
-                //In a sub a page with no content will still show the sticky.
+                //In a sub, a page with no content will still show the sticky.
                 $("a#AVE_loadmorebutton").text(_this.Labels[2]);
                 $("div.AVE_postSeparator#AVE_page_" + (_this.currentPage)).remove();
                 _this.currentPage--;
@@ -4917,13 +5120,19 @@ AVE.Modules['NeverEndingVoat'] = {
                 return;
             }
 
+            // Update mail info
+            _this.UpdateMailInfo($(html).find("span.notification-container > a#mail").attr("class"),
+                $(html).find("span#mailcounter.notification-counter").text());
+            _this.UpdateCPInfo($(html).find("a#scp.userkarma").text(),
+                               $(html).find("a#ccp.userkarma").text());
+
             // Add expando links to the new submissions
+            // from https://github.com/voat/voat/blob/master/Voat/Voat.UI/Scripts/voat.ui.js#L163
             if (!window.wrappedJSObject || !window.wrappedJSObject.UI) { //Chrome
                 location.assign("javascript:UI.ExpandoManager.execute();void(0)");
-            } else {//firefox, because it stopped working with the location hack above
+            } else {//Firefox, because it stopped working with the location hack above
                 window.wrappedJSObject.UI.ExpandoManager.execute();
             }
-            // from https://github.com/voat/voat/blob/master/Voat/Voat.UI/Scripts/voat.ui.js#L190
 
             //Ugly, isn't it?
             if (_this.Options.ExpandNewMedia.Value) {
@@ -4933,18 +5142,56 @@ AVE.Modules['NeverEndingVoat'] = {
                     }
                 }
             }
-            
+
             setTimeout(AVE.Init.UpdateModules, 500);
             window.location.hash = 'p=' + _this.currentPage;
 
-            //Next lines are needed because the front page (^voat.co$) is a bit different from subverses' pages. div.pagination-container isn't normally inside div.sitetable 
-            if ($("div.sitetable").find("div.pagination-container").length > 0) {
-                $("div.pagination-container").appendTo($("div.sitetable"));
-                $("div.sitetable > a[href='/random']").appendTo($("div.sitetable"));
+            //Next lines are needed because the front page (^voat.co$) is a bit different from a subverse page. div.pagination-container isn't normally inside div.sitetable
+            if (sitetable.find("div.pagination-container").length > 0) {
+                $("div.pagination-container").appendTo(sitetable);
+                if (_this.NSFWlink){
+                    $("div#AVE_randomlinks").appendTo(sitetable);
+                } else { // This default case is needed when the nsfwlink isn't displayed (as it used to be if the nsfw option was disabled in the user preferences)
+                    $("div.sitetable > a[href='/random']").appendTo(sitetable);
+                }
             }
         }).fail(function () {
             $("a#AVE_loadmorebutton").text(_this.Labels[3]);
         });
+    },
+
+    UpdateMailInfo: function (newmail, newcount) {
+        var hasmail = $("span.notification-container > a#mail"),
+            mailcounter = $("span#mailcounter.notification-counter"),
+            oldmail = hasmail.attr("class"),
+            oldcount = mailcounter.text();
+
+        if (oldmail !== newmail){
+            hasmail.removeClass(oldmail)
+                   .addClass(newmail);
+            if (newmail === "havemail"){
+                mailcounter.show();
+            } else {
+                mailcounter.hide();
+            }
+        }
+        if (oldcount !== newcount){
+            mailcounter.text(newcount);
+        }
+    },
+
+    UpdateCPInfo: function (newSCP, newCCP) {
+        var SCP = $("a#scp.userkarma"),
+            CCP = $("a#ccp.userkarma"),
+            oldSCP = SCP.text(),
+            oldCCP = CCP.text();
+
+        if (newSCP !== oldSCP){
+            SCP.text(newSCP);
+        }
+        if (newCCP !== oldCCP){
+            CCP.text(newCCP);
+        }
     },
 
     AppendToPreferenceManager: {
@@ -4958,16 +5205,16 @@ AVE.Modules['NeverEndingVoat'] = {
                 htmlStr += '<input id="' + this + '" ' + (_this.Options[this].Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="' + this + '"> ' + _this.Options[this].Desc + '</label><br />';
             });
             return htmlStr;
-        },
-    },
+        }
+    }
 };
 /// END Never Ending Voat ///
 
-/// Reply with quote:  Insert selected/highlighted text (in a comment) into the reply box toggled by "reply". ///
+/// Reply with quote:  Insert selected/highlighted text in a comment into the reply box toggled by "reply". ///
 AVE.Modules['ReplyWithQuote'] = {
     ID: 'ReplyWithQuote',
     Name: 'Reply with quote',
-    Desc: 'Insert selected/highlighted text (in a comment) into the reply box toggled by "reply".',
+    Desc: 'Insert selected/highlighted text in a comment into the reply box toggled by "reply".',
     Category: 'Thread',
 
     Enabled: false,
@@ -5085,17 +5332,19 @@ AVE.Modules['ReplyWithQuote'] = {
 };
 /// END Reply with quote ///
 
-/// Set Voat container\'s width:  By default, Voat shows a margin on both sides of the container. You can modify this by setting a custom width as a percentage of the available horizontal space. ///
+/// Set Voat page width:  By default, Voat shows a margin on both sides of the page. You can modify this by setting a custom width as a percentage of the available horizontal space. ///
 AVE.Modules['FixContainerWidth'] = {
     ID: 'FixContainerWidth',
-    Name: 'Set Voat container\'s width',
-    Desc: 'By default, Voat shows a margin on both sides of the container. You can modify this by setting a custom width as a percentage of the available horizontal space.',
-    Category: 'Fixes',
+    Name: 'Set Voat page width',
+    Desc: 'By default, Voat shows a margin on both sides of the page. You can modify this by setting a custom width as a percentage of the available horizontal space.',
+    Category: 'Misc',
 
     Index: 100,
     Enabled: false,
 
     Store: {},
+
+    RunAt: "container",
 
     Options: {
         Enabled: {
@@ -5110,7 +5359,7 @@ AVE.Modules['FixContainerWidth'] = {
         Justify: {
             Type: 'boolean',
             Value: false
-        },
+        }
     },
 
     OriginalOptions: "",
@@ -5181,13 +5430,141 @@ AVE.Modules['FixContainerWidth'] = {
         },
     },
 };
-/// END Set Voat container\'s width ///
+/// END Set Voat page width ///
 
-/// Submission Filter:  Remove submissions which title matches one of the filters. Additionally, you can specify a subverse, where a filter will only be applied. ///
+/// unsecure HTTP warning:  This module show a warning for submissions that link to HTTP URL instead of HTTPS(ecure) ///
+AVE.Modules['HttpWarning'] = {
+    ID: 'HttpWarning',
+    Name: 'unsecure HTTP warning',
+    Desc: 'This module show a warning for submissions that link to HTTP URL instead of HTTPS(ecure)',
+    Category: 'Subverse',
+
+    Index: 100,
+    Enabled: false,
+
+    Store: {},
+
+    RunAt: "container",
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: true
+        },
+        WarningIcon: {
+            Type: 'boolean',
+            Desc: "Display a warning icon before HTTP submission links",
+            Value: true
+        },
+        ModifyStyle: {
+            Type: 'boolean',
+            Desc: "Change the titles' style with the CSS values below",
+            Value: false
+        },
+        WarningStyle: {
+            Type: 'array',
+            Value: ['color: #e0baba;', //dark
+                    'color: #d85858;'] //light
+        }
+    },
+
+    OriginalOptions: "",
+
+    SavePref: function (POST) {
+        var style = AVE.Utils.CSSstyle === "dark" ? 0 : 1;
+        POST = POST[this.ID];
+
+        this.Options.WarningStyle.Value[style] = POST.WarningStyle;
+        POST.WarningStyle = this.Options.WarningStyle.Value;
+
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
+    },
+
+    ResetPref: function () {
+        this.Options = JSON.parse(this.OriginalOptions);
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = this;
+        var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
+
+        $.each(JSON.parse(Opt), function (key, value) {
+            _this.Options[key].Value = value;
+        });
+        this.Enabled = this.Options.Enabled.Value;
+    },
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.OriginalOptions = JSON.stringify(this.Options); //If ResetPref is used
+        this.SetOptionsFromPref();
+
+        if (this.Enabled) {
+            this.Start();
+        }
+    },
+
+    Start: function () {
+        this.AppendToPage();
+    },
+
+    AppendToPage: function () {
+        if (this.Options.ModifyStyle.Value){
+            AVE.Utils.AddStyle('a.title.may-blank[href^="http:"] {' + this.Options.WarningStyle.Value[AVE.Utils.CSSstyle === "dark" ? 0 : 1] + '}');
+        }
+        if (this.Options.WarningIcon.Value){
+            AVE.Utils.AddStyle( 'a.title.may-blank[href^="http:"]:before {' +
+                '   content: "";' +
+                '   background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20style%3D%22fill%3A%23'+'d85858'+'%3B%22%20d%3D%22M7%2C0L0%2C12h14L7%2C0z%20M7%2C11c-0.553%2C0-1-0.447-1-1s0.447-1%2C1-1c0.553%2C0%2C1%2C0.447%2C1%2C1S7.553%2C11%2C7%2C11z%20M7%2C8%20C6.447%2C8%2C6%2C7.553%2C6%2C7V5c0-0.553%2C0.447-1%2C1-1c0.553%2C0%2C1%2C0.447%2C1%2C1v2C8%2C7.553%2C7.553%2C8%2C7%2C8z%22%2F%3E%3C%2Fsvg%3E");'+
+                '   width: 14px;'+
+                '   height: 14px;'+
+                '   background-repeat: no-repeat;'+
+                '   background-position: center;' +
+                '   display: inline-block;' +
+                '   margin-right: 5px;' +
+                '   vertical-align: middle;'+
+                '}');
+        }
+    },
+
+    AppendToPreferenceManager: {
+
+        html: function () {
+            var _this = AVE.Modules['HttpWarning'],
+                style = AVE.Utils.CSSstyle === "dark" ? 0 : 1;
+            var htmlStr = '';
+
+            htmlStr += '<input id="WarningIcon" ' + (_this.Options.WarningIcon.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="WarningIcon"> ' + _this.Options.WarningIcon.Desc + '</label><br />';
+            htmlStr += '<input id="ModifyStyle" ' + (_this.Options.ModifyStyle.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ModifyStyle"> ' + _this.Options.ModifyStyle.Desc + '</label><br />';
+
+            htmlStr += '<div style="display:inline;padding-left:15px;padding-right:15px;margin-right:10px;font-weight: bold;" id="Demo_WarningStyle">TEST</div>';
+            htmlStr += '<input style="font-size:12px;display:inline;width: 65%;padding:0px;" class="form-control" type="text" Module="' + _this.ID + '" id="WarningStyle" Value="'+_this.Options.WarningStyle.Value[style]+'"/> - Warning style values<br />';
+
+            return htmlStr;
+        },
+        callback: function () {
+            var _this = AVE.Modules['HttpWarning'];
+            $("input[id='WarningStyle'][Module='" + _this.ID + "']").on("keyup", function () {
+                var tmp = [];
+                var demo = $("div#Demo_WarningStyle");
+                demo.attr("style", "display:inline;padding-left:15px;padding-right:15px;margin-right:10px;font-weight: bold;");
+                $.each($("input[id='WarningStyle'][Module='" + _this.ID + "']").val().split(";"), function (idx, val) {
+                    tmp = $.trim(val).split(":");
+                    if (tmp.length === 2) {
+                        demo.css(tmp[0], tmp[1]);
+                    }
+                });
+            }).trigger("keyup");
+        }
+    }
+};
+/// END unsecure HTTP warning ///
+
+/// Submission Filter:  Remove submissions whose titles matche one of the filters. Additionally, filters can be applied to a specific subverse only. ///
 AVE.Modules['SubmissionFilter'] = {
     ID: 'SubmissionFilter',
     Name: 'Submission Filter',
-    Desc: 'Remove submissions which title matches one of the filters. Additionally, you can specify a subverse, where a filter will only be applied.',
+    Desc: 'Remove submissions whose titles matche one of the filters. Additionally, filters can be applied to a specific subverse only.',
     Category: 'Subverse',
 
     Index: 100,
@@ -5387,11 +5764,195 @@ AVE.Modules['SubmissionFilter'] = {
 };
 /// END Submission Filter ///
 
-/// Ignore users:  Lets you tag users as Ignored. Replacing all their comments\' content with [Ignored User]. ///
+/// Simple in-page CSS editor:  Edit your custom CSS stylesheets from within the page itself (created by <a href="https://voat.co/u/j_">/u/j_</a> [<a href="https://voat.co/v/CustomizingVoat/comments/92886">cf.</a>], adapted as a userscript by <a href="https://voat.co/u/dubbelnougat">/u/dubbelnougat</a>) ///
+AVE.Modules['CSSEditor'] = {
+    ID: 'CSSEditor',
+    Name: 'Simple in-page CSS editor',
+    Desc: 'Edit your custom CSS stylesheets from within the page itself (created by <a href="https://voat.co/u/j_">/u/j_</a> [<a href="https://voat.co/v/CustomizingVoat/comments/92886">cf.</a>], adapted as a userscript by <a href="https://voat.co/u/dubbelnougat">/u/dubbelnougat</a>)',
+    Category: 'ModTools',
+
+    Index: 100,
+    Enabled: false,
+
+    Store: {},
+
+    RunAt: "ready",
+
+    /*
+        Automatically open the mod stylesheet page with the new css?
+     */
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: false
+        },
+        Size: {
+            Type: "array[2]", //Width, Height
+            Desc: 'Set the size of the editor panel (in pixel [px] or percentage [%]):',
+            Value: ["400px", "500px"]
+        },
+        Position: {
+            Type: 'array[2]', // Vertically, Horizontally
+            Desc: 'Set the position of the editor panel:',
+            Value: ["bottom", "left"],
+            All: [ { "top": "top:0", "bottom": "bottom:0"},
+                   { "left": "left:0", "right": "right:0"} ]
+        },
+        AllowEverywhere: {
+            Type: 'boolean',
+            Desc: 'Enable this module and show the "CSS Editor" button everywhere, not only in subverse pages.',
+            Value: false
+        },
+        RelocateButton: {
+            Type: 'boolean',
+            Desc: 'Display the "CSS Editor" button in the banner instead of in the side panel.',
+            Value: false
+        }
+    },
+
+    OriginalOptions: "",
+
+    SavePref: function (POST) {
+        var app;
+        POST = POST[this.ID];
+
+        POST.Size = ["", ""];
+        if (POST.hasOwnProperty("sizeW")){
+            app = POST.sizeW.indexOf("px") > 0 || POST.sizeW.indexOf("%") > 0;
+            POST.Size[0] = POST.sizeW;
+            if (!app){ POST.Size[0] += "px"; }
+        }
+        if (POST.hasOwnProperty("sizeH")){
+            app = POST.sizeH.indexOf("px") > 0 || POST.sizeH.indexOf("%") > 0;
+            POST.Size[1] = POST.sizeH;
+            if (!app){
+                POST.Size[1] += "px";
+            }
+        }
+
+        POST.Position = [POST.posV, POST.posH];
+
+        // we can remove properties safely even if they don't exit
+        delete POST.sizeW;
+        delete POST.sizeH;
+        delete POST.posV;
+        delete POST.posH;
+
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
+    },
+
+    ResetPref: function () {
+        this.Options = JSON.parse(this.OriginalOptions);
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = this;
+        var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
+
+        $.each(JSON.parse(Opt), function (key, value) {
+            _this.Options[key].Value = value;
+        });
+        this.Enabled = this.Options.Enabled.Value;
+    },
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.OriginalOptions = JSON.stringify(this.Options);
+        this.SetOptionsFromPref();
+
+        if (!this.Options.AllowEverywhere.Value) {
+            if ($.inArray(AVE.Utils.currentPageType, ["subverse", "thread"]) === -1) {
+                this.Enabled = false;
+            }
+        }
+
+        if (this.Enabled) {
+            this.Start();
+        }
+    },
+
+    Start: function () {
+        this.AppendToPage();
+        this.Listeners();
+    },
+
+    AppendToPage: function () {
+        var button;
+        if (this.Options.RelocateButton.Value || $.inArray(AVE.Utils.currentPageType, ["subverse", "thread"]) === -1){
+            button = '<li class="disabled"><a class="contribute submit-text" id="AVE_CSSEditor_button" style="cursor:pointer;">CSS Editor</a></li>';
+            $(button).appendTo("ul.tabmenu");
+        } else {
+            button = '<div class="spacer"><a class="btn-whoaverse btn-block" id="AVE_CSSEditor_button" style="cursor:pointer;">CSS Editor</a></div>';
+            $(button).insertBefore($(".titlebox:last").parent());
+        }
+    },
+
+    Listeners: function () {
+        var _this = this,
+            sel = "style#custom_css";
+        $("a#AVE_CSSEditor_button").off().on("click", function () {
+            var s = $(sel);
+            if (s.hasClass("AVE_custom_css_editable")) {
+                if (s.is(":hidden")){ s.show(); } else { s.hide(); }
+            } else {
+                if (s.length === 0)// This element may have been removed by one of the style modules
+                { $("body").append('<style id="custom_css"></style>'); s = $(sel); }
+                var Vpos = _this.Options.Position.All[0][_this.Options.Position.Value[0]].split(":"),
+                    Hpos = _this.Options.Position.All[1][_this.Options.Position.Value[1]].split(":");
+
+                s.attr("style", "display:block;position:fixed;z-index:1000;min-height:"+_this.Options.Size.Value[1]+";width:"+_this.Options.Size.Value[0]+";background:rgba(255,255,255,.9);color:#000;opacity:.5;font:10px/1.1 monospace;white-space:pre;overflow:scroll;padding:4px;-webkit-user-modify:read-write-plaintext-only;")
+                 .css(Vpos[0], Vpos[1])
+                 .css(Hpos[0], Hpos[1])
+                 .attr("contentEditable", true)
+                 .attr("onfocus", "this.style.opacity=1")
+                 .attr("onblur", "this.style.opacity=.35")
+                 .addClass("AVE_custom_css_editable")
+                 .on("keyup", function (e) {
+                     if (e.which === 27) {s.hide().trigger("blur");} //Escape key
+                });
+            }
+            s.focus();
+        });
+
+    },
+
+    AppendToPreferenceManager: {
+        html: function () {
+            var _this = AVE.Modules['CSSEditor'],
+                htmlStr = '';
+
+            htmlStr += '<span>'+_this.Options.Position.Desc+'</span><br>';
+            htmlStr += '<span style="margin-left:10px;">Vertical: </span><select id="posV">';
+            $.each(Object.keys(_this.Options.Position.All[0]), function () {
+                htmlStr += '<option ' + (_this.Options.Position.Value[0] == this ? "selected" : "") + ' value="' + this + '">' + this + '</option>';
+            });
+            htmlStr += '</select><br>';
+
+            htmlStr += '<span style="margin-left:10px;">Horizontal: </span><select id="posH">';
+            $.each(Object.keys(_this.Options.Position.All[1]), function () {
+                htmlStr += '<option ' + (_this.Options.Position.Value[1] == this ? "selected" : "") + ' value="' + this + '">' + this + '</option>';
+            });
+            htmlStr += '</select><br><br>';
+
+            htmlStr += '<span>'+_this.Options.Size.Desc+'</span><br>';
+            htmlStr += '<input style="width: 60px;margin-left:10px;" id="sizeW" type="text" name="sizeW" value="'+_this.Options.Size.Value[0]+'" min="1" max="5000"><label style="display:inline;margin-left:5px;" for="sizeW">Width</label><br>';
+            htmlStr += '<input style="width: 60px;margin-left:10px;" id="sizeH" type="text" name="sizeH" value="'+_this.Options.Size.Value[1]+'" min="1" max="5000"><label style="display:inline;margin-left:5px;" for="sizeH">Height</label><br><br>';
+
+            htmlStr += '<input id="AllowEverywhere" ' + (_this.Options.AllowEverywhere.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="AllowEverywhere"> ' + _this.Options.AllowEverywhere.Desc + '</label><br>';
+            htmlStr += '<input id="RelocateButton" ' + (_this.Options.RelocateButton.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="RelocateButton"> ' + _this.Options.RelocateButton.Desc + '</label>';
+
+            return htmlStr;
+        }
+    }
+};
+/// END Simple in-page CSS editor ///
+
+/// Ignore users:  Lets you tag users as Ignored. When tagged, a user\'s comments will be replaced with [Ignored User]. ///
 AVE.Modules['IgnoreUsers'] = {
     ID: 'IgnoreUsers',
     Name: 'Ignore users',
-    Desc: 'Lets you tag users as Ignored. Replacing all their comments\' content with [Ignored User].',
+    Desc: 'Lets you tag users as Ignored. When tagged, a user\'s comments will be replaced with [Ignored User].',
     Category: 'General',
 
     Index: 100, //must be called after the UserTagging module.
@@ -5406,9 +5967,9 @@ AVE.Modules['IgnoreUsers'] = {
         },
         HardIgnore: {
             Type: 'boolean',
-            Desc: 'Remove entirely from the page posts and chain comments made by the ignored users.',
+            Desc: 'Entirely remove posts and chain comments made by ignored users.',
             Value: false
-        },
+        }
     },
 
     IgnoreList: [],
@@ -5541,231 +6102,12 @@ AVE.Modules['IgnoreUsers'] = {
 };
 /// END Ignore users ///
 
-/// User-block fixes:  Minor fixes to the userblock. ///
-AVE.Modules['UserInfoFixedPos'] = {
-    ID: 'UserInfoFixedPos',
-    Name: 'User-block fixes',
-    Desc: 'Minor fixes to the userblock.',
-    Category: 'Fixes',
-
-    Index: 100,
-    Enabled: false,
-
-    RunAt: 'load',
-
-    Store: {},
-
-    Options: {
-        Enabled: {
-            Type: 'boolean',
-            Value: true,
-        },
-        DivideBlock: {
-            Type: 'boolean',
-            Value: false,
-        },
-        ToggleBlock: {
-            Type: 'boolean',
-            Value: true,
-        },
-        PersistentHide: {
-            Type: 'boolean',
-            Value: false,
-        },
-        HidePoints: {
-            Type: 'boolean',
-            Value: false,
-        },
-    },
-
-    SavePref: function (POST) {
-        var _this = this;
-
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
-    },
-
-    SetOptionsFromPref: function () {
-        var _this = this;
-        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
-
-        if (Opt != undefined) {
-            Opt = JSON.parse(Opt);
-            $.each(Opt, function (key, value) {
-                _this.Options[key].Value = value;
-            });
-        }
-        _this.Enabled = _this.Options.Enabled.Value;
-    },
-
-    Load: function () {
-        this.Store = AVE.Storage;
-        this.SetOptionsFromPref();
-
-        if (this.Enabled) {
-            this.Start();
-        }
-    },
-
-    bg: "",
-
-    Start: function () {
-        if (!AVE.Utils.ListHeaderHeight) { AVE.Utils.ListHeaderHeight = $('#sr-header-area').height(); }
-
-        var headerAccountPos = $('#header-account').offset().top;
-        this.SetAccountHeaderPosAsFixed(headerAccountPos);
-
-        if (this.Options.DivideBlock.Value && $("div#header-account > div.logged-in").length > 0) {
-            //Align header-account's content
-            $("div#header-account > div.logged-in").css("text-align", "center");
-            //Add a line return before the icons
-            $("<br />").insertAfter("div#header-account > div.logged-in > span.separator:first");
-            //Remove the, now useless, separator
-            $("div#header-account > div.logged-in > span.separator:first").remove();    
-        }
-
-        if (this.Options.ToggleBlock.Value && $('#header-account:has(div.logged-in)').length > 0) {
-            //Add arrow icon element
-            $('#header-account').append('<div title="Hide user block" class="expanded" id="AVE_ToggleUserBlock"></div>');
-
-            this.Listeners();
-        }
-
-        if (this.Options.PersistentHide.Value) {
-            $("div#AVE_ToggleUserBlock").click();
-        }
-
-        if (this.Options.HidePoints.Value){
-            var html = $("a[title='Profile']")[0].outerHTML;
-            $("span.user:first").html(html);
-        }
-
-        this.SetAltBackground();
-
-        AVE.Utils.AddStyle('\
-div#AVE_ToggleUserBlock{\
-    background-position: center center;\
-    background-repeat: no-repeat;\
-    border: 1px solid #' + (AVE.Utils.CSSstyle === "dark" ? "222" : "DCDCDC") + ';\
-    border-radius: 1em;\
-    cursor:pointer;\
-    float:right;\
-    width: 14px;\
-    height: 14px;\
-}\
-div#AVE_ToggleUserBlock.expanded{\
-    /* SVG from Jquery Mobile Icon Set */\
-    background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpolygon%20style%3D%22fill%3A%23DDD%3B%22%20points%3D%223.404%2C2.051%208.354%2C7%203.404%2C11.95%205.525%2C14.07%2012.596%2C7%205.525%2C-0.071%20%22%2F%3E%3C%2Fsvg%3E");\
-}\
-div#AVE_ToggleUserBlock.collapsed{\
-    /* SVG from Jquery Mobile Icon Set */\
-    background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpolygon%20fill%3D%22%23DDD%22%20points%3D%2214%2C5%209%2C5%209%2C0%205%2C0%205%2C5%200%2C5%200%2C9%205%2C9%205%2C14%209%2C14%209%2C9%2014%2C9%20%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E");\
-}\
-.logged-in{\
-    margin-bottom:2px;\
-}\
-div#header-account > div.logged-in{\
-    background: ' + this.bg + '\
-}\
-/* Next is a fix for some custom styles */\
-div#container {z-index: 1;}\
-div#header-container {z-index: 2;}\
-.modal-backdrop.in {display: none;}\
-.modal#linkFlairSelectModal{top: 140px;}');
-    },
-
-    SetAltBackground: function () {
-        if(!AVE.Modules['InjectCustomStyle'] || !AVE.Modules['InjectCustomStyle'].Enabled){return;}
-
-        this.bg = $("div#header-container").css("background-color") + " " +
-                $("div#header-container").css("background-image") + " " +
-                $("div#header-container").css("background-repeat") + " " +
-                $("div#header-container").css("background-attachment") + " " +
-                $("div#header-container").css("background-position") + " " +
-                $("div#header-container").css("background-clip") + " " +
-                $("div#header-container").css("background-origin");
-
-        if ($("div#header-container").css("background-color") === "transparent" &&
-            $("div#header-container").css("background-image") === "none") {
-            this.bg = $("div#header[role='banner']").css("background-color");
-            if (this.bg === "transparent") {
-                this.bg = $("#logged-in").css("background-color");
-
-                if (this.bg === "transparent" &&
-                    this.bg === $("[title='Profile']").css("color")) {
-                    $("[title='Profile']").css("color");
-                    this.bg = $("#header-account").css("background-color");
-
-                    if (this.bg === "transparent") {
-                        this.bg = $("div#header[role='banner']").css("background-color");
-
-                        if (this.bg === "transparent") {
-                            //If there is no colour nor any image set, we set a default value
-                            this.bg = AVE.Utils.CSSstyle === "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
-                        }
-                    }
-                }
-            }
-        }
-    },
-
-    SetAccountHeaderPosAsFixed: function () {
-        $('div#header-account').css('position', 'fixed')
-                               .css('top', AVE.Utils.ListHeaderHeight + "px")
-                               .css('right', '0')
-                               .css("text-align", "center")
-                               .css("bottom", "auto");
-        //$('div#header-account > div.logged-in').css("background", this.bg);
-    },
-
-    Listeners: function () {
-        $("div#AVE_ToggleUserBlock").on("click", function () {//
-            if ($("div#AVE_ToggleUserBlock").hasClass("collapsed")) {//If user block is already hidden
-                //Show expand icon
-                $("div#AVE_ToggleUserBlock").removeClass("collapsed");
-                $("div#AVE_ToggleUserBlock").addClass("expanded");
-                //Change element's title
-                $("div#AVE_ToggleUserBlock").attr("title", "Hide user block");
-                //Show user block
-                $('div#header-account > div.logged-in,div.logged-out').show();
-                //Restore #header-account's default size
-                $('div#header-account').css("width", "")
-                                       .css("height", "");
-            } else {//If user block is visible
-                //Show collapse icon
-                $("div#AVE_ToggleUserBlock").removeClass("expanded");
-                $("div#AVE_ToggleUserBlock").addClass("collapsed");
-                //Change element's title
-                $("div#AVE_ToggleUserBlock").attr("title", "Show user block");
-                //Hide user block
-                $('div#header-account > div.logged-in,div.logged-out').hide();
-                //Set #header-account's size to be that of the toggle icon
-                $('div#header-account').css("width", "14px")
-                                       .css("height", "14px");
-            }
-        });
-    },
-
-    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
-        html: function () {
-            var _this = AVE.Modules['UserInfoFixedPos'];
-            var htmlStr = "";
-            htmlStr += '<input ' + (_this.Options.DivideBlock.Value ? 'checked="true"' : "") + ' id="DivideBlock" type="checkbox"/><label style="display:inline;" for="DivideBlock"> Do you want the header account separated- username and numbers at the top and icons below?</label>';
-            htmlStr += '<br /><input ' + (_this.Options.ToggleBlock.Value ? 'checked="true"' : "") + ' id="ToggleBlock" type="checkbox"/><label style="display:inline;" for="ToggleBlock"> Show icon to toggle hide/show the user block.</label>';
-            htmlStr += '<br /><input ' + (_this.Options.PersistentHide.Value ? 'checked="true"' : "") + ' id="PersistentHide" type="checkbox"/><label style="display:inline;" for="PersistentHide"> Always hide the userblock</label>';
-            htmlStr += '<br /><input ' + (_this.Options.HidePoints.Value ? 'checked="true"' : "") + ' id="HidePoints" type="checkbox"/><label style="display:inline;" for="HidePoints"> Hide contribution points</label>';
-
-            return htmlStr;
-        },
-    },
-};
-/// END User-block fixes ///
-
-/// Fix expanding images:  Let images expand over the sidebar and disallow the selection/highlight of the image. ///
+/// Fix expanding images:  Let images expand over the sidebar and disallow the selection/highlighting of the image. ///
 AVE.Modules['FixExpandImage'] = {
     ID: 'FixExpandImage',
     Name: 'Fix expanding images',
-    Desc: 'Let images expand over the sidebar and disallow the selection/highlight of the image.',
-    Category: 'Fixes',
+    Desc: 'Let images expand over the sidebar and disallow the selection/highlighting of the image.',
+    Category: 'Misc',
 
     Enabled: false,
 
@@ -5818,7 +6160,7 @@ AVE.Modules['FixExpandImage'] = {
             this.Start();
         }
     },
-    
+
     ImgMedia: "a[title='JPG'],a[title='PNG'],a[title='GIF']",//These are the only media that are resizable
 
     Start: function () {
@@ -5907,7 +6249,7 @@ AVE.Modules['ContributionDeltas'] = {
         },
         AddAsToolTip: {
             Type: 'boolean',
-            Desc: 'Show deltas in a tooltip instead of inline.',
+            Desc: 'Show differences in a tooltip instead of inline.',
             Value: false
         },
         ShowColourDelta: {
@@ -5917,12 +6259,12 @@ AVE.Modules['ContributionDeltas'] = {
         },
         ShowMultipleDeltas: {
             Type: 'boolean',
-            Desc: 'Show multiple deltas in the tooltip (Hour, Day, Week).',
+            Desc: 'Show multiple differences in the tooltip (Hour, Day, Week).',
             Value: false
         },
         ShowSinceLast: {
             Type: 'string',
-            Desc: 'Show contribution points deltas for the last: ',
+            Desc: 'Show contribution point differences for the last: ',
             Value: 'day'
         }
     },
@@ -5999,19 +6341,19 @@ AVE.Modules['ContributionDeltas'] = {
 
         if ((_now - _this.StoredDeltas[_this.Username]["page"].ts) > epsilon){//page
             change = true;
-            //print("AVE: ContribDelta -> Updated \"Page\"");
+            print("AVE: ContribDelta > Updated \"Page\"", true);
             _this.StoredDeltas[_this.Username]["page"] = {ts: _now, S: _this.SCP, C: _this.CCP};
 
             dateDiff = (_now - _this.StoredDeltas[_this.Username]["hour"].ts) /1000;
             if (dateDiff > 3600) { //Hour
-                //print("AVE: ContribDelta -> Updated \"hour\"");
+                print("AVE: ContribDelta > Updated \"hour\"", true);
 
                 newTs = new Date (_now).setMinutes(0, 0);
                 _this.StoredDeltas[_this.Username]["hour"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
 
                 dateDiff = (_now - _this.StoredDeltas[_this.Username]["6 hours"].ts) / 1000;
                 if (dateDiff > 21600) { //6 hours
-                    //print("AVE: ContribDelta -> Updated \"6 hours\"");
+                    print("AVE: ContribDelta > Updated \"6 hours\"", true);
 
                     var newTsHour = new Date (newTs).getHours();
                     newTs = new Date (newTs).setHours(
@@ -6025,7 +6367,7 @@ AVE.Modules['ContributionDeltas'] = {
 
                     dateDiff = (_now - _this.StoredDeltas[_this.Username]["12 hours"].ts) / 1000;
                     if (dateDiff > 43200) { //12 hours
-                        //print("AVE: ContribDelta -> Updated \"12 hours\"");
+                        print("AVE: ContribDelta > Updated \"12 hours\"", true);
 
                         newTs = new Date (newTs).setHours(newTsHour < 12 ? 0 : 12);
                         _this.StoredDeltas[_this.Username]["12 hours"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
@@ -6034,7 +6376,7 @@ AVE.Modules['ContributionDeltas'] = {
                 //Only check for days once per hour (and only check for week once per day)
                 dateDiff = (_now - _this.StoredDeltas[_this.Username]["day"].ts) / 1000;
                 if (dateDiff > 86400) { //day
-                    //print("AVE: ContribDelta -> Updated \"Day\"");
+                    print("AVE: ContribDelta > Updated \"Day\"", true);
 
                     newTs = new Date (newTs).setHours(6);
 
@@ -6042,7 +6384,7 @@ AVE.Modules['ContributionDeltas'] = {
 
                     dateDiff = (_now - _this.StoredDeltas[_this.Username]["week"].ts) / 1000;
                     if (dateDiff > 604800) { //week
-                        //print("AVE: ContribDelta -> Updated \"Week\"");
+                        print("AVE: ContribDelta > Updated \"Week\"", true);
                         newTs -= 86400000 * ((new Date (newTs)).getDay() - 1);
                         _this.StoredDeltas[_this.Username]["week"] = {ts: newTs, S: _this.SCP, C: _this.CCP};
 
@@ -6373,9 +6715,9 @@ AVE.Modules['RememberCommentCount'] = {
                         });
                     }
 
-                    //print("AVE: RememberCommentCount > updating "+ _id);
+                    print("AVE: RememberCommentCount > updating "+ _id, true);
                 } else {
-                    //print("AVE: RememberCommentCount > adding "+ _id);
+                    print("AVE: RememberCommentCount > adding "+ _id, true);
                 }
 
                 if (!this.Init) {//We have no reason to update this again after loading more comments
@@ -6413,9 +6755,10 @@ AVE.Modules['RememberCommentCount'] = {
         } else if (AVE.Utils.currentPageType === "user-comments"){//Comments and link to submissions in user-comments page
             $("div.thread").each(function () {
                 _id = $(this).find("p.parent >  a.title").attr("href").split("/");
-                _count = $(this).find("ul.flat-list.buttons > li:last-child > a").text().split(/(\(|\))/) || 0;
-
                 _id = _id[_id.length - 1];
+                if ($.inArray(_id, _this.Processed) !== -1){return true;}
+
+                _count = $(this).find("ul.flat-list.buttons > li:last-child > a").text().split(/(\(|\))/) || 0;
                 _count = _count[_count.length -3];
 
                 if (_count > 0) {
@@ -6423,6 +6766,7 @@ AVE.Modules['RememberCommentCount'] = {
                         $(this).find("ul.flat-list.buttons > li:last-child > a").append('&nbsp;<span style="font-weight:bold;color:#4189B1;">(+' + (_count - _this.Data[_id][0]) + ')</span>');
                     }
                 }
+                _this.Processed.push(_id)
             });
         }
     },
@@ -6491,6 +6835,297 @@ AVE.Modules['RememberCommentCount'] = {
     }
 };
 /// END Remember comment count ///
+
+/// Account Switcher:  Store information for several accounts and switch between them easily. ///
+AVE.Modules['AccountSwitcher'] = {
+    ID: 'AccountSwitcher',
+    Name: 'Account Switcher',
+    Desc: 'Store information for several accounts and switch between them easily.',
+    Category: 'Account',
+
+    Index: 100,
+    Enabled: false,
+
+    Store: {},
+
+    RunAt: "banner",
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: false
+        }
+    },
+
+    OriginalOptions: "",
+
+    SavePref: function (POST) {
+        POST = POST[this.ID];
+
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = this;
+        var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
+
+        $.each(JSON.parse(Opt), function (key, value) {
+            _this.Options[key].Value = value;
+        });
+        this.Enabled = this.Options.Enabled.Value;
+    },
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.SetOptionsFromPref();
+
+        if (this.Enabled) {
+
+            this.StorageName = this.Store.Prefix + this.ID + "_accounts";
+
+            this.savedAccounts = JSON.parse(this.Store.GetValue(this.StorageName, "[]"));
+
+            this.Start();
+        }
+    },
+
+    Start: function () {
+        //Thanks a lot to /u/GingerSoul for this feature!
+
+        this.style = '' +
+            'span#AVE_AccountSwitcher_del {\
+                /* Delete */\
+                height: 14px;\
+                width: 14px;\
+                margin-top:2px;\
+                margin-left:4px;\
+                /* SVG from Jquery Mobile Icon Set */\
+                background-image:url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpolygon%20fill%3D%22%23' + (AVE.Utils.CSSstyle === "dark" ? "af3f3f" : "ce6d6d") + '%22%20points%3D%2214%2C3%2011%2C0%207%2C4%203%2C0%200%2C3%204%2C7%200%2C11%203%2C14%207%2C10%2011%2C14%2014%2C11%2010%2C7%20%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E")!important;\
+    background-repeat: no-repeat;\
+    cursor: pointer;\
+    background-position: center;\
+                }\
+            span#AVE_AccountSwitcher_edit {\
+                /* edit */\
+                height: 14px;\
+                width: 14px;\
+                margin-top:2px;\
+                margin-left:4px;\
+                /* SVG from Jquery Mobile Icon Set */\
+                background-image:url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23377da8%22%20d%3D%22M1%2C10l-1%2C4l4-1l7-7L8%2C3L1%2C10z%20M11%2C0L9%2C2l3%2C3l2-2L11%2C0z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E")!important;\
+        background-repeat: no-repeat;\
+        cursor: pointer;\
+        background-position: center;\
+                }';
+
+        AVE.Utils.AddStyle(this.style);
+        this.AppendToPage();
+    },
+
+    storageName: "",
+    style: "",
+    savedAccounts: [],
+    normalColour: "#000",
+    hoverColour: "#e23f3f",
+
+    AppendToPage: function () { //To insert content into the page
+        var _this = this;
+
+        var q = $('div#header-account > div:first'),
+            qH = q.get(0).offsetHeight,
+            qW = q.get(0).offsetWidth;
+        if (q.length > 0) {
+            var light = AVE.Utils.CSSstyle === "light";
+            if (!light)
+            {
+                this.normalColour = '#fff'; //this.hoverColour = "#8c2f2f"
+            }
+            var manager = document.createElement('span');
+            manager.style.position = 'relative';
+            manager.style.display = 'inline-block';
+            manager.style.visibility = 'visible';
+            manager.style.fontSize = '12px';
+            var managerIcon = document.createElement('img');
+            manager.appendChild(managerIcon);
+            managerIcon.src = '/favicon.ico';
+            managerIcon.width = (qH / 2) > 13 ? qH / 2 : 13;
+            managerIcon.height = (qH / 2) > 13 ? qH / 2 : 13;
+            managerIcon.title = 'Accounts';
+            managerIcon.style.cursor = 'pointer';
+            managerIcon.style.marginRight = '0.5em';
+            var managerMenu = document.createElement('div');
+            manager.appendChild(managerMenu);
+            managerMenu.style.display = 'none';
+            managerMenu.style.position = 'absolute';
+            managerMenu.style.left = '0';
+            managerMenu.style.top = (qH / 1.5) + 'px';
+            managerMenu.style.width = (qW >= 200 ? 200 : qW) + 'px';
+            managerMenu.style.border = '1px solid #777';
+            managerMenu.style.borderRadius = '3px';
+            managerMenu.style.background = light ? '#fff' : '#333';
+            managerMenu.style.color = this.normalColour;
+            managerMenu.style.textAlign = 'left';
+            managerIcon.addEventListener('click', function (e) {
+                managerMenu.style.display = managerMenu.style.display == 'none' ? 'block' : 'none';
+            }, false);
+            document.addEventListener('click', function (e) {
+                if (e.target != managerIcon)
+                    managerMenu.style.display = 'none';
+            }, false);
+            $.each(this.savedAccounts, function (val) {
+                print('AVE: AccountSwitcher > adding ' + _this.savedAccounts[val].name, true);
+                _this.addLoginLink(managerMenu, _this.savedAccounts[val].name, _this.savedAccounts[val].pass);
+            });
+            var managerAddAccount = document.createElement('div');
+            managerAddAccount.appendChild(document.createTextNode('+ Add account'));
+            managerMenu.appendChild(managerAddAccount);
+            managerAddAccount.style.cursor = 'pointer';
+            managerAddAccount.style.padding = '0 0.5em';
+            this.switchColor(managerAddAccount);
+            managerAddAccount.addEventListener('click', function () {
+                var user = prompt('Username', '');
+                if (!user){
+                    return false;
+                }
+                var exit = false;
+                $.each(_this.savedAccounts, function (idx) {
+                    if (user.toUpperCase() === _this.savedAccounts[idx].name.toUpperCase()) {
+                        alert('User ('+user+') already exists');
+                        exit = true;
+                        return false;
+                    }
+                });
+                if (exit){return false;}
+
+                var pass = prompt('Password', '');
+                if (!pass){
+                    alert("You need to input a password");
+                    return false;
+                }
+                _this.savedAccounts.push({
+                    name: user,
+                    pass: pass
+                });
+                _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.savedAccounts));
+                managerMenu.removeChild(managerAddAccount);
+                _this.addLoginLink(managerMenu, user, pass);
+                managerMenu.appendChild(managerAddAccount);
+            }, false);
+            if (q.className === 'logged-in'){
+                q = q.find(".user");
+            }
+            $(manager).insertBefore(q.find('>:first-child'));
+        }
+    },
+
+    switchColor: function (e) {
+        var _this = this;
+        $(e).hover(function() {
+            $(this).css( "color", _this.hoverColour );
+        },         function() {
+            $(this).css( "color", _this.normalColour );
+        });
+    },
+
+    logIn: function (user, pass) {
+        var token = document.querySelector('[name="__RequestVerificationToken"]');
+        if (!token) {
+            alert('Can\'t login from this page');
+            return;
+        }
+        var form = document.createElement('form');
+        var userInput = document.createElement('input');
+        var passInput = document.createElement('input');
+        var tokenInput = document.createElement('input');
+        var rememberMe = document.createElement('input');
+        form.method = 'post';
+        form.action = '/account/login?ReturnUrl=' + encodeURIComponent(location.pathname);
+        form.appendChild(userInput);
+        form.appendChild(passInput);
+        form.appendChild(tokenInput);
+        form.appendChild(rememberMe);
+        document.body.appendChild(form);
+        userInput.name = 'UserName';
+        userInput.value = user;
+        passInput.name = 'Password';
+        passInput.value = pass;
+        tokenInput.name = '__RequestVerificationToken';
+        tokenInput.value = token.value;
+        rememberMe.type = 'checkbox';
+        rememberMe.value = 'RememberMe';
+        rememberMe.value = 'false';
+        form.style.display = 'none';
+        form.submit();
+    },
+
+    addLoginLink: function (managerMenu, name) {
+        if (typeof name !== "string") {print("AVE: AccountSwitcher > wrong variable type for \"name\""); return false;}
+        var _this = this;
+        var account = document.createElement('div'),
+            namelink = document.createElement('span');
+
+        namelink.appendChild(document.createTextNode(name));
+        account.appendChild(namelink);
+
+        var del = $('<span id="AVE_AccountSwitcher_del" style="float:right;" title="remove account information"></span>').get(0),
+            edit = $('<span id="AVE_AccountSwitcher_edit" style="float:right;" title="change password"></span>').get(0);
+
+        account.appendChild(del);
+        account.appendChild(edit);
+        managerMenu.appendChild(account);
+        namelink.style.cursor = 'pointer';
+        account.style.padding = '0 0.5em';
+
+        this.switchColor(account);
+
+        $(edit).off()
+            .on("click", function () {
+                var pass = prompt('New password', '');
+                if (pass) {
+                    for (var i = 0; i < _this.savedAccounts.length; i++) {
+                        if (name.toUpperCase() === _this.savedAccounts[i].name.toUpperCase()) {
+                            _this.savedAccounts[i].pass = pass;
+                            break;
+                        }
+                    }
+                    _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.savedAccounts));
+                }
+        });
+        $(del).off()
+            .on("click", function () {
+                if (confirm('Are you sure you want to remove '+name+' ?')) {
+                    for (var i = 0; i < _this.savedAccounts.length; i++) {
+                        if (name.toUpperCase() === _this.savedAccounts[i].name.toUpperCase()) {
+                            _this.savedAccounts.splice(i, 1);
+                            break;
+                        }
+                    }
+                    _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.savedAccounts));
+                    managerMenu.removeChild(account);
+                }
+            });
+
+        $(namelink).off()
+            .on("click", function () {
+                for (var i = 0; i < _this.savedAccounts.length; i++) {
+                    if (name.toUpperCase() === _this.savedAccounts[i].name.toUpperCase()){
+                        _this.logIn(name, _this.savedAccounts[i].pass);
+                        return false;
+                    }
+                }
+            });
+    },
+
+    AppendToPreferenceManager: {
+        html: function () {
+            //var _this = AVE.Modules['AccountSwitcher'];
+
+            return 'Feature written by <a href="https://voat.co/u/GingerSoul">/u/GingerSoul</a>.<br><br>' +
+                    '<strong>DO NOT FORGET that your account information are stored unencrypted in AVE\'s data when you export it to a JSON file!</strong>';
+        }
+    }
+};
+/// END Account Switcher ///
 
 /// Append quote:  Add a "quote" link to automatically insert the quoted comment into the closest reply box. ///
 AVE.Modules['AppendQuote'] = {
@@ -6651,7 +7286,7 @@ AVE.Modules['DisableShareALink'] = {
     ID: 'DisableShareALink',
     Name: 'Disable Share-a-Link',
     Desc: 'This module will remove the Share-a-Link overlay block.',
-    Category: 'Fixes',
+    Category: 'Misc',
     //The share-a-link feature doesn't exist anymore it seems. This module is obsolete.
 
     Index: 100,
@@ -7131,7 +7766,6 @@ AVE.Modules['Shortcuts'] = {
 
                 var subversesArr = _this.module.GetSubversesList();
                 var idx = $(this).parent().index() -1;
-                print(idx);
                 AVE.Utils.move(subversesArr, idx, idx+1);
 
                 _this.module.Store.SetValue(_this.module.StorageName, subversesArr.join(","));
@@ -7480,8 +8114,8 @@ AVE.Modules['DomainFilter'] = {
 
                 $("div#DomainFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click");
                 $("div#DomainFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").on("click", function () {
-                    //print("Remove link: " + $(this).attr("id"));
-                    //print("Remove span: " + $(this).prev("span.AVE_Domain_Filter").attr("id"));
+                    print("Remove link: " + $(this).attr("id"), true);
+                    print("Remove span: " + $(this).prev("span.AVE_Domain_Filter").attr("id"), true);
                     $(this).next("br").remove();
                     $(this).prev("span.AVE_Domain_Filter").remove();
                     $(this).remove();
@@ -7633,14 +8267,12 @@ AVE.Modules['HideUsername'] = {
     OriginalOptions: "",
 
     SavePref: function (POST) {
-        var _this = this;
         POST = POST[this.ID];
 
         this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
     },
 
     ResetPref: function () {
-        var _this = this;
         this.Options = JSON.parse(this.OriginalOptions);
     },
 
@@ -7697,13 +8329,13 @@ AVE.Modules['HideUsername'] = {
 
             htmlStr += '<input id="RemoveInLoginBlock" ' + (_this.Options.RemoveInLoginBlock.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="RemoveInLoginBlock"> ' + _this.Options.RemoveInLoginBlock.Desc + '</label>';
             htmlStr += '<br /><input id="ReplaceEverywhere" ' + (_this.Options.ReplaceEverywhere.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ReplaceEverywhere"> ' + _this.Options.ReplaceEverywhere.Desc + '</label>';
-            htmlStr += '<br />' + _this.Options.NewName.Desc + '<input id="NewName" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.NewName.Value + '"></input>';
+            htmlStr += '<br />' + _this.Options.NewName.Desc + '<input id="NewName" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.NewName.Value + '"/>';
 
             return htmlStr;
         },
         callback: function () {
-        },
-    },
+        }
+    }
 };
 /// END Hide username ///
 
@@ -8036,6 +8668,7 @@ AVE.Modules['DomainTags'] = {
     removeTag: function (domain) {
         "use strict";
         delete this.DomainTags[domain];
+        this.Store.SetValue(this.StorageName, JSON.stringify(this.DomainTags));
     },
 
     AppendToPreferenceManager: {
@@ -8213,7 +8846,7 @@ AVE.Modules['DomainTags'] = {
                 .on("click", function () {
                     var name = $(this).parent().attr("domain");
                     if (confirm("Are you sure you want to delete the tag attached to \""+name+"\"?")){
-                        _this.module.RemoveTag(name);
+                        _this.module.removeTag(name);
                         $(_this.CSSselector).trigger("click");
                     }
                 });
@@ -8384,10 +9017,10 @@ AVE.Modules['DomainTags'] = {
                 r = colour[0]; g = colour[1]; b = colour[2];
                 bestColour = AVE.Utils.GetBestFontColour(r, g, b);
 
-                direct = /self\.[a-zA-Z0-9]?/.test(obj.name);
+                direct = /v\/[a-zA-Z0-9]?/.test(obj.name);
 
                 htmlStr += '<tr domain="'+obj.name+'">';
-                htmlStr += '<td><a target="_blank" href="/'+ (direct ? "v/"+obj.name.replace("self.", "") : "domains/"+obj.name)+'" >'+obj.name + '</a></td>' +
+                htmlStr += '<td><a target="_blank" href="/'+ (direct ? obj.name : "domains/"+obj.name)+'" >'+obj.name + '</a></td>' +
                     '<td data="tag"><span title="'+obj.t+'">'+obj.t+'</span></td>' +
                     '<td data="colour" style="background-color:'+obj.c+'; color:'+bestColour+';">'+obj.c+'</td>' +
                     '<td data="ignore">'+obj.i+'</td>' +
@@ -8403,6 +9036,276 @@ AVE.Modules['DomainTags'] = {
     }
 };
 /// END Domain tags ///
+
+/// User-block fixes:  Minor fixes to the userblock. ///
+AVE.Modules['UserInfoFixedPos'] = {
+    ID: 'UserInfoFixedPos',
+    Name: 'User-block fixes',
+    Desc: 'Minor fixes to the userblock.',
+    Category: 'Misc',
+
+    Index: 200,
+    Enabled: false,
+
+    RunAt: 'banner',
+
+    Store: {},
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: true
+        },
+        DivideBlock: {
+            Type: 'boolean',
+            Value: false
+        },
+        ToggleBlock: {
+            Type: 'boolean',
+            Value: true
+        },
+        PersistentHide: {
+            Type: 'boolean',
+            Value: false
+        },
+        HidePoints: {
+            Type: 'boolean',
+            Value: false
+        }
+    },
+
+    SavePref: function (POST) {
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST[this.ID]));
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = this;
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
+
+        if (Opt != undefined) {
+            Opt = JSON.parse(Opt);
+            $.each(Opt, function (key, value) {
+                _this.Options[key].Value = value;
+            });
+        }
+        _this.Enabled = _this.Options.Enabled.Value;
+    },
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.SetOptionsFromPref();
+
+        if (this.Enabled) {
+            this.Start();
+        }
+    },
+
+    bg: "",
+    userBlockOriginalOffset: null,
+    userBlockOriginalWidth: 0,
+    HeaderFixed: false,
+
+    Start: function () {
+        if (!AVE.Utils.ListHeaderHeight) { AVE.Utils.ListHeaderHeight = $('#sr-header-area').height(); }
+
+        if (AVE.Modules['HeaderFixedPos'] && AVE.Modules['HeaderFixedPos'].Enabled){ this.HeaderFixed = true; }
+
+        var JqId1 = $('#header-account'),
+            JqId2 = $("div#header-account > div.logged-in");
+        //this.userBlockOriginalTopOffset = JqId1.offset().top;
+        //this.SetAccountHeaderPosAsFixed();
+
+        if (this.Options.DivideBlock.Value && JqId2.length > 0) {
+            //Align header-account's content
+            JqId2.css("text-align", "center");
+            //Add a line return before the icons
+            $("<br />").insertAfter("div#header-account > div.logged-in > span.separator:first");
+            //Remove the, now useless, separator
+            $("div#header-account > div.logged-in > span.separator:first").remove();    
+        }
+
+        if (this.Options.ToggleBlock.Value && $('#header-account:has(div.logged-in)').length > 0) {
+            //Add arrow icon element
+            JqId1.append('<div title="Hide user block" class="expanded" id="AVE_ToggleUserBlock"></div>');
+            this.ToggleBlockListener();
+        }
+
+        if (this.Options.PersistentHide.Value) {
+            $("div#AVE_ToggleUserBlock").click();
+        }
+
+        if (this.Options.HidePoints.Value){
+            var html = $("a[title='Profile']")[0].outerHTML;
+            $("span.user:first").html(html);
+        }
+
+        this.SetAltBackground();
+
+        AVE.Utils.AddStyle('\
+div#AVE_ToggleUserBlock{\
+    background-position: center center;\
+    background-repeat: no-repeat;\
+    border: 1px solid #' + (AVE.Utils.CSSstyle === "dark" ? "222" : "DCDCDC") + ';\
+    border-radius: 1em;\
+    cursor:pointer;\
+    float:right;\
+    width: 14px;\
+    height: 14px;\
+}\
+div#AVE_ToggleUserBlock.expanded{\
+    /* SVG from Jquery Mobile Icon Set */\
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpolygon%20style%3D%22fill%3A%23DDD%3B%22%20points%3D%223.404%2C2.051%208.354%2C7%203.404%2C11.95%205.525%2C14.07%2012.596%2C7%205.525%2C-0.071%20%22%2F%3E%3C%2Fsvg%3E");\
+}\
+div#AVE_ToggleUserBlock.collapsed{\
+    /* SVG from Jquery Mobile Icon Set */\
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpolygon%20fill%3D%22%23DDD%22%20points%3D%2214%2C5%209%2C5%209%2C0%205%2C0%205%2C5%200%2C5%200%2C9%205%2C9%205%2C14%209%2C14%209%2C9%2014%2C9%20%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E");\
+}\
+.logged-in{\
+    margin-bottom:2px;\
+}\
+div#header-account > div.logged-in{\
+    background: ' + this.bg + '\
+}\
+/* Next is a fix for some custom styles */\
+div#container {z-index: 1;}\
+div#header-container {z-index: 2;}\
+.modal-backdrop.in {display: none;}\
+.modal#linkFlairSelectModal{top: 140px;}');
+
+        this.Listeners();
+    },
+
+    SetAltBackground: function () {
+        if(!AVE.Modules['InjectCustomStyle'] || !AVE.Modules['InjectCustomStyle'].Enabled){return;}
+
+        var JqId = $("div#header-container");
+        this.bg = JqId.css("background-color") + " " +
+                  JqId.css("background-image") + " " +
+                  JqId.css("background-repeat") + " " +
+                  JqId.css("background-attachment") + " " +
+                  JqId.css("background-position") + " " +
+                  JqId.css("background-clip") + " " +
+                  JqId.css("background-origin");
+
+        if (JqId.css("background-color") === "transparent" &&
+            JqId.css("background-image") === "none") {
+            this.bg = $("div#header[role='banner']").css("background-color");
+            if (this.bg === "transparent") {
+                this.bg = $("#logged-in").css("background-color");
+
+                if (this.bg === "transparent" &&
+                    this.bg === $("[title='Profile']").css("color")) {
+                    $("[title='Profile']").css("color");
+                    this.bg = $("#header-account").css("background-color");
+
+                    if (this.bg === "transparent") {
+                        this.bg = $("div#header[role='banner']").css("background-color");
+
+                        if (this.bg === "transparent") {
+                            //If there is no colour nor any image set, we set a default value
+                            this.bg = AVE.Utils.CSSstyle === "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)";
+                        }
+                    }
+                }
+            }
+        }
+        $('div#header-account > div.logged-in').css("background", this.bg);
+    },
+
+    SetAccountHeaderPosAsFixed: function () {
+        var JqId = $('#header-account');
+        if ($(window).scrollTop() + (this.HeaderFixed ? AVE.Utils.ListHeaderHeight : 0) > this.userBlockOriginalOffset.top) {
+            JqId.css('position', 'fixed')
+                .css('top', (this.HeaderFixed ? AVE.Utils.ListHeaderHeight : 0) +"px")
+                .css('left', this.userBlockOriginalOffset.left+"px")
+                .css('right', this.userBlockOriginalOffset.right+"px")
+                .css("text-align", "center")
+                .css("height", "0px");
+            $('.logged-in').css("background", AVE.Utils.CSSstyle == "dark" ? "rgba(41, 41, 41, 0.80)" : "rgba(246, 246, 246, 0.80)");
+        } else {
+            JqId.css('position', "")
+                .css('top', "")
+                .css('left', "")
+                .css('right', "")
+                .css("text-align", "")
+                .css("height", "");
+            $('.logged-in').css("background", "");
+        }
+    },
+
+    ToggleBlockListener: function() {
+        var JqId = $("div#AVE_ToggleUserBlock");
+        JqId.on("click", function () {//
+            if (JqId.hasClass("collapsed")) {//If user block is already hidden
+                //Show expand icon
+                JqId.removeClass("collapsed");
+                JqId.addClass("expanded");
+                //Change element's title
+                JqId.attr("title", "Hide user block");
+                //Show user block
+                $('div#header-account > div.logged-in,div.logged-out').show();
+                //Restore #header-account's default size
+                $('div#header-account').css("width", "")
+                    .css("height", "");
+            } else {//If user block is visible
+                //Show collapse icon
+                JqId.removeClass("expanded");
+                JqId.addClass("collapsed");
+                //Change element's title
+                JqId.attr("title", "Show user block");
+                //Hide user block
+                $('div#header-account > div.logged-in,div.logged-out').hide();
+                //Set #header-account's size to be that of the toggle icon
+                $('div#header-account').css("width", "14px")
+                    .css("height", "14px");
+            }
+        });
+    },
+
+    Listeners: function () {
+        var _this = this;
+        $(window).ready(function () { _this.UpdateBlockData(); _this.SetAccountHeaderPosAsFixed();})
+                 .on("scroll", function () { _this.SetAccountHeaderPosAsFixed();})
+                 .on("resize", function () { _this.UpdateBlockData(); _this.SetAccountHeaderPosAsFixed();});
+    },
+
+    UpdateBlockData : function () {
+        var JqId = $('#header-account');
+
+        // Reset the block for an instant so that we don't get back the offset values we ourselves set.
+        // If you don't see what I mean: comment out the next css calls, then resize the page while scrolled down
+        JqId.css('position', "")
+            .css('top', "")
+            .css('left', "")
+            .css('right', "")
+            .css("text-align", "")
+            .css("height", "");
+
+        if (!this.userBlockOriginalOffset){
+            this.userBlockOriginalOffset = JqId.offset();
+            this.userBlockOriginalWidth = JqId.outerWidth();
+        }
+        else { this.userBlockOriginalOffset.left = JqId.offset().left; }
+
+        this.userBlockOriginalOffset.right = Math.floor($(document).width() - (this.userBlockOriginalOffset.left + this.userBlockOriginalWidth + 1));
+        if (this.userBlockOriginalOffset.right < 0){this.userBlockOriginalOffset.right = 0;}
+    },
+
+    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+        html: function () {
+            var _this = AVE.Modules['UserInfoFixedPos'];
+            var htmlStr = "";
+            htmlStr += '<input ' + (_this.Options.DivideBlock.Value ? 'checked="true"' : "") + ' id="DivideBlock" type="checkbox"/><label style="display:inline;" for="DivideBlock"> Account header separated - username and stats at the top, icons below</label>';
+            htmlStr += '<br /><input ' + (_this.Options.ToggleBlock.Value ? 'checked="true"' : "") + ' id="ToggleBlock" type="checkbox"/><label style="display:inline;" for="ToggleBlock"> Show icon to toggle hide/show the user block</label>';
+            htmlStr += '<br /><input ' + (_this.Options.PersistentHide.Value ? 'checked="true"' : "") + ' id="PersistentHide" type="checkbox"/><label style="display:inline;" for="PersistentHide"> Always hide the userblock</label>';
+            htmlStr += '<br /><input ' + (_this.Options.HidePoints.Value ? 'checked="true"' : "") + ' id="HidePoints" type="checkbox"/><label style="display:inline;" for="HidePoints"> Hide contribution points</label>';
+
+            return htmlStr;
+        }
+    }
+};
+
+/// END User-block fixes ///
 
 /// AVE\'s dashboard:  Use it to manage your saved data. ///
 AVE.Modules['Dashboard'] = {
