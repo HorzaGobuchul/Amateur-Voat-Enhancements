@@ -63,9 +63,12 @@ AVE.Modules['UserInfoFixedPos'] = {
     bg: "",
     userBlockOriginalOffset: null,
     userBlockOriginalWidth: 0,
+    HeaderFixed: false,
 
     Start: function () {
         if (!AVE.Utils.ListHeaderHeight) { AVE.Utils.ListHeaderHeight = $('#sr-header-area').height(); }
+
+        if (AVE.Modules['HeaderFixedPos'] && AVE.Modules['HeaderFixedPos'].Enabled){ this.HeaderFixed = true; }
 
         var JqId1 = $('#header-account'),
             JqId2 = $("div#header-account > div.logged-in");
@@ -128,6 +131,8 @@ div#container {z-index: 1;}\
 div#header-container {z-index: 2;}\
 .modal-backdrop.in {display: none;}\
 .modal#linkFlairSelectModal{top: 140px;}');
+
+        this.Listeners();
     },
 
     SetAltBackground: function () {
@@ -165,15 +170,13 @@ div#header-container {z-index: 2;}\
             }
         }
         $('div#header-account > div.logged-in').css("background", this.bg);
-
-        this.Listeners();
     },
 
     SetAccountHeaderPosAsFixed: function () {
         var JqId = $('#header-account');
-        if ($(window).scrollTop() + AVE.Utils.ListHeaderHeight > this.userBlockOriginalOffset.top) {
+        if ($(window).scrollTop() + (this.HeaderFixed ? AVE.Utils.ListHeaderHeight : 0) > this.userBlockOriginalOffset.top) {
             JqId.css('position', 'fixed')
-                .css('top', AVE.Utils.ListHeaderHeight+"px")
+                .css('top', (this.HeaderFixed ? AVE.Utils.ListHeaderHeight : 0) +"px")
                 .css('left', this.userBlockOriginalOffset.left+"px")
                 .css('right', this.userBlockOriginalOffset.right+"px")
                 .css("text-align", "center")

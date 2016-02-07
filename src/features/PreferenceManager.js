@@ -163,8 +163,14 @@ AVE.Modules['PreferenceManager'] = {
                 font-size:12px;\
                 border-bottom: 2px solid #' + (AVE.Utils.CSSstyle === "dark" ? "222" : "DDD") + ';\
             }\
-            span.ModuleTitle{\
+            label.ModuleTitle{\
                 font-size:14px;\
+            }\
+            .dark label.ModuleTitle{\
+                color: #967aff;\
+            }\
+            .light label.ModuleTitle{\
+                color: #4aabe7;\
             }\
             span.ModuleState{\
                 font-size:10px;\
@@ -225,7 +231,7 @@ AVE.Modules['PreferenceManager'] = {
 
     Categories: ["General", "Subverse", "Thread", "Posts", "Domains", "Account", "Style", "Misc", "Manager", "ModTools"],//Available Categories to show
     Modules: [],//List of modules
-    ModifiedModules: [],
+    ModifiedModules: [],//Modules whose options have been modified and should be saved
 
     AppendToPage: function () {
         AVE.Utils.AddStyle(this.MngWinStyle);
@@ -388,8 +394,10 @@ AVE.Modules['PreferenceManager'] = {
 
             $(module).find(":input").each(function () {
                 var key = $(this).prop("id");
-                if (key === "") { return true; }
-                if ($(this).attr("type") && $(this).attr("type").toLowerCase() === "checkbox") {
+
+                if (key === AVE.Modules[ModKey].Name) {POST[ModKey].Enabled = $(this).is(":checked");}
+                else if (key === "") { /* continue/pass */ }
+                else if ($(this).attr("type") && $(this).attr("type").toLowerCase() === "checkbox") {
                     POST[ModKey][key] = $(this).is(":checked");
                 } else {
                     POST[ModKey][key] = $(this).val();
@@ -432,11 +440,12 @@ AVE.Modules['PreferenceManager'] = {
             enabled = true;
             alwaysEnabled = true;
         }
+
         var html =
             '<div id="' + module.ID + '" class="ModuleBlock">\
                 <div class="ModuleTitleBlock">\
-                    <input id="Enabled" ' + (alwaysEnabled ? 'disabled="true"' : '') + ' type="checkbox" class="ToggleEnable" ' + ((enabled || alwaysEnabled) ? 'Checked="true"' : '') + ' /> \
-                    <span class="ModuleTitle alert-title">' + module.Name + '</span> \
+                    <input id="' + module.Name + '" ' + (alwaysEnabled ? 'disabled="true"' : '') + ' type="checkbox" class="ToggleEnable" ' + ((enabled || alwaysEnabled) ? 'Checked="true"' : '') + ' /> \
+                    <label for="' + module.Name + '" class="ModuleTitle">' + module.Name + '</label> \
                     <span class="ModuleState ' + ((enabled || alwaysEnabled) ? 'Enabled' : 'Disabled') + '"></span>\
                 </div>\
                 <span class="ModuleDesc">' + module.Desc + '</span>\

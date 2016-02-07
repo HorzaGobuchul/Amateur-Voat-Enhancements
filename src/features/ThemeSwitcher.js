@@ -50,14 +50,14 @@ AVE.Modules['ThemeSwitcher'] = {
                     type: "POST",
                     url: "/account/togglenightmode/",
                     complete: function () {
-                        print("AVE: ThemeSwichter > toggled night mode");
+                        print("AVE: ThemeSwichter > toggled theme style");
                         var prevstyle = AVE.Utils.CSSstyle;
                         prevstyle = prevstyle.substr(0,1).toUpperCase() + prevstyle.substr(1, prevstyle.length);
 
                         var newstyle = prevstyle === "Dark" ? "Light" : "Dark";
                         var csslink = $('link[rel="stylesheet"][href^="/Content/'+prevstyle+'"]');
                         csslink.attr("href", csslink.attr("href").replace(prevstyle, newstyle));
-                        $("body").attr("class", newstyle);
+                        $("body").attr("class", newstyle.toLowerCase());
 
                         AVE.Utils.CSSstyle = AVE.Utils.CSS_Style();
                         if (AVE.Modules['HeaderFixedPos'] && AVE.Modules['HeaderFixedPos'].Enabled){

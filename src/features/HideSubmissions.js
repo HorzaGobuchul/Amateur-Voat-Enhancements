@@ -4,7 +4,7 @@ AVE.Modules['HideSubmissions'] = {
     Desc: 'Hide vote with the keyboard or automatically after voting on it.',
     Category: 'Subverse',
 
-    Index: 10, //early so that other module don't do unnecessary processing on submissions that will get removed
+    Index: 10, //early so that other modules don't do unnecessary processing on submissions that will get removed
     Enabled: false,
 
     Store: {},
@@ -34,6 +34,11 @@ AVE.Modules['HideSubmissions'] = {
         HideAfterVote: {
             Type: 'boolean',
             Desc: "Hide the submission right after the vote is registered.",
+            Value: false
+        },
+        HideAfterView: {
+            Type: 'boolean',
+            Desc: "Hide the submission after viewing it (opening its link).",
             Value: false
         },
         AddHideButton: {
@@ -112,9 +117,10 @@ AVE.Modules['HideSubmissions'] = {
 
         var JqId = $("div.submission.id-"+id.toString());
 
-        if (  (!vote && this.Options.HideRightAway.Value)
-            || (vote && this.Options.HideAfterVote.Value)){
+        if (   (vote === false && this.Options.HideRightAway.Value)
+            || (vote === true && this.Options.HideAfterVote.Value)){
             JqId.remove();
+            print("AVE: HideSubmissions > removing submission with id "+id);
         } else if(this.Options.AddHideButton.Value) {
             JqId.find("ul.flat-list.buttons").find("li > a#AVE_HideSubmissions_link").text("unhide");
         }
@@ -139,6 +145,7 @@ AVE.Modules['HideSubmissions'] = {
             var id = $(this).attr("data-fullname");
             if (id && $.inArray(id.toString(), _this.HiddenPosts) !== -1){
                 $(this).remove();
+                print("AVE: HideSubmissions > removing submission with id "+id);
             }
         });
 
@@ -175,6 +182,17 @@ AVE.Modules['HideSubmissions'] = {
             });
         }
 
+        if (this.Options.HideAfterView.Value){
+            var id;
+            $("a.title.may-blank").off().on("mouseup", function (e) {
+                if (e.which > 2) {return;} //Left or middle click
+                id = $(this).parents("div.submission:first").attr("data-fullname");
+
+                if ($.inArray(id.toString(), this.HiddenPosts) !== -1){return;}
+                _this.AddToHiddenList(id, "spe");
+            });
+        }
+
         if (this.Options.HideDownvoted.Value || this.Options.HideUpvoted.Value) {
             if (this.obsVoteChange) { this.obsVoteChange.disconnect(); }
             this.obsVoteChange = new OnAttrChange($("div[class*='midcol']"), function (e) {
@@ -201,7 +219,7 @@ AVE.Modules['HideSubmissions'] = {
 
             htmlStr += '<input id="HideUpvoted" ' + (_this.Options.HideUpvoted.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideUpvoted"> ' + _this.Options.HideUpvoted.Desc + '</label><br>';
             htmlStr += '<input id="HideDownvoted" ' + (_this.Options.HideDownvoted.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideDownvoted"> ' + _this.Options.HideDownvoted.Desc + '</label><br>';
-            htmlStr += '<input id="HideAfterVote" ' + (_this.Options.HideAfterVote.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideAfterVote"> ' + _this.Options.HideAfterVote.Desc + '</label><br><br>';
+            htmlStr += '<input id="HideAfterVote" ' + (_this.Options.HideAfterVote.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideAfterVote"> ' + _this.Options.HideAfterVote.Desc + '</label><br>';
             htmlStr += '<input id="HideRightAway" ' + (_this.Options.HideRightAway.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideRightAway"> ' + _this.Options.HideRightAway.Desc + '</label>';
             if (AVE.Modules['ShortKeys']){
                 var key = AVE.Modules['ShortKeys'].Options.HidePost.Value || "Enter/Return";
@@ -209,6 +227,8 @@ AVE.Modules['HideSubmissions'] = {
             } else {
                 htmlStr += ' (disabled).<br>';
             }
+            htmlStr += '<input id="HideAfterView" ' + (_this.Options.HideAfterView.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HideAfterView"> ' + _this.Options.HideAfterView.Desc + '</label><br><br>';
+
             htmlStr += '<input id="AddHideButton" ' + (_this.Options.AddHideButton.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="AddHideButton"> ' + _this.Options.AddHideButton.Desc + '</label><br>';
 
             return htmlStr;

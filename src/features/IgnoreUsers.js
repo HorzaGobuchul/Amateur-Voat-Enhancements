@@ -18,7 +18,7 @@ AVE.Modules['IgnoreUsers'] = {
             Type: 'boolean',
             Desc: 'Entirely remove posts and chain comments made by ignored users.',
             Value: false
-        },
+        }
     },
 
     IgnoreList: [],
