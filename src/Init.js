@@ -113,7 +113,13 @@ AVE.Init = {
             print("Loaded > " + ID + " (" + (Date.now() - time) + "ms)");
         } else {
             try { AVE.Modules[ID].Load(); }
-            catch (e) {print("AVE: Error loading " + ID);}
+            catch (e) {
+                print("AVE: Error loading " + ID);
+                var Opt = JSON.parse(AVE.Storage.GetValue(AVE.Storage.Prefix + ID, "{}"));
+                Opt.Enabled = false;
+                AVE.Storage.SetValue(AVE.Storage.Prefix + ID, JSON.stringify(Opt));
+                alert("AVE: Error loading module \"" + ID +"\"\nIt has been disabled, reload for the change to be effective");
+            }
         }
     },
 

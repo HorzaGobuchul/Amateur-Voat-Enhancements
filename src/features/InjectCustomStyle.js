@@ -214,7 +214,7 @@ AVE.Modules['InjectCustomStyle'] = {
             });
             htmlStr += '</select>';
 
-            htmlStr += '<br /><br />' + _this.Options.CustomStyleUrl.Desc + '<br /><input id="CustomStyleUrl" style="width:85%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.CustomStyleUrl.Value + '"></input>';
+            htmlStr += '<br /><br />' + _this.Options.CustomStyleUrl.Desc + '<br /><input id="CustomStyleUrl" style="width:85%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" value="' + _this.Options.CustomStyleUrl.Value + '">';
             htmlStr += '&nbsp; <a href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-unsub" id="AVE_CheckCSSFile">Check</a>';
 
             htmlStr += '<br /> <a target="_blank" href="https://userstyles.org/styles/browse/voat">Try a usertstyle<a/>: add ".css" at the end of the userstyle\'s url and paste it above.';

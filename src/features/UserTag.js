@@ -49,6 +49,7 @@ AVE.Modules['UserTag'] = {
             Value: false
         }
     },
+
     //Possible issues with the fact that the username in the profil overview is in lower case
     UserTagObj: function (tag, colour, ignored, balance, context) {
         this.t = tag.toString();
@@ -59,9 +60,7 @@ AVE.Modules['UserTag'] = {
     },
 
     SavePref: function (POST) {
-        var _this = this;
-
-        _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST[this.ID]));
     },
 
     SetOptionsFromPref: function () {
@@ -216,8 +215,11 @@ table#formTable{\
     Migrate: function () {
         var _this = this;
         var data = JSON.parse(this.Store.GetValue(this.StorageName, "{}"));
+
+        print("AVE: UserTag > migrating (a one-time process)");
         
         $.each(data, function (key, val) {
+            if(val.hasOwnProperty("t") || !val.hasOwnProperty("tag") || Object.keys(val).length === 0){return true;}
             data[key] = new _this.UserTagObj(data[key].tag, data[key].colour, data[key].ignore, data[key].balance, data[key].context);
             if(!val.tag){
                 delete data[key].t;
@@ -230,9 +232,10 @@ table#formTable{\
                 delete data[key].i;
             }
             if (!val.context){
-                delete  data[key].con;
+                delete data[key].con;
             }
         });
+
         this.Store.SetValue(this.StorageName, JSON.stringify(data));
 
         var POST = {};
@@ -240,6 +243,9 @@ table#formTable{\
             Enabled: true,
             VoteBalance: this.Options.VoteBalance.Value,
             ShowBalanceWithColourGradient: this.Options.ShowBalanceWithColourGradient.Value,
+            ColourGradientRangePos: this.Options.ColourGradientRangePos.Value,
+            ColourGradientRangeNeg: this.Options.ColourGradientRangeNeg.Value,
+            ColourGradientMaxWhite: this.Options.ColourGradientMaxWhite.Value,
             Migrated: true
         };
         this.SavePref(POST);

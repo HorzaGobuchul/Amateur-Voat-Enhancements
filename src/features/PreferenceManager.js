@@ -469,11 +469,19 @@ AVE.Modules['PreferenceManager'] = {
         //Get special form element from the modules themselves.
         if (typeof module.AppendToPreferenceManager === "object") {
             if (typeof module.AppendToPreferenceManager.html === "function") {
-                $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']").append('<div class=AVE_ModuleCustomInput></div>');
-                $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']").find("div.AVE_ModuleCustomInput").append(module.AppendToPreferenceManager.html());
-            }
-            if (typeof module.AppendToPreferenceManager.callback === "function") {
-                module.AppendToPreferenceManager.callback();
+                var JqId = $("form[cat='" + cat + "']").find("div[id='" + module.ID + "']");
+                JqId.append('<div class=AVE_ModuleCustomInput></div>');
+                try {
+                    html = module.AppendToPreferenceManager.html();
+                    JqId.find("div.AVE_ModuleCustomInput").append(html);
+                    if (typeof module.AppendToPreferenceManager.callback === "function") {
+                        module.AppendToPreferenceManager.callback();
+                    }
+                }
+                catch (e) {
+                    print("AVE: PreferenceManager > Error importing custom settings for " + module.ID +"! Aborting.");
+                    JqId.find("div.AVE_ModuleCustomInput").html('<span style="font-size:18px;font-weight:bold;">Error importing custom settings. Operation aborted.</span>');
+                }
             }
         }
 

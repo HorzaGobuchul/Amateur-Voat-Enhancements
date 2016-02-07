@@ -172,7 +172,6 @@ AVE.Modules['HideSubmissions'] = {
     obsVoteChange: null,
 
     Listeners: function () {
-        "use strict";
         var _this = this;
 
         if (this.Options.AddHideButton.Value) {

@@ -59,12 +59,17 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.5.9",
+        "V2.36.8.9",
+        "   Init:",
+        "       If a module crashes when loading it will be automatically deactivated",
+        "   UserTag:",
+        "       Corrected an embarrassing bug that essentially would have prevented new users from using the beta version with a fresh install",
         "   HideSubmissions:",
         "       option to hide a submission after clicking its link",
         "   ShowSubmissionVoatBalance:",
         "       Finally working thanks to a script by /u/dubbelnougat",
         "   PreferencesManager:",
+        "       If a module encounters an error when importing its custom options it will show an error instead of crashing the whole preference manager",
         "       It is now possible to enable/disable a module by clicking its title",
         "   ShortKeys:",
         "       Fixed interference with CSSEditor",
