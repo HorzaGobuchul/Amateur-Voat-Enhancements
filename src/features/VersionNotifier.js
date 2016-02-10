@@ -29,7 +29,7 @@ AVE.Modules['VersionNotifier'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -60,7 +60,22 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.8.13",
+        "V2.36.9.20",
+        "   HttpWarning:",
+        "       Submission's title attribute replaced with a warning",
+        "   CSSEditor:",
+        "       Fixed scrollbars not appearing",
+        "   AccountSwitcher:",
+        "       The Voat icon will now be at the right of the username by default, but can be changed",
+        "       The manager block element will now be positioned coherently below the account element when the latter is divided",
+        "       The width of the manager block is now set to 200px",
+        "   AccountSwitcher, UserInfoFixedPos, HeaderFixedPos:",
+        "       Added conditonals to catch an error related to the CDN error page",
+        "   Init:",
+        "       Will look for error pages sooner (on head ready)",
+        "V2.36.8.14",
+        "   PreferenceManager:",
+        "       Fixed issue where buttons are considered inputs and were saved along with the actual options value",
         "   General:",
         "       Added a failsafe in the function responsible for loading settings for each module",
         "   SelectPost:",

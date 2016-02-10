@@ -4,7 +4,7 @@ AVE.Modules['AccountSwitcher'] = {
     Desc: 'Store information for several accounts and switch between them easily.',
     Category: 'Account',
 
-    Index: 100,
+    Index: 200,
     Enabled: false,
 
     Store: {},
@@ -14,6 +14,11 @@ AVE.Modules['AccountSwitcher'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
+            Value: false
+        },
+        IconPositionLeft: {
+            Type: 'boolean',
+            Desc: "Display the voat icon on the left of your username",
             Value: false
         }
     },
@@ -31,7 +36,7 @@ AVE.Modules['AccountSwitcher'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -92,91 +97,100 @@ AVE.Modules['AccountSwitcher'] = {
 
     AppendToPage: function () { //To insert content into the page
         var _this = this;
+        var q = $('div#header-account > div:first');
 
-        var q = $('div#header-account > div:first'),
-            qH = q.get(0).offsetHeight,
-            qW = q.get(0).offsetWidth;
-        if (q.length > 0) {
-            var light = AVE.Utils.CSSstyle === "light";
-            if (!light)
-            {
-                this.normalColour = '#fff'; //this.hoverColour = "#8c2f2f"
+        if(q.length === 0) {
+            print("AVE: AccountSwitcher > the header account element couldn't be found. Is this an error page?");
+        }
+
+        var qH = q.height() + (q.outerHeight() - q.height()) / 2,
+            qW = q.outerWidth();
+
+        var light = AVE.Utils.CSSstyle === "light";
+        if (!light)
+        {
+            this.normalColour = '#fff'; //this.hoverColour = "#8c2f2f"
+        }
+
+        var manager = document.createElement('span');
+        manager.style.position = 'relative';
+        manager.style.display = 'inline-block';
+        manager.style.visibility = 'visible';
+        manager.style.fontSize = '12px';
+        var managerIcon = document.createElement('img');
+        manager.appendChild(managerIcon);
+        managerIcon.src = '/favicon.ico';
+        managerIcon.width = 14;
+        managerIcon.height = 14;
+        managerIcon.title = 'Accounts';
+        managerIcon.style.cursor = 'pointer';
+        var managerMenu = document.createElement('div');
+        manager.appendChild(managerMenu);
+        managerMenu.style.display = 'none';
+        managerMenu.style.position = 'absolute';
+        managerMenu.style.left = '0';
+        managerMenu.style.top = qH + 'px';
+        managerMenu.style.width = '200px';
+        managerMenu.style.border = '1px solid #777';
+        managerMenu.style.borderRadius = '3px';
+        managerMenu.style.background = light ? '#fff' : '#333';
+        managerMenu.style.color = this.normalColour;
+        managerMenu.style.textAlign = 'left';
+        managerIcon.addEventListener('click', function (e) {
+            managerMenu.style.display = managerMenu.style.display == 'none' ? 'block' : 'none';
+        }, false);
+        document.addEventListener('click', function (e) {
+            if (e.target != managerIcon)
+                managerMenu.style.display = 'none';
+        }, false);
+        $.each(this.savedAccounts, function (val) {
+            //print('AVE: AccountSwitcher > adding ' + _this.savedAccounts[val].name, true);
+            _this.addLoginLink(managerMenu, _this.savedAccounts[val].name, _this.savedAccounts[val].pass);
+        });
+        var managerAddAccount = document.createElement('div');
+        managerAddAccount.appendChild(document.createTextNode('+ Add account'));
+        managerMenu.appendChild(managerAddAccount);
+        managerAddAccount.style.cursor = 'pointer';
+        managerAddAccount.style.padding = '0 0.5em';
+        this.switchColor(managerAddAccount);
+        managerAddAccount.addEventListener('click', function () {
+            var user = prompt('Username', '');
+            if (!user){
+                return false;
             }
-            var manager = document.createElement('span');
-            manager.style.position = 'relative';
-            manager.style.display = 'inline-block';
-            manager.style.visibility = 'visible';
-            manager.style.fontSize = '12px';
-            var managerIcon = document.createElement('img');
-            manager.appendChild(managerIcon);
-            managerIcon.src = '/favicon.ico';
-            managerIcon.width = (qH / 2) > 13 ? qH / 2 : 13;
-            managerIcon.height = (qH / 2) > 13 ? qH / 2 : 13;
-            managerIcon.title = 'Accounts';
-            managerIcon.style.cursor = 'pointer';
-            managerIcon.style.marginRight = '0.5em';
-            var managerMenu = document.createElement('div');
-            manager.appendChild(managerMenu);
-            managerMenu.style.display = 'none';
-            managerMenu.style.position = 'absolute';
-            managerMenu.style.left = '0';
-            managerMenu.style.top = (qH / 1.5) + 'px';
-            managerMenu.style.width = (qW >= 200 ? 200 : qW) + 'px';
-            managerMenu.style.border = '1px solid #777';
-            managerMenu.style.borderRadius = '3px';
-            managerMenu.style.background = light ? '#fff' : '#333';
-            managerMenu.style.color = this.normalColour;
-            managerMenu.style.textAlign = 'left';
-            managerIcon.addEventListener('click', function (e) {
-                managerMenu.style.display = managerMenu.style.display == 'none' ? 'block' : 'none';
-            }, false);
-            document.addEventListener('click', function (e) {
-                if (e.target != managerIcon)
-                    managerMenu.style.display = 'none';
-            }, false);
-            $.each(this.savedAccounts, function (val) {
-                //print('AVE: AccountSwitcher > adding ' + _this.savedAccounts[val].name, true);
-                _this.addLoginLink(managerMenu, _this.savedAccounts[val].name, _this.savedAccounts[val].pass);
+            var exit = false;
+            $.each(_this.savedAccounts, function (idx) {
+                if (user.toUpperCase() === _this.savedAccounts[idx].name.toUpperCase()) {
+                    alert('User ('+user+') already exists');
+                    exit = true;
+                    return false;
+                }
             });
-            var managerAddAccount = document.createElement('div');
-            managerAddAccount.appendChild(document.createTextNode('+ Add account'));
-            managerMenu.appendChild(managerAddAccount);
-            managerAddAccount.style.cursor = 'pointer';
-            managerAddAccount.style.padding = '0 0.5em';
-            this.switchColor(managerAddAccount);
-            managerAddAccount.addEventListener('click', function () {
-                var user = prompt('Username', '');
-                if (!user){
-                    return false;
-                }
-                var exit = false;
-                $.each(_this.savedAccounts, function (idx) {
-                    if (user.toUpperCase() === _this.savedAccounts[idx].name.toUpperCase()) {
-                        alert('User ('+user+') already exists');
-                        exit = true;
-                        return false;
-                    }
-                });
-                if (exit){return false;}
+            if (exit){return false;}
 
-                var pass = prompt('Password', '');
-                if (!pass){
-                    alert("You need to input a password");
-                    return false;
-                }
-                _this.savedAccounts.push({
-                    name: user,
-                    pass: pass
-                });
-                _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.savedAccounts));
-                managerMenu.removeChild(managerAddAccount);
-                _this.addLoginLink(managerMenu, user, pass);
-                managerMenu.appendChild(managerAddAccount);
-            }, false);
-            if (q.className === 'logged-in'){
-                q = q.find(".user");
+            var pass = prompt('Password', '');
+            if (!pass){
+                alert("You need to input a password");
+                return false;
             }
+            _this.savedAccounts.push({
+                name: user,
+                pass: pass
+            });
+            _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.savedAccounts));
+            managerMenu.removeChild(managerAddAccount);
+            _this.addLoginLink(managerMenu, user, pass);
+            managerMenu.appendChild(managerAddAccount);
+        }, false);
+        if (q.className === 'logged-in'){
+            q = q.find(".user");
+        } else {this.Options.IconPositionLeft.Value = true;} // Can't be at the right of the username if we aren't logged in
+        if (this.Options.IconPositionLeft.Value){
             $(manager).insertBefore(q.find('>:first-child'));
+            managerIcon.style.marginRight = '0.5em';
+        } else {
+            $(manager).insertAfter("span.user > a[title='Profile']");
+            managerIcon.style.marginLeft = '0.5em';
         }
     },
 
@@ -280,10 +294,14 @@ AVE.Modules['AccountSwitcher'] = {
 
     AppendToPreferenceManager: {
         html: function () {
-            //var _this = AVE.Modules['AccountSwitcher'];
+            var _this = AVE.Modules['AccountSwitcher'];
+            var htmlStr = "";
 
-            return 'Feature written by <a href="https://voat.co/u/GingerSoul">/u/GingerSoul</a>.<br><br>' +
+            htmlStr += '<input id="IconPositionLeft" ' + (_this.Options.IconPositionLeft.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="IconPositionLeft"> ' + _this.Options.IconPositionLeft.Desc + '</label><br><br>';
+            htmlStr += 'Feature written by <a href="https://voat.co/u/GingerSoul">/u/GingerSoul</a>.<br><br>' +
                     '<strong>DO NOT FORGET that your account information are stored unencrypted in AVE\'s data when you export it to a JSON file!</strong>';
+
+            return htmlStr;
         }
     }
 };

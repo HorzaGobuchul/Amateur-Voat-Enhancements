@@ -2,6 +2,7 @@ var AVE = {};
 AVE.Modules = {};
 
 AVE.Init = {
+    stopLoading: false,
     Start: function () {
         var ModLoad, _this, stopLoading;
 
@@ -14,7 +15,6 @@ AVE.Init = {
             DocReady: [],
             WinLoaded: []
         };
-        stopLoading = false;
 
         AVE.Utils.EarlySet();
 
@@ -48,6 +48,17 @@ AVE.Init = {
 
             //On head ready
             $("head").ready(function () {
+                //By /u/Jammi: voat.co/v/AVE/comments/421861
+                if (document.title === 'Checking your bits' || document.title === 'Play Pen Improvements') { // Add CDN error page
+                    print("AVE: this is an error page, no more modules will be started");
+                    if (~document.cookie.indexOf('theme=dark')) {
+                        $.each(["body background #333", "body color #dfdfdf", "#header background #333", "#header-container background #333", "#header-container borderBottomColor #555", "#header-container borderTopColor #555", ".panel-info background #222", ".panel-heading background #222", ".panel-heading borderColor #444", ".panel-title background #222", ".panel-title color #dfdfdf", ".panel-body background #222", ".panel-body borderColor #444"],
+                            function () { var _this = this.split(" "); $(_this[0]).css(_this[1], _this[2]); });
+                    }
+                    this.stopLoading = true;
+                    return;
+                }//Error pages that are empty
+
                 AVE.Utils.LateSet();
                 $.each(ModLoad.HeadReady, function () {
                     _this.LoadModules(this);
@@ -71,17 +82,6 @@ AVE.Init = {
             //On doc ready
             $(document).ready(function () {
                 print("AVE: Current style > " + AVE.Utils.CSSstyle, true);
-
-                //By /u/Jammi: voat.co/v/AVE/comments/421861
-                if (document.title === 'Checking your bits' || document.title === 'Play Pen Improvements') {
-                    print("AVE: this is an error page, no more modules will be started");
-                    if (~document.cookie.indexOf('theme=dark')) {
-                        $.each(["body background #333", "body color #dfdfdf", "#header background #333", "#header-container background #333", "#header-container borderBottomColor #555", "#header-container borderTopColor #555", ".panel-info background #222", ".panel-heading background #222", ".panel-heading borderColor #444", ".panel-title background #222", ".panel-title color #dfdfdf", ".panel-body background #222", ".panel-body borderColor #444"],
-                               function () { var _this = this.split(" "); $(_this[0]).css(_this[1], _this[2]); });
-                    }
-                    stopLoading = true;
-                    return;
-                }//Error pages that are empty
                 
                 $.each(ModLoad.DocReady, function () {
                     _this.LoadModules(this);
@@ -89,7 +89,7 @@ AVE.Init = {
             });
             //On window loaded
             var loadModuleOnLoadComplete = function () {
-                if (stopLoading){return;}
+                if (this.stopLoading){return;}
                 $.each(ModLoad.WinLoaded, function () {
                     _this.LoadModules(this);
                 });
@@ -104,6 +104,7 @@ AVE.Init = {
     },
 
     LoadModules: function (ID) {
+        if (this.stopLoading){return;}
         var module = AVE.Modules[ID];
         print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")", true);
 

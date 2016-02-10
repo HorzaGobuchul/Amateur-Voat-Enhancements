@@ -84,7 +84,7 @@ AVE.Modules['CSSEditor'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -135,7 +135,7 @@ AVE.Modules['CSSEditor'] = {
                 var Vpos = _this.Options.Position.All[0][_this.Options.Position.Value[0]].split(":"),
                     Hpos = _this.Options.Position.All[1][_this.Options.Position.Value[1]].split(":");
 
-                s.attr("style", "display:block;position:fixed;z-index:1000;min-height:"+_this.Options.Size.Value[1]+";width:"+_this.Options.Size.Value[0]+";background:rgba(255,255,255,.9);color:#000;opacity:.5;font:10px/1.1 monospace;white-space:pre;overflow:scroll;padding:4px;-webkit-user-modify:read-write-plaintext-only;")
+                s.attr("style", "display:block;position:fixed;z-index:2000;max-height:"+_this.Options.Size.Value[1]+";max-width:"+_this.Options.Size.Value[0]+";min-height:"+_this.Options.Size.Value[1]+";min-width:"+_this.Options.Size.Value[0]+";background:rgba(255,255,255,.9);color:#000;opacity:.5;font:10px/1.1 monospace;white-space:pre;overflow:scroll;padding:4px;-webkit-user-modify:read-write-plaintext-only;")
                  .css(Vpos[0], Vpos[1])
                  .css(Hpos[0], Hpos[1])
                  .attr("contentEditable", true)
@@ -148,7 +148,6 @@ AVE.Modules['CSSEditor'] = {
             }
             s.focus();
         });
-
     },
 
     AppendToPreferenceManager: {

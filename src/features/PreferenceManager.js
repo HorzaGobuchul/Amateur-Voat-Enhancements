@@ -36,7 +36,7 @@ AVE.Modules['PreferenceManager'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key" +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -392,7 +392,8 @@ AVE.Modules['PreferenceManager'] = {
             $(module).find(":input").each(function () {
                 var key = $(this).prop("id");
 
-                if (key === AVE.Modules[ModKey].Name) {POST[ModKey].Enabled = $(this).is(":checked");}
+                if ($(this).is("button")){return true;}
+                else if (key === AVE.Modules[ModKey].Name) {POST[ModKey].Enabled = $(this).is(":checked");}
                 else if (key === "") { /* continue/pass */ }
                 else if ($(this).attr("type") && $(this).attr("type").toLowerCase() === "checkbox") {
                     POST[ModKey][key] = $(this).is(":checked");
@@ -476,8 +477,12 @@ AVE.Modules['PreferenceManager'] = {
                     }
                 }
                 catch (e) {
-                    print("AVE: PreferenceManager > Error importing custom settings for " + module.ID +"! Aborting.");
-                    JqId.find("div.AVE_ModuleCustomInput").html('<span style="font-size:18px;font-weight:bold;">Error importing custom settings. Operation aborted.</span>');
+                    if(!AVE.Utils.DevMode){
+                        print("AVE: PreferenceManager > Error importing custom settings for " + module.ID +"! Aborting.");
+                        JqId.find("div.AVE_ModuleCustomInput").html('<span style="font-size:18px;font-weight:bold;">Error importing custom settings. Operation aborted.</span>');
+                    } else {
+                        console.error(e);
+                    }
                 }
             }
         }

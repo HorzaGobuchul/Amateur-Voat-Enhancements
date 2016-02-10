@@ -45,7 +45,7 @@ AVE.Modules['UserInfoFixedPos'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -71,8 +71,12 @@ AVE.Modules['UserInfoFixedPos'] = {
 
         if (AVE.Modules['HeaderFixedPos'] && AVE.Modules['HeaderFixedPos'].Enabled){ this.HeaderFixed = true; }
 
-        var JqId1 = $('#header-account'),
-            JqId2 = $("div#header-account > div.logged-in");
+        var JqId1 = $('#header-account');
+        if(JqId1.length === 0) {
+            print("AVE: UserInfoFixedPos > the header account element couldn't be found.");
+        }
+
+        var JqId2 = $("div#header-account > div.logged-in");
         //this.userBlockOriginalTopOffset = JqId1.offset().top;
         //this.SetAccountHeaderPosAsFixed();
 

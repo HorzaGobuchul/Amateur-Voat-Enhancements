@@ -29,7 +29,7 @@ AVE.Modules['HeaderFixedPos'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -61,6 +61,9 @@ AVE.Modules['HeaderFixedPos'] = {
 
         var bg, border, JqId;
         JqId = $("#sr-header-area");
+        if(JqId.length === 0) {
+            print("AVE: HeaderFixedPos > the header account element couldn't be found. Is this an error page?");
+        }
         //Subverse list bg
         bg = JqId.css("background-color");
         //If alpha channel isn't 1

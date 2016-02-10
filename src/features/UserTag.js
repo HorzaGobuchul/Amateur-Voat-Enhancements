@@ -65,7 +65,7 @@ AVE.Modules['UserTag'] = {
 
         Opt = JSON.parse(Opt);
         $.each(Opt, function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
 
