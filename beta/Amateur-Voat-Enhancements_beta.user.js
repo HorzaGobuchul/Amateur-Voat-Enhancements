@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2016-02-07
+// @date        2016-02-18
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.36.8.13
+// @version     2.36.9.25
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -27,6 +27,7 @@ var AVE = {};
 AVE.Modules = {};
 
 AVE.Init = {
+    stopLoading: false,
     Start: function () {
         var ModLoad, _this, stopLoading;
 
@@ -39,7 +40,6 @@ AVE.Init = {
             DocReady: [],
             WinLoaded: []
         };
-        stopLoading = false;
 
         AVE.Utils.EarlySet();
 
@@ -73,6 +73,17 @@ AVE.Init = {
 
             //On head ready
             $("head").ready(function () {
+                //By /u/Jammi: voat.co/v/AVE/comments/421861
+                if (document.title === 'Checking your bits' || document.title === 'Play Pen Improvements') { // Add CDN error page
+                    print("AVE: this is an error page, no more modules will be started");
+                    if (~document.cookie.indexOf('theme=dark')) {
+                        $.each(["body background #333", "body color #dfdfdf", "#header background #333", "#header-container background #333", "#header-container borderBottomColor #555", "#header-container borderTopColor #555", ".panel-info background #222", ".panel-heading background #222", ".panel-heading borderColor #444", ".panel-title background #222", ".panel-title color #dfdfdf", ".panel-body background #222", ".panel-body borderColor #444"],
+                            function () { var _this = this.split(" "); $(_this[0]).css(_this[1], _this[2]); });
+                    }
+                    this.stopLoading = true;
+                    return;
+                }//Error pages that are empty
+
                 AVE.Utils.LateSet();
                 $.each(ModLoad.HeadReady, function () {
                     _this.LoadModules(this);
@@ -96,17 +107,6 @@ AVE.Init = {
             //On doc ready
             $(document).ready(function () {
                 print("AVE: Current style > " + AVE.Utils.CSSstyle, true);
-
-                //By /u/Jammi: voat.co/v/AVE/comments/421861
-                if (document.title === 'Checking your bits' || document.title === 'Play Pen Improvements') {
-                    print("AVE: this is an error page, no more modules will be started");
-                    if (~document.cookie.indexOf('theme=dark')) {
-                        $.each(["body background #333", "body color #dfdfdf", "#header background #333", "#header-container background #333", "#header-container borderBottomColor #555", "#header-container borderTopColor #555", ".panel-info background #222", ".panel-heading background #222", ".panel-heading borderColor #444", ".panel-title background #222", ".panel-title color #dfdfdf", ".panel-body background #222", ".panel-body borderColor #444"],
-                               function () { var _this = this.split(" "); $(_this[0]).css(_this[1], _this[2]); });
-                    }
-                    stopLoading = true;
-                    return;
-                }//Error pages that are empty
                 
                 $.each(ModLoad.DocReady, function () {
                     _this.LoadModules(this);
@@ -114,7 +114,7 @@ AVE.Init = {
             });
             //On window loaded
             var loadModuleOnLoadComplete = function () {
-                if (stopLoading){return;}
+                if (this.stopLoading){return;}
                 $.each(ModLoad.WinLoaded, function () {
                     _this.LoadModules(this);
                 });
@@ -129,6 +129,7 @@ AVE.Init = {
     },
 
     LoadModules: function (ID) {
+        if (this.stopLoading){return;}
         var module = AVE.Modules[ID];
         print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")", true);
 
@@ -140,10 +141,12 @@ AVE.Init = {
             try { AVE.Modules[ID].Load(); }
             catch (e) {
                 print("AVE: Error loading " + ID);
+                //if (true) { console.error(e); }
                 var Opt = JSON.parse(AVE.Storage.GetValue(AVE.Storage.Prefix + ID, "{}"));
                 Opt.Enabled = false;
                 AVE.Storage.SetValue(AVE.Storage.Prefix + ID, JSON.stringify(Opt));
                 alert("AVE: Error loading module \"" + ID +"\"\nIt has been disabled, reload for the change to be effective");
+
             }
         }
     },
@@ -521,7 +524,7 @@ AVE.Modules['PreferenceManager'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key" +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -877,7 +880,8 @@ AVE.Modules['PreferenceManager'] = {
             $(module).find(":input").each(function () {
                 var key = $(this).prop("id");
 
-                if (key === AVE.Modules[ModKey].Name) {POST[ModKey].Enabled = $(this).is(":checked");}
+                if ($(this).is("button")){return true;}
+                else if (key === AVE.Modules[ModKey].Name) {POST[ModKey].Enabled = $(this).is(":checked");}
                 else if (key === "") { /* continue/pass */ }
                 else if ($(this).attr("type") && $(this).attr("type").toLowerCase() === "checkbox") {
                     POST[ModKey][key] = $(this).is(":checked");
@@ -961,8 +965,12 @@ AVE.Modules['PreferenceManager'] = {
                     }
                 }
                 catch (e) {
-                    print("AVE: PreferenceManager > Error importing custom settings for " + module.ID +"! Aborting.");
-                    JqId.find("div.AVE_ModuleCustomInput").html('<span style="font-size:18px;font-weight:bold;">Error importing custom settings. Operation aborted.</span>');
+                    if(!AVE.Utils.DevMode){
+                        print("AVE: PreferenceManager > Error importing custom settings for " + module.ID +"! Aborting.");
+                        JqId.find("div.AVE_ModuleCustomInput").html('<span style="font-size:18px;font-weight:bold;">Error importing custom settings. Operation aborted.</span>');
+                    } else {
+                        console.error(e);
+                    }
                 }
             }
         }
@@ -1139,7 +1147,7 @@ AVE.Modules['VersionNotifier'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -1170,7 +1178,31 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.8.13",
+        "V2.36.9.25",
+        "   AppendQuote:",
+        "       Fixed issue where the quote link would be added in the wrong list element",
+        "       The quote link is now inserted as the second element in a post's flat-list",
+        "   UserTag:",
+        "       In the dashboard, the paging options aren't empty by default anymore (shows tags and ignored, but not all votes registered)",
+        "   SelectPost:",
+        "       Fixed critical bug related to the SetOptionsFromPref function",
+        "   HttpWarning:",
+        "       Submission's title attribute replaced with a warning",
+        "   CSSEditor:",
+        "       Fixed scrollbars not appearing",
+        "   AccountSwitcher:",
+        "       Is Enabled by default",
+        "       The Voat icon will now be at the right of the username by default, but can be changed",
+        "       Fixed bug related to a Jquery selector that wouldn't appropriately detect a div's class",
+        "       The manager block element will now be positioned coherently below the account element when the latter is divided",
+        "       The width of the manager block is now set to 200px",
+        "   AccountSwitcher, UserInfoFixedPos, HeaderFixedPos:",
+        "       Added conditonals to catch an error related to the CDN error page",
+        "   Init:",
+        "       Will look for error pages sooner (on head ready)",
+        "V2.36.8.14",
+        "   PreferenceManager:",
+        "       Fixed issue where buttons are considered inputs and were saved along with the actual options value",
         "   General:",
         "       Added a failsafe in the function responsible for loading settings for each module",
         "   SelectPost:",
@@ -1566,7 +1598,7 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -1694,7 +1726,7 @@ AVE.Modules['UserTag'] = {
 
         Opt = JSON.parse(Opt);
         $.each(Opt, function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
 
@@ -2352,7 +2384,7 @@ table#formTable{\
         },
 
         GetOptions: function () {
-            var options = JSON.parse(this.module.Store.GetValue(this.StorageName, "{}"));
+            var options = JSON.parse(this.module.Store.GetValue(this.StorageName, "[false, true, true, 20]"));
 
             this.ShowVoteBalance = !!options[0];
             this.ShowIgnore = options[1] ? true : false;
@@ -2838,7 +2870,7 @@ AVE.Modules['ToggleMedia'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -3042,7 +3074,7 @@ AVE.Modules['HideSubmissions'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -3263,10 +3295,10 @@ AVE.Modules['SelectPost'] = {
 
     SetOptionsFromPref: function () {
         var _this = this;
-        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID);
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         Opt = JSON.parse(Opt);
-        if (Opt.Enabled.hasOwnProperty("Value")){
+        if (Opt.Enabled && Opt.Enabled.hasOwnProperty("Value")){
             //Migrate
             var POST = {};
             POST.Enabled = Opt.Enabled.Value;
@@ -3280,7 +3312,7 @@ AVE.Modules['SelectPost'] = {
         }
 
         $.each(Opt, function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
 
@@ -3488,7 +3520,7 @@ AVE.Modules['ShortKeys'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -3901,7 +3933,7 @@ AVE.Modules['InjectCustomStyle'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -4170,7 +4202,7 @@ AVE.Modules['ToggleCustomStyle'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -4339,7 +4371,7 @@ AVE.Modules['HeaderFixedPos'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -4371,6 +4403,9 @@ AVE.Modules['HeaderFixedPos'] = {
 
         var bg, border, JqId;
         JqId = $("#sr-header-area");
+        if(JqId.length === 0) {
+            print("AVE: HeaderFixedPos > the header account element couldn't be found. Is this an error page?");
+        }
         //Subverse list bg
         bg = JqId.css("background-color");
         //If alpha channel isn't 1
@@ -4508,7 +4543,7 @@ AVE.Modules['CommentFilter'] = {
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
 
@@ -4694,7 +4729,7 @@ AVE.Modules['ToggleChildComment'] = {
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         _this.Enabled = _this.Options.Enabled.Value;
@@ -4781,7 +4816,7 @@ AVE.Modules['ShowSubmissionVoatBalance'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -4899,7 +4934,7 @@ AVE.Modules['ThemeSwitcher'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -5006,7 +5041,7 @@ AVE.Modules['NeverEndingVoat'] = {
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         _this.Enabled = _this.Options.Enabled.Value;
@@ -5270,7 +5305,7 @@ AVE.Modules['ReplyWithQuote'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -5416,7 +5451,7 @@ AVE.Modules['FixContainerWidth'] = {
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         _this.Enabled = _this.Options.Enabled.Value;
@@ -5520,7 +5555,7 @@ AVE.Modules['HttpWarning'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -5545,6 +5580,7 @@ AVE.Modules['HttpWarning'] = {
             AVE.Utils.AddStyle('a.title.may-blank[href^="http:"] {' + this.Options.WarningStyle.Value[AVE.Utils.CSSstyle === "dark" ? 0 : 1] + '}');
         }
         if (this.Options.WarningIcon.Value){
+            $('a.title.may-blank[href^="http:"]').attr("title", "This submission links to a webpage over an insecure protocol (HTTP)");
             AVE.Utils.AddStyle( 'a.title.may-blank[href^="http:"]:before {' +
                 '   content: "";' +
                 '   background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20style%3D%22fill%3A%23'+'d85858'+'%3B%22%20d%3D%22M7%2C0L0%2C12h14L7%2C0z%20M7%2C11c-0.553%2C0-1-0.447-1-1s0.447-1%2C1-1c0.553%2C0%2C1%2C0.447%2C1%2C1S7.553%2C11%2C7%2C11z%20M7%2C8%20C6.447%2C8%2C6%2C7.553%2C6%2C7V5c0-0.553%2C0.447-1%2C1-1c0.553%2C0%2C1%2C0.447%2C1%2C1v2C8%2C7.553%2C7.553%2C8%2C7%2C8z%22%2F%3E%3C%2Fsvg%3E");'+
@@ -5554,7 +5590,7 @@ AVE.Modules['HttpWarning'] = {
                 '   background-position: center;' +
                 '   display: inline-block;' +
                 '   margin-right: 5px;' +
-                '   vertical-align: middle;'+
+                '   vertical-align: middle;' +
                 '}');
         }
     },
@@ -5675,7 +5711,7 @@ AVE.Modules['SubmissionFilter'] = {
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
 
@@ -5884,7 +5920,7 @@ AVE.Modules['CSSEditor'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -5935,7 +5971,7 @@ AVE.Modules['CSSEditor'] = {
                 var Vpos = _this.Options.Position.All[0][_this.Options.Position.Value[0]].split(":"),
                     Hpos = _this.Options.Position.All[1][_this.Options.Position.Value[1]].split(":");
 
-                s.attr("style", "display:block;position:fixed;z-index:1000;min-height:"+_this.Options.Size.Value[1]+";width:"+_this.Options.Size.Value[0]+";background:rgba(255,255,255,.9);color:#000;opacity:.5;font:10px/1.1 monospace;white-space:pre;overflow:scroll;padding:4px;-webkit-user-modify:read-write-plaintext-only;")
+                s.attr("style", "display:block;position:fixed;z-index:2000;max-height:"+_this.Options.Size.Value[1]+";max-width:"+_this.Options.Size.Value[0]+";min-height:"+_this.Options.Size.Value[1]+";min-width:"+_this.Options.Size.Value[0]+";background:rgba(255,255,255,.9);color:#000;opacity:.5;font:10px/1.1 monospace;white-space:pre;overflow:scroll;padding:4px;-webkit-user-modify:read-write-plaintext-only;")
                  .css(Vpos[0], Vpos[1])
                  .css(Hpos[0], Hpos[1])
                  .attr("contentEditable", true)
@@ -5948,7 +5984,6 @@ AVE.Modules['CSSEditor'] = {
             }
             s.focus();
         });
-
     },
 
     AppendToPreferenceManager: {
@@ -6029,7 +6064,7 @@ AVE.Modules['IgnoreUsers'] = {
 
         Opt = JSON.parse(Opt);
         $.each(Opt, function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
 
@@ -6175,7 +6210,7 @@ AVE.Modules['FixExpandImage'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -6325,7 +6360,7 @@ AVE.Modules['ContributionDeltas'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -6654,7 +6689,7 @@ AVE.Modules['RememberCommentCount'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -6874,298 +6909,6 @@ AVE.Modules['RememberCommentCount'] = {
 };
 /// END Remember comment count ///
 
-/// Account Switcher:  Store information for several accounts and switch between them easily. ///
-AVE.Modules['AccountSwitcher'] = {
-    ID: 'AccountSwitcher',
-    Name: 'Account Switcher',
-    Desc: 'Store information for several accounts and switch between them easily.',
-    Category: 'Account',
-
-    Index: 100,
-    Enabled: false,
-
-    Store: {},
-
-    RunAt: "banner",
-
-    Options: {
-        Enabled: {
-            Type: 'boolean',
-            Value: false
-        }
-    },
-
-    OriginalOptions: "",
-
-    SavePref: function (POST) {
-        POST = POST[this.ID];
-
-        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
-    },
-
-    SetOptionsFromPref: function () {
-        var _this = this;
-        var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
-
-        $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
-            _this.Options[key].Value = value;
-        });
-        this.Enabled = this.Options.Enabled.Value;
-    },
-
-    Load: function () {
-        this.Store = AVE.Storage;
-        this.SetOptionsFromPref();
-
-        if (this.Enabled) {
-
-            this.StorageName = this.Store.Prefix + this.ID + "_accounts";
-
-            this.savedAccounts = JSON.parse(this.Store.GetValue(this.StorageName, "[]"));
-
-            this.Start();
-        }
-    },
-
-    Start: function () {
-        //Thanks a lot to /u/GingerSoul for this feature!
-
-        this.style = '' +
-            'span#AVE_AccountSwitcher_del {\
-                /* Delete */\
-                height: 14px;\
-                width: 14px;\
-                margin-top:2px;\
-                margin-left:4px;\
-                /* SVG from Jquery Mobile Icon Set */\
-                background-image:url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpolygon%20fill%3D%22%23' + (AVE.Utils.CSSstyle === "dark" ? "af3f3f" : "ce6d6d") + '%22%20points%3D%2214%2C3%2011%2C0%207%2C4%203%2C0%200%2C3%204%2C7%200%2C11%203%2C14%207%2C10%2011%2C14%2014%2C11%2010%2C7%20%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E")!important;\
-    background-repeat: no-repeat;\
-    cursor: pointer;\
-    background-position: center;\
-                }\
-            span#AVE_AccountSwitcher_edit {\
-                /* edit */\
-                height: 14px;\
-                width: 14px;\
-                margin-top:2px;\
-                margin-left:4px;\
-                /* SVG from Jquery Mobile Icon Set */\
-                background-image:url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23377da8%22%20d%3D%22M1%2C10l-1%2C4l4-1l7-7L8%2C3L1%2C10z%20M11%2C0L9%2C2l3%2C3l2-2L11%2C0z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E")!important;\
-        background-repeat: no-repeat;\
-        cursor: pointer;\
-        background-position: center;\
-                }';
-
-        AVE.Utils.AddStyle(this.style);
-        this.AppendToPage();
-    },
-
-    storageName: "",
-    style: "",
-    savedAccounts: [],
-    normalColour: "#000",
-    hoverColour: "#e23f3f",
-
-    AppendToPage: function () { //To insert content into the page
-        var _this = this;
-
-        var q = $('div#header-account > div:first'),
-            qH = q.get(0).offsetHeight,
-            qW = q.get(0).offsetWidth;
-        if (q.length > 0) {
-            var light = AVE.Utils.CSSstyle === "light";
-            if (!light)
-            {
-                this.normalColour = '#fff'; //this.hoverColour = "#8c2f2f"
-            }
-            var manager = document.createElement('span');
-            manager.style.position = 'relative';
-            manager.style.display = 'inline-block';
-            manager.style.visibility = 'visible';
-            manager.style.fontSize = '12px';
-            var managerIcon = document.createElement('img');
-            manager.appendChild(managerIcon);
-            managerIcon.src = '/favicon.ico';
-            managerIcon.width = (qH / 2) > 13 ? qH / 2 : 13;
-            managerIcon.height = (qH / 2) > 13 ? qH / 2 : 13;
-            managerIcon.title = 'Accounts';
-            managerIcon.style.cursor = 'pointer';
-            managerIcon.style.marginRight = '0.5em';
-            var managerMenu = document.createElement('div');
-            manager.appendChild(managerMenu);
-            managerMenu.style.display = 'none';
-            managerMenu.style.position = 'absolute';
-            managerMenu.style.left = '0';
-            managerMenu.style.top = (qH / 1.5) + 'px';
-            managerMenu.style.width = (qW >= 200 ? 200 : qW) + 'px';
-            managerMenu.style.border = '1px solid #777';
-            managerMenu.style.borderRadius = '3px';
-            managerMenu.style.background = light ? '#fff' : '#333';
-            managerMenu.style.color = this.normalColour;
-            managerMenu.style.textAlign = 'left';
-            managerIcon.addEventListener('click', function (e) {
-                managerMenu.style.display = managerMenu.style.display == 'none' ? 'block' : 'none';
-            }, false);
-            document.addEventListener('click', function (e) {
-                if (e.target != managerIcon)
-                    managerMenu.style.display = 'none';
-            }, false);
-            $.each(this.savedAccounts, function (val) {
-                //print('AVE: AccountSwitcher > adding ' + _this.savedAccounts[val].name, true);
-                _this.addLoginLink(managerMenu, _this.savedAccounts[val].name, _this.savedAccounts[val].pass);
-            });
-            var managerAddAccount = document.createElement('div');
-            managerAddAccount.appendChild(document.createTextNode('+ Add account'));
-            managerMenu.appendChild(managerAddAccount);
-            managerAddAccount.style.cursor = 'pointer';
-            managerAddAccount.style.padding = '0 0.5em';
-            this.switchColor(managerAddAccount);
-            managerAddAccount.addEventListener('click', function () {
-                var user = prompt('Username', '');
-                if (!user){
-                    return false;
-                }
-                var exit = false;
-                $.each(_this.savedAccounts, function (idx) {
-                    if (user.toUpperCase() === _this.savedAccounts[idx].name.toUpperCase()) {
-                        alert('User ('+user+') already exists');
-                        exit = true;
-                        return false;
-                    }
-                });
-                if (exit){return false;}
-
-                var pass = prompt('Password', '');
-                if (!pass){
-                    alert("You need to input a password");
-                    return false;
-                }
-                _this.savedAccounts.push({
-                    name: user,
-                    pass: pass
-                });
-                _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.savedAccounts));
-                managerMenu.removeChild(managerAddAccount);
-                _this.addLoginLink(managerMenu, user, pass);
-                managerMenu.appendChild(managerAddAccount);
-            }, false);
-            if (q.className === 'logged-in'){
-                q = q.find(".user");
-            }
-            $(manager).insertBefore(q.find('>:first-child'));
-        }
-    },
-
-    switchColor: function (e) {
-        var _this = this;
-        $(e).hover(function() {
-            $(this).css( "color", _this.hoverColour );
-        },         function() {
-            $(this).css( "color", _this.normalColour );
-        });
-    },
-
-    logIn: function (user, pass) {
-        var token = document.querySelector('[name="__RequestVerificationToken"]');
-        if (!token) {
-            alert('Can\'t login from this page');
-            return;
-        }
-        var form = document.createElement('form');
-        var userInput = document.createElement('input');
-        var passInput = document.createElement('input');
-        var tokenInput = document.createElement('input');
-        var rememberMe = document.createElement('input');
-        form.method = 'post';
-        form.action = '/account/login?ReturnUrl=' + encodeURIComponent(location.pathname);
-        form.appendChild(userInput);
-        form.appendChild(passInput);
-        form.appendChild(tokenInput);
-        form.appendChild(rememberMe);
-        document.body.appendChild(form);
-        userInput.name = 'UserName';
-        userInput.value = user;
-        passInput.name = 'Password';
-        passInput.value = pass;
-        tokenInput.name = '__RequestVerificationToken';
-        tokenInput.value = token.value;
-        rememberMe.type = 'checkbox';
-        rememberMe.value = 'RememberMe';
-        rememberMe.value = 'false';
-        form.style.display = 'none';
-        form.submit();
-    },
-
-    addLoginLink: function (managerMenu, name) {
-        if (typeof name !== "string") {print("AVE: AccountSwitcher > wrong variable type for \"name\""); return false;}
-        var _this = this;
-        var account = document.createElement('div'),
-            namelink = document.createElement('span');
-
-        namelink.appendChild(document.createTextNode(name));
-        account.appendChild(namelink);
-
-        var del = $('<span id="AVE_AccountSwitcher_del" style="float:right;" title="remove account information"></span>').get(0),
-            edit = $('<span id="AVE_AccountSwitcher_edit" style="float:right;" title="change password"></span>').get(0);
-
-        account.appendChild(del);
-        account.appendChild(edit);
-        managerMenu.appendChild(account);
-        namelink.style.cursor = 'pointer';
-        account.style.padding = '0 0.5em';
-
-        this.switchColor(account);
-
-        $(edit).off()
-            .on("click", function () {
-                var pass = prompt('New password', '');
-                if (pass) {
-                    for (var i = 0; i < _this.savedAccounts.length; i++) {
-                        if (name.toUpperCase() === _this.savedAccounts[i].name.toUpperCase()) {
-                            _this.savedAccounts[i].pass = pass;
-                            break;
-                        }
-                    }
-                    _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.savedAccounts));
-                }
-        });
-        $(del).off()
-            .on("click", function () {
-                if (confirm('Are you sure you want to remove '+name+' ?')) {
-                    for (var i = 0; i < _this.savedAccounts.length; i++) {
-                        if (name.toUpperCase() === _this.savedAccounts[i].name.toUpperCase()) {
-                            _this.savedAccounts.splice(i, 1);
-                            break;
-                        }
-                    }
-                    _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.savedAccounts));
-                    managerMenu.removeChild(account);
-                }
-            });
-
-        $(namelink).off()
-            .on("click", function () {
-                for (var i = 0; i < _this.savedAccounts.length; i++) {
-                    if (name.toUpperCase() === _this.savedAccounts[i].name.toUpperCase()){
-                        _this.logIn(name, _this.savedAccounts[i].pass);
-                        return false;
-                    }
-                }
-            });
-    },
-
-    AppendToPreferenceManager: {
-        html: function () {
-            //var _this = AVE.Modules['AccountSwitcher'];
-
-            return 'Feature written by <a href="https://voat.co/u/GingerSoul">/u/GingerSoul</a>.<br><br>' +
-                    '<strong>DO NOT FORGET that your account information are stored unencrypted in AVE\'s data when you export it to a JSON file!</strong>';
-        }
-    }
-};
-/// END Account Switcher ///
-
 /// Append quote:  Add a "quote" link to automatically insert the quoted comment into the closest reply box. ///
 AVE.Modules['AppendQuote'] = {
     ID: 'AppendQuote',
@@ -7192,6 +6935,8 @@ AVE.Modules['AppendQuote'] = {
     SavePref: function (POST) {
         var _this = this;
 
+        print(JSON.stringify(POST));
+
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
@@ -7207,7 +6952,7 @@ AVE.Modules['AppendQuote'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -7238,10 +6983,13 @@ AVE.Modules['AppendQuote'] = {
     },
 
     AppendToPage: function () {
-        $("ul[class*='flat-list']").each(function () {
+        $("ul.flat-list.buttons").each(function () {
             if ($(this).find("a#AVE_QuotePost").length > 0) { return; }
 
-            $('<li><a id="AVE_QuotePost" href="javascript:void(0)" style="font-weight:bold;">quote</a></li>').insertAfter($(this).find("li:contains(source)"));
+            var cont = $(this).find("li:first");
+            if (cont.length > 0){
+                $('<li><a id="AVE_QuotePost" href="javascript:void(0)" style="font-weight:bold;">quote</a></li>').insertAfter(cont);
+            }
         });
     },
 
@@ -7354,7 +7102,7 @@ AVE.Modules['DisableShareALink'] = {
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         _this.Enabled = _this.Options.Enabled.Value;
@@ -7410,7 +7158,7 @@ AVE.Modules['Shortcuts'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -7886,7 +7634,7 @@ AVE.Modules['ArchiveSubmission'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -8044,7 +7792,7 @@ AVE.Modules['DomainFilter'] = {
         var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
 
@@ -8213,7 +7961,7 @@ AVE.Modules['SingleClickOpener'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -8327,7 +8075,7 @@ AVE.Modules['HideUsername'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -8435,7 +8183,7 @@ AVE.Modules['DomainTags'] = {
         var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
 
         $.each(JSON.parse(Opt), function (key, value) {
-            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
             _this.Options[key].Value = value;
         });
         this.Enabled = this.Options.Enabled.Value;
@@ -9131,7 +8879,7 @@ AVE.Modules['UserInfoFixedPos'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
-                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist");return true;}
+                if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
                 _this.Options[key].Value = value;
             });
         }
@@ -9157,8 +8905,12 @@ AVE.Modules['UserInfoFixedPos'] = {
 
         if (AVE.Modules['HeaderFixedPos'] && AVE.Modules['HeaderFixedPos'].Enabled){ this.HeaderFixed = true; }
 
-        var JqId1 = $('#header-account'),
-            JqId2 = $("div#header-account > div.logged-in");
+        var JqId1 = $('#header-account');
+        if(JqId1.length === 0) {
+            print("AVE: UserInfoFixedPos > the header account element couldn't be found.");
+        }
+
+        var JqId2 = $("div#header-account > div.logged-in");
         //this.userBlockOriginalTopOffset = JqId1.offset().top;
         //this.SetAccountHeaderPosAsFixed();
 
@@ -9353,6 +9105,316 @@ div#header-container {z-index: 2;}\
 };
 
 /// END User-block fixes ///
+
+/// Account Switcher:  Store information for several accounts and switch between them easily. ///
+AVE.Modules['AccountSwitcher'] = {
+    ID: 'AccountSwitcher',
+    Name: 'Account Switcher',
+    Desc: 'Store information for several accounts and switch between them easily.',
+    Category: 'Account',
+
+    Index: 200,
+    Enabled: false,
+
+    Store: {},
+
+    RunAt: "banner",
+
+    Options: {
+        Enabled: {
+            Type: 'boolean',
+            Value: true
+        },
+        IconPositionLeft: {
+            Type: 'boolean',
+            Desc: "Display the voat icon on the left of your username",
+            Value: false
+        }
+    },
+
+    OriginalOptions: "",
+
+    SavePref: function (POST) {
+        POST = POST[this.ID];
+
+        this.Store.SetValue(this.Store.Prefix + this.ID, JSON.stringify(POST));
+    },
+
+    SetOptionsFromPref: function () {
+        var _this = this;
+        var Opt = this.Store.GetValue(this.Store.Prefix + this.ID, "{}");
+
+        $.each(JSON.parse(Opt), function (key, value) {
+            if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
+            _this.Options[key].Value = value;
+        });
+        this.Enabled = this.Options.Enabled.Value;
+    },
+
+    Load: function () {
+        this.Store = AVE.Storage;
+        this.SetOptionsFromPref();
+
+        if (this.Enabled) {
+
+            this.StorageName = this.Store.Prefix + this.ID + "_accounts";
+
+            this.savedAccounts = JSON.parse(this.Store.GetValue(this.StorageName, "[]"));
+
+            this.Start();
+        }
+    },
+
+    Start: function () {
+        //Thanks a lot to /u/GingerSoul for this feature!
+
+        this.style = '' +
+            'span#AVE_AccountSwitcher_del {\
+                /* Delete */\
+                height: 14px;\
+                width: 14px;\
+                margin-top:2px;\
+                margin-left:4px;\
+                /* SVG from Jquery Mobile Icon Set */\
+                background-image:url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpolygon%20fill%3D%22%23' + (AVE.Utils.CSSstyle === "dark" ? "af3f3f" : "ce6d6d") + '%22%20points%3D%2214%2C3%2011%2C0%207%2C4%203%2C0%200%2C3%204%2C7%200%2C11%203%2C14%207%2C10%2011%2C14%2014%2C11%2010%2C7%20%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E")!important;\
+    background-repeat: no-repeat;\
+    cursor: pointer;\
+    background-position: center;\
+                }\
+            span#AVE_AccountSwitcher_edit {\
+                /* edit */\
+                height: 14px;\
+                width: 14px;\
+                margin-top:2px;\
+                margin-left:4px;\
+                /* SVG from Jquery Mobile Icon Set */\
+                background-image:url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23377da8%22%20d%3D%22M1%2C10l-1%2C4l4-1l7-7L8%2C3L1%2C10z%20M11%2C0L9%2C2l3%2C3l2-2L11%2C0z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E")!important;\
+        background-repeat: no-repeat;\
+        cursor: pointer;\
+        background-position: center;\
+                }';
+
+        AVE.Utils.AddStyle(this.style);
+        this.AppendToPage();
+    },
+
+    storageName: "",
+    style: "",
+    savedAccounts: [],
+    normalColour: "#000",
+    hoverColour: "#e23f3f",
+
+    AppendToPage: function () { //To insert content into the page
+        var _this = this;
+        var q = $('div#header-account > div:first');
+
+        if(q.length === 0) {
+            print("AVE: AccountSwitcher > the header account element couldn't be found. Is this an error page?");
+        }
+
+        var qH = q.height() + (q.outerHeight() - q.height()) / 2;
+            //qW = q.outerWidth();
+
+        var light = AVE.Utils.CSSstyle === "light";
+        if (!light)
+        {
+            this.normalColour = '#fff'; //this.hoverColour = "#8c2f2f"
+        }
+
+        var manager = document.createElement('span');
+        manager.style.position = 'relative';
+        manager.style.display = 'inline-block';
+        manager.style.visibility = 'visible';
+        manager.style.fontSize = '12px';
+        var managerIcon = document.createElement('img');
+        manager.appendChild(managerIcon);
+        managerIcon.src = '/favicon.ico';
+        managerIcon.width = 14;
+        managerIcon.height = 14;
+        managerIcon.title = 'Accounts';
+        managerIcon.style.cursor = 'pointer';
+        var managerMenu = document.createElement('div');
+        manager.appendChild(managerMenu);
+        managerMenu.style.display = 'none';
+        managerMenu.style.position = 'absolute';
+        managerMenu.style.left = '0';
+        managerMenu.style.top = qH + 'px';
+        managerMenu.style.width = '200px';
+        managerMenu.style.border = '1px solid #777';
+        managerMenu.style.borderRadius = '3px';
+        managerMenu.style.background = light ? '#fff' : '#333';
+        managerMenu.style.color = this.normalColour;
+        managerMenu.style.textAlign = 'left';
+        managerIcon.addEventListener('click', function (e) {
+            managerMenu.style.display = managerMenu.style.display == 'none' ? 'block' : 'none';
+        }, false);
+        document.addEventListener('click', function (e) {
+            if (e.target != managerIcon)
+                managerMenu.style.display = 'none';
+        }, false);
+        $.each(this.savedAccounts, function (val) {
+            //print('AVE: AccountSwitcher > adding ' + _this.savedAccounts[val].name, true);
+            _this.addLoginLink(managerMenu, _this.savedAccounts[val].name, _this.savedAccounts[val].pass);
+        });
+        var managerAddAccount = document.createElement('div');
+        managerAddAccount.appendChild(document.createTextNode('+ Add account'));
+        managerMenu.appendChild(managerAddAccount);
+        managerAddAccount.style.cursor = 'pointer';
+        managerAddAccount.style.padding = '0 0.5em';
+        this.switchColor(managerAddAccount);
+        managerAddAccount.addEventListener('click', function () {
+            var user = prompt('Username', '');
+            if (!user){
+                return false;
+            }
+            var exit = false;
+            $.each(_this.savedAccounts, function (idx) {
+                if (user.toUpperCase() === _this.savedAccounts[idx].name.toUpperCase()) {
+                    alert('User ('+user+') already exists');
+                    exit = true;
+                    return false;
+                }
+            });
+            if (exit){return false;}
+
+            var pass = prompt('Password', '');
+            if (!pass){
+                alert("You need to input a password");
+                return false;
+            }
+            _this.savedAccounts.push({
+                name: user,
+                pass: pass
+            });
+            _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.savedAccounts));
+            managerMenu.removeChild(managerAddAccount);
+            _this.addLoginLink(managerMenu, user, pass);
+            managerMenu.appendChild(managerAddAccount);
+        }, false);
+        if (q.hasClass('logged-in')){
+            q = q.find(".user");
+        } else {this.Options.IconPositionLeft.Value = true;} // Can't be at the right of the username if we aren't logged in
+        if (this.Options.IconPositionLeft.Value){
+            $(manager).insertBefore(q.find('>:first-child'));
+            managerIcon.style.marginRight = '0.5em';
+        } else {
+            $(manager).insertAfter("span.user > a[title='Profile']");
+            managerIcon.style.marginLeft = '0.5em';
+        }
+    },
+
+    switchColor: function (e) {
+        var _this = this;
+        $(e).hover(function() {
+            $(this).css( "color", _this.hoverColour );
+        },         function() {
+            $(this).css( "color", _this.normalColour );
+        });
+    },
+
+    logIn: function (user, pass) {
+        var token = document.querySelector('[name="__RequestVerificationToken"]');
+        if (!token) {
+            alert('Can\'t login from this page');
+            return;
+        }
+        var form = document.createElement('form');
+        var userInput = document.createElement('input');
+        var passInput = document.createElement('input');
+        var tokenInput = document.createElement('input');
+        var rememberMe = document.createElement('input');
+        form.method = 'post';
+        form.action = '/account/login?ReturnUrl=' + encodeURIComponent(location.pathname);
+        form.appendChild(userInput);
+        form.appendChild(passInput);
+        form.appendChild(tokenInput);
+        form.appendChild(rememberMe);
+        document.body.appendChild(form);
+        userInput.name = 'UserName';
+        userInput.value = user;
+        passInput.name = 'Password';
+        passInput.value = pass;
+        tokenInput.name = '__RequestVerificationToken';
+        tokenInput.value = token.value;
+        rememberMe.type = 'checkbox';
+        rememberMe.value = 'RememberMe';
+        rememberMe.value = 'false';
+        form.style.display = 'none';
+        form.submit();
+    },
+
+    addLoginLink: function (managerMenu, name) {
+        if (typeof name !== "string") {print("AVE: AccountSwitcher > wrong variable type for \"name\""); return false;}
+        var _this = this;
+        var account = document.createElement('div'),
+            namelink = document.createElement('span');
+
+        namelink.appendChild(document.createTextNode(name));
+        account.appendChild(namelink);
+
+        var del = $('<span id="AVE_AccountSwitcher_del" style="float:right;" title="remove account information"></span>').get(0),
+            edit = $('<span id="AVE_AccountSwitcher_edit" style="float:right;" title="change password"></span>').get(0);
+
+        account.appendChild(del);
+        account.appendChild(edit);
+        managerMenu.appendChild(account);
+        namelink.style.cursor = 'pointer';
+        account.style.padding = '0 0.5em';
+
+        this.switchColor(account);
+
+        $(edit).off()
+            .on("click", function () {
+                var pass = prompt('New password', '');
+                if (pass) {
+                    for (var i = 0; i < _this.savedAccounts.length; i++) {
+                        if (name.toUpperCase() === _this.savedAccounts[i].name.toUpperCase()) {
+                            _this.savedAccounts[i].pass = pass;
+                            break;
+                        }
+                    }
+                    _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.savedAccounts));
+                }
+        });
+        $(del).off()
+            .on("click", function () {
+                if (confirm('Are you sure you want to remove '+name+' ?')) {
+                    for (var i = 0; i < _this.savedAccounts.length; i++) {
+                        if (name.toUpperCase() === _this.savedAccounts[i].name.toUpperCase()) {
+                            _this.savedAccounts.splice(i, 1);
+                            break;
+                        }
+                    }
+                    _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.savedAccounts));
+                    managerMenu.removeChild(account);
+                }
+            });
+
+        $(namelink).off()
+            .on("click", function () {
+                for (var i = 0; i < _this.savedAccounts.length; i++) {
+                    if (name.toUpperCase() === _this.savedAccounts[i].name.toUpperCase()){
+                        _this.logIn(name, _this.savedAccounts[i].pass);
+                        return false;
+                    }
+                }
+            });
+    },
+
+    AppendToPreferenceManager: {
+        html: function () {
+            var _this = AVE.Modules['AccountSwitcher'];
+            var htmlStr = "";
+
+            htmlStr += '<input id="IconPositionLeft" ' + (_this.Options.IconPositionLeft.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="IconPositionLeft"> ' + _this.Options.IconPositionLeft.Desc + '</label><br><br>';
+            htmlStr += 'Feature written by <a href="https://voat.co/u/GingerSoul">/u/GingerSoul</a>.<br><br>' +
+                    '<strong>DO NOT FORGET that your account information are stored unencrypted in AVE\'s data when you export it to a JSON file!</strong>';
+
+            return htmlStr;
+        }
+    }
+};
+/// END Account Switcher ///
 
 /// AVE\'s dashboard:  Use it to manage your saved data. ///
 AVE.Modules['Dashboard'] = {

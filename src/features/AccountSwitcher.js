@@ -14,7 +14,7 @@ AVE.Modules['AccountSwitcher'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: false
+            Value: true
         },
         IconPositionLeft: {
             Type: 'boolean',
@@ -103,8 +103,8 @@ AVE.Modules['AccountSwitcher'] = {
             print("AVE: AccountSwitcher > the header account element couldn't be found. Is this an error page?");
         }
 
-        var qH = q.height() + (q.outerHeight() - q.height()) / 2,
-            qW = q.outerWidth();
+        var qH = q.height() + (q.outerHeight() - q.height()) / 2;
+            //qW = q.outerWidth();
 
         var light = AVE.Utils.CSSstyle === "light";
         if (!light)
@@ -182,7 +182,7 @@ AVE.Modules['AccountSwitcher'] = {
             _this.addLoginLink(managerMenu, user, pass);
             managerMenu.appendChild(managerAddAccount);
         }, false);
-        if (q.className === 'logged-in'){
+        if (q.hasClass('logged-in')){
             q = q.find(".user");
         } else {this.Options.IconPositionLeft.Value = true;} // Can't be at the right of the username if we aren't logged in
         if (this.Options.IconPositionLeft.Value){

@@ -71,10 +71,13 @@ AVE.Modules['AppendQuote'] = {
     },
 
     AppendToPage: function () {
-        $("ul[class*='flat-list']").each(function () {
+        $("ul.flat-list.buttons").each(function () {
             if ($(this).find("a#AVE_QuotePost").length > 0) { return; }
 
-            $('<li><a id="AVE_QuotePost" href="javascript:void(0)" style="font-weight:bold;">quote</a></li>').insertAfter($(this).find("li:contains(source)"));
+            var cont = $(this).find("li:first");
+            if (cont.length > 0){
+                $('<li><a id="AVE_QuotePost" href="javascript:void(0)" style="font-weight:bold;">quote</a></li>').insertAfter(cont);
+            }
         });
     },
 

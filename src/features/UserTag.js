@@ -723,7 +723,7 @@ table#formTable{\
         },
 
         GetOptions: function () {
-            var options = JSON.parse(this.module.Store.GetValue(this.StorageName, "{}"));
+            var options = JSON.parse(this.module.Store.GetValue(this.StorageName, "[false, true, true, 20]"));
 
             this.ShowVoteBalance = !!options[0];
             this.ShowIgnore = options[1] ? true : false;

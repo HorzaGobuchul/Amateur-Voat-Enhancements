@@ -55,10 +55,10 @@ AVE.Modules['SelectPost'] = {
 
     SetOptionsFromPref: function () {
         var _this = this;
-        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID);
+        var Opt = _this.Store.GetValue(_this.Store.Prefix + _this.ID, "{}");
 
         Opt = JSON.parse(Opt);
-        if (Opt.Enabled.hasOwnProperty("Value")){
+        if (Opt.Enabled && Opt.Enabled.hasOwnProperty("Value")){
             //Migrate
             var POST = {};
             POST.Enabled = Opt.Enabled.Value;
