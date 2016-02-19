@@ -121,7 +121,6 @@ AVE.Init = {
                 Opt.Enabled = false;
                 AVE.Storage.SetValue(AVE.Storage.Prefix + ID, JSON.stringify(Opt));
                 alert("AVE: Error loading module \"" + ID +"\"\nIt has been disabled, reload for the change to be effective");
-
             }
         }
     },

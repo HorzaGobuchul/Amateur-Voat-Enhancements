@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2016-02-18
+// @date        2016-02-19
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.36.9.25
+// @version     2.36.9.26
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -146,7 +146,6 @@ AVE.Init = {
                 Opt.Enabled = false;
                 AVE.Storage.SetValue(AVE.Storage.Prefix + ID, JSON.stringify(Opt));
                 alert("AVE: Error loading module \"" + ID +"\"\nIt has been disabled, reload for the change to be effective");
-
             }
         }
     },
@@ -1178,7 +1177,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.9.25",
+        "V2.36.9.26",
+        "   IgnoreUsers:",
+        "       Fixed bug in anonimized subverses",
         "   AppendQuote:",
         "       Fixed issue where the quote link would be added in the wrong list element",
         "       The quote link is now inserted as the second element in a post's flat-list",
@@ -6095,6 +6096,9 @@ AVE.Modules['IgnoreUsers'] = {
                 _this.Processed.push($(this).parents("div.comment:first").find("input#CommentId").val());
 
                 var name = $(this).attr("data-username");
+
+                if (!name) { return true; }
+
                 if ($.inArray(name.toLowerCase(), _this.IgnoreList) === -1) { return true; }
 
                 if (_this.Options.HardIgnore.Value) {

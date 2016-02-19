@@ -60,7 +60,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.9.25",
+        "V2.36.9.26",
+        "   IgnoreUsers:",
+        "       Fixed bug in anonimized subverses",
         "   AppendQuote:",
         "       Fixed issue where the quote link would be added in the wrong list element",
         "       The quote link is now inserted as the second element in a post's flat-list",

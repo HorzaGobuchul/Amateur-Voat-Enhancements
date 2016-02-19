@@ -75,6 +75,9 @@ AVE.Modules['IgnoreUsers'] = {
                 _this.Processed.push($(this).parents("div.comment:first").find("input#CommentId").val());
 
                 var name = $(this).attr("data-username");
+
+                if (!name) { return true; }
+
                 if ($.inArray(name.toLowerCase(), _this.IgnoreList) === -1) { return true; }
 
                 if (_this.Options.HardIgnore.Value) {
