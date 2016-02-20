@@ -49,7 +49,7 @@ AVE.Modules['HideSubmissions'] = {
         MaxStorage: {
             Type: 'int',
             Range: [1,5000],
-            Desc: "Max number of submissions to remember.",
+            Desc: "Max number of submissions to remember",
             Value: 400
         }
     },
@@ -118,8 +118,8 @@ AVE.Modules['HideSubmissions'] = {
 
         var JqId = $("div.submission.id-"+id.toString());
 
-        if (   (vote === false && this.Options.HideRightAway.Value)
-            || (vote === true && this.Options.HideAfterVote.Value)){
+        if (   (!vote && this.Options.HideRightAway.Value)
+            || (vote && this.Options.HideAfterVote.Value)){
             JqId.remove();
             print("AVE: HideSubmissions > removing submission with id "+id);
         } else if(this.Options.AddHideButton.Value) {

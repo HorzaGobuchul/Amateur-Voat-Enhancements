@@ -131,7 +131,7 @@ AVE.Modules['CSSEditor'] = {
                 if (s.is(":hidden")){ s.show(); } else { s.hide(); }
             } else {
                 if (s.length === 0)// This element may have been removed by one of the style modules
-                { $("body").append('<style id="custom_css"></style>'); s = $(sel); }
+                    { $("body").append('<style id="custom_css"></style>'); s = $(sel); }
                 var Vpos = _this.Options.Position.All[0][_this.Options.Position.Value[0]].split(":"),
                     Hpos = _this.Options.Position.All[1][_this.Options.Position.Value[1]].split(":");
 

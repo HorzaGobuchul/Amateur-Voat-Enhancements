@@ -138,6 +138,9 @@ div#header-container {z-index: 2;}\
 .modal#linkFlairSelectModal{top: 140px;}');
 
         this.Listeners();
+
+        // Update once after three seconds in case modules loaded later change the element's width by addind content to it.
+        setTimeout(this.UpdateBlockData, 3000);
     },
 
     SetAltBackground: function () {

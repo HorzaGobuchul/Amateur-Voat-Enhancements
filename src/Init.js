@@ -4,17 +4,16 @@ AVE.Modules = {};
 AVE.Init = {
     stopLoading: false,
     Start: function () {
-        var ModLoad, _this, stopLoading;
 
-        _this = this;
-        ModLoad = {
-            Start: [],
-            HeadReady: [],
-            BannerReady: [],
-            ContainerReady: [],
-            DocReady: [],
-            WinLoaded: []
-        };
+        var _this = this,
+            ModLoad = {
+                Start: [],
+                HeadReady: [],
+                BannerReady: [],
+                ContainerReady: [],
+                DocReady: [],
+                WinLoaded: []
+            };
 
         AVE.Utils.EarlySet();
 
@@ -42,6 +41,7 @@ AVE.Init = {
             });
 
             //Start as soon as possible
+            print("Init: Starting as soon as possible", true);
             $.each(ModLoad.Start, function () {
                 _this.LoadModules(this);
             });
@@ -60,6 +60,7 @@ AVE.Init = {
                 }//Error pages that are empty
 
                 AVE.Utils.LateSet();
+                print("Init: Starting on Head ready", true);
                 $.each(ModLoad.HeadReady, function () {
                     _this.LoadModules(this);
                 });
@@ -67,6 +68,7 @@ AVE.Init = {
 
             //On Banner ready
             $("div#header").ready(function () {
+                print("Init: Starting on Banner ready", true);
                 $.each(ModLoad.BannerReady, function () {
                     _this.LoadModules(this);
                 });
@@ -74,6 +76,7 @@ AVE.Init = {
 
             //On container ready
             $("div#container").ready(function () {
+                print("Init: Starting on Container ready", true);
                 $.each(ModLoad.ContainerReady, function () {
                     _this.LoadModules(this);
                 });
@@ -81,6 +84,7 @@ AVE.Init = {
 
             //On doc ready
             $(document).ready(function () {
+                print("Init: Starting on Doc ready", true);
                 print("AVE: Current style > " + AVE.Utils.CSSstyle, true);
                 
                 $.each(ModLoad.DocReady, function () {
@@ -89,6 +93,7 @@ AVE.Init = {
             });
             //On window loaded
             var loadModuleOnLoadComplete = function () {
+                print("Init: Starting on Window loaded (last)", true);
                 if (this.stopLoading){return;}
                 $.each(ModLoad.WinLoaded, function () {
                     _this.LoadModules(this);
@@ -106,12 +111,12 @@ AVE.Init = {
     LoadModules: function (ID) {
         if (this.stopLoading){return;}
         var module = AVE.Modules[ID];
-        print("AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")", true);
+        print("  AVE: Loading: " + module.Name + " (RunAt: " + (module.RunAt || "ready" ) + ")", true);
 
         if (AVE.Utils.DevMode){
             var time = Date.now();
             AVE.Modules[ID].Load();
-            print("Loaded > " + ID + " (" + (Date.now() - time) + "ms)");
+            print("    Loaded > " + ID + " (" + (Date.now() - time) + "ms)");
         } else {
             try { AVE.Modules[ID].Load(); }
             catch (e) {

@@ -10,7 +10,7 @@ AVE.Modules['HideUsername'] = {
 
     Store: {},
 
-    RunAt: "ready",
+    RunAt: "banner",
 
     Options: {
         Enabled: {

@@ -9,17 +9,17 @@ AVE.Modules['FixContainerWidth'] = {
 
     Store: {},
 
-    RunAt: "container",
+    RunAt: "head",
 
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         Width: {
             Type: 'int',
             Range: [1,100],
-            Value: 100,
+            Value: 100
         },
         Justify: {
             Type: 'boolean',
@@ -78,7 +78,7 @@ AVE.Modules['FixContainerWidth'] = {
     AppendToPreferenceManager: {
         html: function () {
             var _this = AVE.Modules['FixContainerWidth'];
-            var htmlStr = '<input style="width:50%;display:inline;" id="Width" value="' + _this.Options.Width.Value + '" type="range" min="' + _this.Options.Width.Range[0] + ' max="' + _this.Options.Width.Range[1] + '"/> <span id="FixContainerWidth_Value"></span>%';
+            var htmlStr = '<input style="width:50%;display:inline;" id="Width" value="' + _this.Options.Width.Value + '" type="range" min="' + _this.Options.Width.Range[0] + ' max="' + _this.Options.Width.Range[1] + '"/> <span id="FixContainerWidth_Value">' + _this.Options.Width.Value + '</span>%';
 
             htmlStr += '<br /><input ' + (_this.Options.Justify.Value ? 'checked="true"' : "") + ' id="Justify" type="checkbox"/><label for="Justify">Justify text in comments.</label>';
 

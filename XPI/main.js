@@ -1,7 +1,7 @@
 ﻿let tabs = require("sdk/tabs");
 let info = require("./package.json");
 let pageMod = require("sdk/page-mod");
-let ss = require("sdk/simple-storage"); 
+let ss = require("sdk/simple-storage");
 
 //From RES (Reddit-Enhancement-Suite:
 //  https://github.com/honestbleeps/Reddit-Enhancement-Suite/blob/master/XPI/lib/main.js#L48
@@ -26,43 +26,53 @@ pageMod.PageMod({
     exclude: ['*.voat.co/api'],
     contentScriptWhen: 'start',
     contentScriptFile: [
-    "./Ext/jquery-2.1.4.min.js",
-    "./Ext/to-markdown.js",
-    "./Ext/FileSaver.min.js",
-    "./Core/Init.js",
-    "./Core/Storage.js",
-    "./Core/Utils.js",
-    "./Modules/PreferenceManager.js",
-    "./Modules/VersionNotifier.js",
-    "./Modules/HeaderFixedPos.js",
-    "./Modules/UpdateAfterLoadingMore.js",
-    "./Modules/UserInfoFixedPos.js",
-    "./Modules/UserTag.js",
-    "./Modules/ToggleMedia.js",
-    "./Modules/AppendQuote.js",
-    "./Modules/DisableShareALink.js",
-    "./Modules/FixExpandImage.js",
-    "./Modules/FixContainerWidth.js",
-    "./Modules/IgnoreUsers.js",
-    "./Modules/NeverEndingVoat.js",
-    //"./Modules/RememberCommentCount.js",
-    "./Modules/ReplyWithQuote.js",
-    "./Modules/SelectPost.js",
-    "./Modules/Shortcuts.js",
-    "./Modules/ShortKeys.js",
-    "./Modules/ToggleChildComment.js",
-    "./Modules/SubmissionFilter.js",
-    "./Modules/CommentFilter.js",
-    "./Modules/DomainFilter.js",
-    "./Modules/ShowSubmissionVoatBalance.js",
-    "./Modules/HideUsername.js",
-    "./Modules/InjectCustomStyle.js",
-    "./Modules/ToggleCustomStyle.js",
-    "./Modules/ContributionDeltas.js",
-    "./BuildDep.js",
+        "./Ext/jquery-2.1.4.min.js",
+        "./Ext/to-markdown.js",
+        "./Ext/FileSaver.min.js",
+        "./Core/Init.js",
+        "./Core/Storage.js",
+        "./Core/Utils.js",
+        "./Modules/PreferenceManager.js",
+        "./Modules/VersionNotifier.js",
+        "./Modules/UpdateAfterLoadingMore.js",
+        "./Modules/UserTag.js",
+        "./Modules/ToggleMedia.js",
+        "./Modules/HideSubmissions.js",
+        "./Modules/SelectPost.js",
+        "./Modules/ShortKeys.js",
+        "./Modules/InjectCustomStyle.js",
+        "./Modules/ToggleCustomStyle.js",
+        "./Modules/HeaderFixedPos.js",
+        "./Modules/CommentFilter.js",
+        "./Modules/ToggleChildComment.js",
+        "./Modules/ShowSubmissionVoatBalance.js",
+        "./Modules/ThemeSwitcher.js",
+        "./Modules/NeverEndingVoat.js",
+        "./Modules/ReplyWithQuote.js",
+        "./Modules/FixContainerWidth.js",
+        "./Modules/HttpWarning.js",
+        "./Modules/SubmissionFilter.js",
+        "./Modules/CSSEditor.js",
+        "./Modules/IgnoreUsers.js",
+        "./Modules/FixExpandImage.js",
+        "./Modules/ContributionDeltas.js",
+        "./Modules/RememberCommentCount.js",
+        "./Modules/AppendQuote.js",
+        "./Modules/DisableShareALink.js",
+        "./Modules/Shortcuts.js",
+        "./Modules/ArchiveSubmission.js",
+        "./Modules/DomainFilter.js",
+        "./Modules/SingleClickOpener.js",
+        "./Modules/HideUsername.js",
+        "./Modules/DomainTags.js",
+        "./Modules/UserInfoFixedPos.js",
+        "./Modules/AccountSwitcher.js",
+        "./Modules/Dashboard.js",
+        "./BuildDep.js"
     ],
     onAttach: function (worker) {
         worker.on('message', function (data) {
+
             switch (data.request) {
                 case 'GetStorage':
                     worker.postMessage({ request: "SetStorage", message: Storage });
@@ -88,13 +98,13 @@ pageMod.PageMod({
                     worker.postMessage({ request: "SetMetadata", message: { version: info.version, name: info.title } });
                     break;
                 case 'OpenInTab':
-                    tabs.open(data.url);
+                    tabs.open({url: data.url, inBackground: true});
                     break;
                 default:
                     console.log("On Message Default: "+data);
                     break;
             }
-        }),
+        });
         worker.port.emit("Start");
     }
 });

@@ -35,47 +35,39 @@ AVE.Modules['ToggleCustomStyle'] = {
         this.Enabled = this.Options.Enabled.Value;
     },
 
-    CustomCSSContainerCount: 0,
-
     Load: function () {
         this.Store = AVE.Storage;
         this.SetOptionsFromPref();
 
         if (this.Enabled && (!AVE.Modules['InjectCustomStyle'].Enabled || !AVE.Modules['InjectCustomStyle'].Options.RemoveSubverseStyle.Value)) {
-            
-            var _this = this;
-            var obsCustomCSS = new OnNodeChange($(document.documentElement), function (m) {
-                //By /u/FuzzyWords: voat.co/v/AVEbeta/comments/448708/2133227
-                if(m.addedNodes) {
-                    for(var i = 0; i < m.addedNodes.length; i++) {
-                        var n = m.addedNodes[i];
-                        if(n.parentNode && n.nodeName.toUpperCase() === "STYLE" && n.id === "custom_css") {
-                            if (!_this.CustomCSS){
-                                _this.CustomCSS = $(n).text();
-                            }                           
-                            
-                            //We want to disconnect the observer once it has done its job. But remember that a custom style is added twice in threads.
-                            _this.CustomCSSContainerCount+=1;
-                            if (AVE.Utils.currentPageType === "thread") {
-                                if (_this.CustomCSSContainerCount === 2)
-                                {
-                                    n.parentNode.removeChild(n);
+
+            var sel = $("style#custom_css");
+            if (sel.length > 0){
+                this.CustomCSS = sel.text();
+                this.Start();
+            } else {
+                var _this = this;
+                var obsCustomCSS = new OnNodeChange($(document.documentElement), function (m) {
+                    //By /u/FuzzyWords: voat.co/v/AVEbeta/comments/448708/2133227
+                    if(m.addedNodes) {
+                        for(var i = 0; i < m.addedNodes.length; i++) {
+                            var n = m.addedNodes[i];
+                            if(n.parentNode && n.nodeName.toUpperCase() === "STYLE" && n.id === "custom_css") {
+                                if (!_this.CustomCSS){
+                                    _this.CustomCSS = $(n).text();
+                                }
+
+                                if (_this.CustomCSSContainerCount === 1 && $.trim(_this.CustomCSS).length > 0){
+                                    _this.Start();
+
                                     obsCustomCSS.disconnect();
                                 }
                             }
-                            else { obsCustomCSS.disconnect(); }
-
-                            if (_this.CustomCSSContainerCount === 1 && $.trim(_this.CustomCSS).length > 0){
-                                _this.Start();
-                            }
                         }
                     }
-                }
-            });
-            obsCustomCSS.observe();
-        
-            // && $.trim($("style#custom_css:first").text()).length > 0
-            //this.CustomCSS = $("style#custom_css:first").text();
+                });
+                obsCustomCSS.observe();
+            }
         }
     },
 
@@ -98,7 +90,7 @@ AVE.Modules['ToggleCustomStyle'] = {
     },
 
     AppendToPage: function () {
-        $('<input style="position:inherit;" id="AVE_ToggleCustomStyle" ' + (this.DisabledCSS ? 'checked="true"' : "") + ' type="checkbox"> <label for="AVE_ToggleCustomStyle" style="position:inherit;display:inline !important">Enable custom style</label><br />').insertAfter("h1.hover.whoaversename");
+        $('<input style="position:inherit;" id="AVE_ToggleCustomStyle" ' + (this.DisabledCSS ? 'checked="true"' : "") + ' type="checkbox"> <label for="AVE_ToggleCustomStyle" style="position:inherit;display:inline !important;">Enable custom style</label><br />').insertAfter("h1.hover.whoaversename");
     },
 
     Listeners: function () {
@@ -113,7 +105,8 @@ AVE.Modules['ToggleCustomStyle'] = {
     },
 
     ToggleCSSPref: function (status) {
-        var CSSlist = JSON.parse(this.Store.GetValue(this.StorageName, "[]"));
+        var CSSlist = JSON.parse(this.Store.GetValue(this.StorageName, "[]")),
+            JqId = $("style#custom_css");
 
         if (status) { //Enable
             if ($.inArray(AVE.Utils.subverseName, CSSlist) !== -1) {
@@ -125,8 +118,8 @@ AVE.Modules['ToggleCustomStyle'] = {
                 this.Store.SetValue(this.StorageName, JSON.stringify(CSSlist));
             }
             //Don't add the CSS if we didn't remove it previously
-            if ($.trim($("style#custom_css").text()).length === 0) {
-                $("style#custom_css").append(this.CustomCSS);
+            if ($.trim(JqId.text()).length === 0) {
+                JqId.append(this.CustomCSS);
             }
         } else { // Disable
             if ($.inArray(AVE.Utils.subverseName, CSSlist) === -1) {
@@ -134,7 +127,7 @@ AVE.Modules['ToggleCustomStyle'] = {
                 CSSlist.push(AVE.Utils.subverseName);
                 this.Store.SetValue(this.StorageName, JSON.stringify(CSSlist));
             }
-            $("style#custom_css").text("");
+            JqId.text("");
         }
         
         $(window).scrollTop(0);

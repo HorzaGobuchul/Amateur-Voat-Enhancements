@@ -102,7 +102,14 @@ AVE.Modules['InjectCustomStyle'] = {
 
     Start: function () {
         var _this = this;
-        var theme = ~document.cookie.indexOf('theme=dark') ? "Dark" : "Light";
+
+        var theme = AVE.Utils.CSSstyle || ~document.cookie.indexOf('theme=dark') ? "Dark" : "Light";
+
+        /*
+        BUG:
+            if you log-in on voat.co then switch to www.voat.co, the theme info cookie (queried above) doesn't exist
+            this module needs to start as soon as possible and the cookie is the earliest way to get that info
+         */
 
         var obsCustomCSS = new OnNodeChange($(document.documentElement), function (m) {
             //By /u/FuzzyWords: voat.co/v/AVEbeta/comments/448708/2133227
@@ -119,12 +126,8 @@ AVE.Modules['InjectCustomStyle'] = {
                             n.parentNode.removeChild(n);
 
                             //We want to disconnect the observer once it has done its job. But remember that a custom style is added twice in threads.
-                            _this.CustomCSSContainerCount++;
-                            if (AVE.Utils.currentPageType === "thread") {
-                                if (_this.CustomCSSContainerCount === 2)
-                                { obsCustomCSS.disconnect();}
-                            }
-                            else { obsCustomCSS.disconnect(); }
+                            // Actually this is no longer the case (the limit is set to 1 now)
+                            obsCustomCSS.disconnect();
                         }
                     }
                 }

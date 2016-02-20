@@ -71,7 +71,7 @@ AVE.Modules['ShortKeys'] = {
         HidePost: {
             Type: 'char',
             Value: 'h'
-        },
+        }
     },
 
     OriginalOptions: "",

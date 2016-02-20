@@ -4,7 +4,7 @@ var Storage = {};
 Storage.SetValue = function (key, value) {
     var newObj = {};
     newObj[key] = value;
-    console.log(newObj);
+    //console.log(newObj);
     chrome.storage.local.set(newObj, function (result) {
         // console.log("result:");
 
@@ -23,16 +23,15 @@ chrome.runtime.onMessage.addListener(
 	function (data, sender, sendResponse) {
 	    switch (data.request) {
 	        case 'Storage':
-	            switch (data.type) { //Get this in the Browser-Specific script?
+	            switch (data.type) {
 	                case 'SetValue':
 	                    Storage.SetValue(data.key, data.value);
-	                    Storage.GetAll(sendResponse);
 	                    break;
 	                case 'DeleteValue':
 	                    Storage.DeleteValue(data.key);
 	                    break;
                     case "Update":
-                        sendResponse({ request: "SetStorage"});
+                        chrome.tabs.sendMessage(sender.tab.id, {request: "SetStorage"});
                         break;
 	            }
 	            break;

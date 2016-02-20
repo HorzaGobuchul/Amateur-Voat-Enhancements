@@ -31,12 +31,12 @@ AVE.Modules['UserTag'] = {
         },
         ColourGradientRangePos: {
             Type: "int",
-            Desc: "Positive vote balance above which the colour cannot get more green.",
+            Desc: "Positive vote balance above which the colour cannot get greener.",
             Value: 100
         },
         ColourGradientRangeNeg: {
             Type: "int",
-            Desc: "Negative vote balance above which the colour cannot get more red.",
+            Desc: "Negative vote balance below which the colour cannot get redder.",
             Value: -100
         },
         ColourGradientMaxWhite: { //Show example of min value (1, -1) beside
@@ -280,10 +280,14 @@ table#formTable{\
                     if (_this.Options.ShowBalanceWithColourGradient.Value){
                         var r, g, b;
 
-                        var progValence = valence ? Math.min(100, tag.b) : Math.max(-100, tag.b);
-                        if (!valence){progValence *= -1;}
+                        var limit = _this.Options.ColourGradientRangePos.Value;
+                        var progValence = valence ?
+                            Math.min(_this.Options.ColourGradientRangePos.Value, tag.b) : Math.max(_this.Options.ColourGradientRangeNeg.Value, tag.b);
+                        if (!valence){
+                            limit = _this.Options.ColourGradientRangeNeg.Value;
+                        }
 
-                        r = g = b = parseInt(210 - progValence/100 * 210, 10);
+                        r = g = b = parseInt(210 - progValence/limit * 210, 10);
                         if (valence) { g = 255; }
                         else { r = 255; }
                         style = 'style="color:#262626;background-color:rgb('+r+','+g+','+b+');" ';
@@ -508,14 +512,19 @@ table#formTable{\
                 if (tag.b !== 0) {
                     var valence = tag.b > 0;
                     var sign = valence ? "+" : "";
-                    var progValence = valence ? Math.min(100, tag.b) : Math.max(-100, tag.b);
                     var style = "";
-
-                    if (!valence){progValence *= -1;}
 
                     if (_this.Options.ShowBalanceWithColourGradient.Value){
                         var r, g, b;
-                        r = g = b = parseInt(210 - progValence/100 * 210, 10);
+
+                        var limit = _this.Options.ColourGradientRangePos.Value;
+                        var progValence = valence ?
+                            Math.min(_this.Options.ColourGradientRangePos.Value, tag.b) : Math.max(_this.Options.ColourGradientRangeNeg.Value, tag.b);
+                        if (!valence){
+                            limit = _this.Options.ColourGradientRangeNeg.Value;
+                        }
+
+                        r = g = b = parseInt(210 - progValence/limit * 210, 10);
                         if (valence) { g = 255; }
                         else { r = 255; }
                         style = 'color:#262626;background-color:rgb('+r+','+g+','+b+');';
@@ -586,10 +595,14 @@ table#formTable{\
                 htmlStr += "<li>You have voted on submissions made by <strong>" + VoteLen + "</strong> users.</li>";
                 htmlStr += "<li>You have chosen to ignore <strong>" + IgnoreLen + "</strong> users.</li></ul>";
 
-                htmlStr += '<br /><input id="VoteBalance" ' + (_this.Options.VoteBalance.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="VoteBalance"> ' + _this.Options.VoteBalance.Desc + '</label><br />';
-                htmlStr += '<input id="ShowBalanceWithColourGradient" ' + (_this.Options.ShowBalanceWithColourGradient.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ShowBalanceWithColourGradient"> ' + _this.Options.ShowBalanceWithColourGradient.Desc + '</label><br />';
+                htmlStr += '<br /><input id="VoteBalance" ' + (_this.Options.VoteBalance.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="VoteBalance"> ' + _this.Options.VoteBalance.Desc + '</label><br>';
+                htmlStr += '<input id="ShowBalanceWithColourGradient" ' + (_this.Options.ShowBalanceWithColourGradient.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ShowBalanceWithColourGradient"> ' + _this.Options.ShowBalanceWithColourGradient.Desc + '</label><br><br>';
                 //Add option to remove oldest tags.
                 //  Seeing as this.usertags is ordered oldest first, propose to remove X tags at the beginning of the list.
+
+                htmlStr += '<input style="width: 60px;" id="ColourGradientRangeNeg" type="number" name="ColourGradientRangeNeg" value="'+_this.Options.ColourGradientRangeNeg.Value+'"> <label style="display:inline;" for="ColourGradientRangeNeg"> ' + _this.Options.ColourGradientRangeNeg.Desc + '</label><br>';
+                htmlStr += '<input style="width: 60px;" id="ColourGradientRangePos" type="number" name="ColourGradientRangePos" value="'+_this.Options.ColourGradientRangePos.Value+'"> <label style="display:inline;" for="ColourGradientRangePos"> ' + _this.Options.ColourGradientRangePos.Desc + '</label>';
+
                 return htmlStr;
             }
         }
@@ -1128,10 +1141,14 @@ table#formTable{\
                     var Vr, Vg, Vb;
                     var valence = obj.b > 0;
 
-                    var progValence = valence ? Math.min(100, obj.b) : Math.max(-100, obj.b);
-                    if (!valence){progValence *= -1;}
+                    var limit = this.module.Options.ColourGradientRangePos.Value;
+                    var progValence = valence ?
+                        Math.min(this.module.Options.ColourGradientRangePos.Value, obj.b) : Math.max(this.module.Options.ColourGradientRangeNeg.Value, obj.b);
+                    if (!valence){
+                        limit = this.module.Options.ColourGradientRangeNeg.Value;
+                    }
 
-                    Vr = Vg = Vb = parseInt(210 - progValence/100 * 210, 10);
+                    Vr = Vg = Vb = parseInt(210 - progValence/limit * 210, 10);
                     if (valence) { Vg = 255; }
                     else { Vr = 255; }
                     VoteColour = 'color:#262626;background-color:rgb('+Vr+','+Vg+','+Vb+')';
@@ -1143,7 +1160,7 @@ table#formTable{\
                 if (obj.col){
                     htmlStr +=  '<td data="colour" style="background-color:'+obj.col+';color:'+bestColour+';">'+obj.col+'</td>';
                 } else {
-                    htmlStr +=  '<td data="colour" title="You need to set a tag before choosing a colour" style="cursor:not-allowed;background-color:rgba(0,0,0,0);;color:'+bestColour+';">None</td>';
+                    htmlStr +=  '<td data="colour" title="You need to set a tag before choosing a colour" style="cursor:not-allowed;background-color:rgba(0,0,0,0);color:'+bestColour+';">None</td>';
                 }
                 htmlStr +=      '<td data="ignore">'+obj.i+'</td>' +
                                 '<td data="balance" style="'+VoteColour+'">'+obj.b+'</td>' +

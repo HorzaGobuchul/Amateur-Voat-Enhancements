@@ -15,6 +15,11 @@ AVE.Modules['SingleClickOpener'] = {
         Enabled: {
             Type: 'boolean',
             Value: true
+        },
+        OpenInArchive: {
+            Type: 'boolean',
+            Desc: 'Open external link in <strong>archives.is</strong>.',
+            Value: false
         }
     },
 
@@ -70,6 +75,7 @@ AVE.Modules['SingleClickOpener'] = {
 
     Listeners: function () {
         "use strict";
+        var _this = this;
         $("li > a#AVE_SingleClickOpener_link").off().on("click", function () {
             var url = [];
 
@@ -77,6 +83,10 @@ AVE.Modules['SingleClickOpener'] = {
             url.push("https://" + window.location.hostname + $(this).parent().parent().find(":first-child > a.comments").attr("href"));
 
             if (!/^http/.test(url[0])) { url[0] = "https://" + window.location.hostname + url[0]; }
+
+            if (_this.Options.OpenInArchive.Value && !/^https?:\/\/archive\.is/.test(url[0])){
+                url[0] = 'https://archive.is/?run=1&url='+encodeURIComponent(url[0]);
+            }
 
             if (url[0] && url[0] === url[1]) {
                 AVE.Utils.SendMessage({ request: "OpenInTab", url: url[0] });
@@ -86,4 +96,13 @@ AVE.Modules['SingleClickOpener'] = {
             }
         });
     },
+
+    AppendToPreferenceManager: { //Use to add custom input to the pref Manager
+        html: function () {
+            var _this = AVE.Modules['SingleClickOpener'];
+            return '<input id="OpenInArchive" ' + (_this.Options.OpenInArchive.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInArchive"> ' + _this.Options.OpenInArchive.Desc + '</label><br>';
+        },
+    }
 };
+
+

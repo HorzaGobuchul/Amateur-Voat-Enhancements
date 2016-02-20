@@ -18,6 +18,7 @@ chrome.runtime.onMessage.addListener(
 	    switch (data.request) {
 	        case 'SetStorage':
 	            chrome.storage.local.get(null, function (items) {
+					console.log(items.length);
 			        var on = !!AVE.Storage.Data;
 			        AVE.Storage.Data = items;
 			        if (!on) { AVE.Init.Start(); }

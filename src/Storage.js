@@ -31,5 +31,5 @@ AVE.Storage = {
 
     Update: function () {
         AVE.Utils.SendMessage({ request: "Storage", type: "Update"});
-    },
+    }
 };
