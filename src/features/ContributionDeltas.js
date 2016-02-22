@@ -174,6 +174,7 @@ AVE.Modules['ContributionDeltas'] = {
     AppendToPage: function () {
         var _this = this;
         var delta, JqId, data, multipleD;
+        var _str, _data, _delta;
 
         multipleD = ["hour", "day", "week"];
         if ($.inArray(this.Options.ShowSinceLast.Value, multipleD) == -1){
@@ -202,7 +203,6 @@ AVE.Modules['ContributionDeltas'] = {
         }
 
         if (this.Options.ShowMultipleDeltas.Value){
-            var _str, _data, _delta;
             _str = "";
             $.each(multipleD, function (i, v) {
                 _data = _this.StoredDeltas[_this.Username][v];
@@ -239,7 +239,6 @@ AVE.Modules['ContributionDeltas'] = {
         }
 
         if (this.Options.ShowMultipleDeltas.Value){
-            var _str, _data, _delta;
             _str = "";
             $.each(multipleD, function (i, v) {
                 _data = _this.StoredDeltas[_this.Username][v];
@@ -288,22 +287,25 @@ AVE.Modules['ContributionDeltas'] = {
 
         callback: function () {
             var _this = AVE.Modules['ContributionDeltas'];
-            var _Mngthis = this;
             var JqId;
 
             JqId = $("div#ContributionDeltas > div.AVE_ModuleCustomInput > a#AVE_Reset_SinceLast");
 
+            /**
+             * @param timeStamp
+             * @returns {string}
+             */
+            function GetParsedDate (timeStamp) {
+                return new Date(timeStamp).toLocaleString();
+            }
+
             JqId.off("click");
             JqId.on("click", function () {
-                $("span#AVE_LastReset").text('Last reset on '+ _Mngthis.GetParsedDate(Date.now()));
+                $("span#AVE_LastReset").text('Last reset on '+ GetParsedDate(Date.now()));
 
                 _this.StoredDeltas[_this.Username]["reset"] = {ts: Date.now(), S: $("a.userkarma#scp").text(), C: $("a.userkarma#ccp").text()};
                 _this.Store.SetValue(_this.Store.Prefix + _this.ID + "_Deltas", JSON.stringify(_this.StoredDeltas));
             });
-        },
-
-        GetParsedDate: function(timeStamp) {
-            return new Date(timeStamp).toLocaleString();
         }
     }
 };

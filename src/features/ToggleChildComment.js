@@ -12,8 +12,8 @@ AVE.Modules['ToggleChildComment'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
-        },
+            Value: true
+        }
     },
 
     LabelHide: "hide child comments",
@@ -70,8 +70,8 @@ AVE.Modules['ToggleChildComment'] = {
 
     Listeners: function () {
         var _this = this;
-        $("a#AVE_ToggleChildComment").off("click");
-        $("a#AVE_ToggleChildComment").on("click", function () {
+        $("a#AVE_ToggleChildComment").off("click")
+            .on("click", function () {
 
             var NextLevelComments = $(this).parents("div[class*='comment']:first").children("div[class*='child'][class*='comment']");
             if (NextLevelComments.is(":visible")) {
@@ -82,5 +82,5 @@ AVE.Modules['ToggleChildComment'] = {
                 $(this).text(_this.LabelHide);
             }
         });
-    },
+    }
 };

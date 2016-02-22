@@ -159,8 +159,7 @@ AVE.Modules['CommentFilter'] = {
 
     Listeners: function () {
         if ($("a[AVE='HiddenComment']").length > 0) {
-            $("a[AVE='HiddenComment']").off("click");
-            $("a[AVE='HiddenComment']").on("click", function () {
+            $("a[AVE='HiddenComment']").off("click").on("click", function () {
                 $(this).parent().find("div.md").show();
                 $(this).remove();
             });
@@ -183,9 +182,9 @@ AVE.Modules['CommentFilter'] = {
 
             this.htmlNewFilter = '<span class="AVE_Comment_Filter" id="{@id}">\
                                 Keyword(s) \
-                                    <input id="{@id}-kw" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="CommentFilter" value="{@keywords}"></input>\
+                                    <input id="{@id}-kw" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="CommentFilter" value="{@keywords}">\
                                 Subverse(s) \
-                                    <input id="{@id}-sub" style="width:29%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="CommentFilter" value="{@subverses}"></input>\
+                                    <input id="{@id}-sub" style="width:29%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="CommentFilter" value="{@subverses}">\
                                 </span>\
                                 <a href="javascript:void(0)" title="Remove filter" style="font-size: 16px;font-weight: bold;" class="RemoveFilter" id="{@id}">-</a>';
 
@@ -196,7 +195,7 @@ AVE.Modules['CommentFilter'] = {
             var count = 0;
             $.each(_this.Options.Filters.Value, function () {
                 var filter = Pref_this.htmlNewFilter + "<br />";
-                filter = filter.replace(/\{@id\}/ig, count);
+                filter = filter.replace(/\{@id}/ig, count);
                 filter = filter.replace("{@keywords}", this.Keywords.join(","));
                 filter = filter.replace("{@subverses}", this.ApplyToSub.join(","));
                 count++;
@@ -218,8 +217,8 @@ AVE.Modules['CommentFilter'] = {
 
                 $(html).insertBefore("div#CommentFilter > div.AVE_ModuleCustomInput > a#AddNewFilter");
 
-                $("div#CommentFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click");
-                $("div#CommentFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").on("click", function () {
+                $("div#CommentFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click")
+                    .on("click", function () {
                     $(this).next("br").remove();
                     $(this).prev("span.AVE_Comment_Filter").remove();
                     $(this).remove();
@@ -227,8 +226,8 @@ AVE.Modules['CommentFilter'] = {
                 AVE.Modules.PreferenceManager.ChangeListeners();
             });
 
-            $("div#CommentFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click");
-            $("div#CommentFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").on("click", function () {
+            $("div#CommentFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click")
+                .on("click", function () {
                 $(this).next("br").remove();
                 $(this).prev("span.AVE_Comment_Filter").remove();
                 $(this).remove();

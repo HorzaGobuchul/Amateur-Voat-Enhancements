@@ -60,6 +60,8 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.36.12.33",
+        "   General maintenance",
         "V2.36.11.33",
         "   UserTag:",
         "       Implemented options to choose the vote balance gradient's lower and upper limits",
@@ -423,7 +425,7 @@ AVE.Modules['VersionNotifier'] = {
                        '}';
         var notifierHTML = '<div class="VersionBox">' +
                                 '<p class="VersionBoxTitle">' + AVE.Utils.MetaData.name + '</p>' +
-                                '<p class="VersionBoxInfo">' + (this.Trigger === "new" ? this.LabelNew : this.LabelShow) + ' <strong style="font-size:14px">' + AVE.Utils.MetaData.version + '</strong></p>' +
+                                '<p class="VersionBoxInfo">' + (this.Trigger === "new" ? this.LabelNew : this.LabelShow) + ' <strong style="font-size:14px;">' + AVE.Utils.MetaData.version + '</strong></p>' +
                                 '<p class="VersionBoxToggle"><a href="javascript:void(0)" id="ShowChangelog">See Changelog?</a><p>' +
                                 '<div class="VersionBoxClose">Close</div>' +
                             '</div>';
@@ -466,5 +468,5 @@ AVE.Modules['VersionNotifier'] = {
                 $("div.VersionBoxClose").trigger("click");
             }
         });
-    },
+    }
 };

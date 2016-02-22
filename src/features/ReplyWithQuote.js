@@ -11,8 +11,8 @@ AVE.Modules['ReplyWithQuote'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
-        },
+            Value: true
+        }
     },
 
     SavePref: function (POST) {
@@ -107,7 +107,7 @@ AVE.Modules['ReplyWithQuote'] = {
         if (window.getSelection) {
             t = window.getSelection();
             if (t.rangeCount) {
-                for (var i = 0, len = t.rangeCount; i < len; ++i) {
+                for (var i = 0; i < t.rangeCount; ++i) {
                     return new XMLSerializer().serializeToString(t.getRangeAt(i).cloneContents());
                 }
             }

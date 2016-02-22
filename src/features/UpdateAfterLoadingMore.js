@@ -12,8 +12,8 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
-        },
+            Value: true
+        }
     },
 
     SavePref: function (POST) {
@@ -50,15 +50,16 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
     CommentLen: 0,
 
     Start: function () {
-        var _this = this;
+        var _this = this,
+            JqId = $("div[class*='id-']");
 
-        this.CommentLen = $("div[class*='id-']").length;
+        this.CommentLen = JqId.length;
         //More Comments
         if (this.obsComm) { this.obsComm.disconnect(); }
         this.obsComm = new OnNodeChange($("div.sitetable#siteTable"), function (e) {
             if (e.addedNodes.length > 0 && e.removedNodes.length === 0) {
-                if ($("div[class*='id-']").length > _this.CommentLen) {
-                    _this.CommentLen = $("div[class*='id-']").length;
+                if (JqId.length > _this.CommentLen) {
+                    _this.CommentLen = JqId.length;
 
                     setTimeout(AVE.Init.UpdateModules, 500);
                 }

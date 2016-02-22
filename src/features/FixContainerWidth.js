@@ -9,7 +9,7 @@ AVE.Modules['FixContainerWidth'] = {
 
     Store: {},
 
-    RunAt: "head",
+    RunAt: "start",
 
     Options: {
         Enabled: {
@@ -93,6 +93,6 @@ AVE.Modules['FixContainerWidth'] = {
             if (_this.Enabled){
                 $("div#container").trigger("change");
             }
-        },
-    },
+        }
+    }
 };

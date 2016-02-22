@@ -35,7 +35,7 @@ AVE.Modules['NeverEndingVoat'] = {
             Type: 'boolean',
             Desc: 'Expand media in inserted pages, if you already clicked the \"View Media\" button.',
             Value: false
-        },
+        }
     },
 
     OriginalOptions: "",
@@ -133,7 +133,7 @@ AVE.Modules['NeverEndingVoat'] = {
 
     LoadMore: function () {
         //Don't load another page if one is already being loaded.
-        if ($("a#AVE_loadmorebutton").text() === this.Labels[1]) { return false; }
+        if ($("a#AVE_loadmorebutton").text() === this.Labels[1]) { return; }
 
         var _this = this;
 
@@ -267,6 +267,8 @@ AVE.Modules['NeverEndingVoat'] = {
             CCP = $("a#ccp.userkarma"),
             oldSCP = SCP.text(),
             oldCCP = CCP.text();
+
+        print(newSCP+" - "+newCCP+" - "+oldSCP+" - "+oldCCP);
 
         if (newSCP !== oldSCP){
             SCP.text(newSCP);

@@ -142,7 +142,7 @@ AVE.Modules['ShortKeys'] = {
 
                     var submitbtn = inp.nextAll("input#submitbutton:first"); //
                     if (submitbtn.length === 0){
-                        submitbtn = inp.parent().parent().nextAll("input#submitbutton:first");;
+                        submitbtn = inp.parent().parent().nextAll("input#submitbutton:first");
                     }
                     submitbtn.trigger("click");
                 }

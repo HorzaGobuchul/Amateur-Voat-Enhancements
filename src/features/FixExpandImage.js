@@ -6,20 +6,20 @@ AVE.Modules['FixExpandImage'] = {
 
     Enabled: false,
 
-    Store: AVE.storage,
+    Store: {},
 
     RunAt: "load",
 
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         OverSidebar: {
             Type: 'boolean',
             Desc: 'Let images expand over the sidebard.',
-            Value: true,
-        },
+            Value: true
+        }
     },
 
     SavePref: function (POST) {
@@ -119,6 +119,6 @@ AVE.Modules['FixExpandImage'] = {
             var htmlStr = "";
             htmlStr += '<input ' + (_this.Options.OverSidebar.Value ? 'checked="true"' : "") + ' id="OverSidebar" type="checkbox"/><label for="OverSidebar"> '+_this.Options.OverSidebar.Desc+'</label>';
             return htmlStr;
-        },
-    },
+        }
+    }
 };

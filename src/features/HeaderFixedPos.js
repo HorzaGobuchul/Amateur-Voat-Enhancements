@@ -62,7 +62,7 @@ AVE.Modules['HeaderFixedPos'] = {
         var bg, border, JqId;
         JqId = $("#sr-header-area");
         if(JqId.length === 0) {
-            print("AVE: HeaderFixedPos > the header account element couldn't be found. Is this an error page?")
+            print("AVE: HeaderFixedPos > the header account element couldn't be found. Is this an error page?");
             return;
         }
         //Subverse list bg

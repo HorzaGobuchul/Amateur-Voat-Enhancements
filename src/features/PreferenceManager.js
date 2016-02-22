@@ -502,12 +502,13 @@ AVE.Modules['PreferenceManager'] = {
         }
 
         $("div.ModuleBlock[id='" + module.ID + "'] > div.ModuleTitleBlock > input.ToggleEnable").change(function () {
+            var JqId = $(this).parent().find("span[class*='ModuleState']");
             if (this.checked) {
-                $(this).parent().find("span[class*='ModuleState']").addClass("Enabled");
-                $(this).parent().find("span[class*='ModuleState']").removeClass("Disabled");
+                JqId.addClass("Enabled");
+                JqId.removeClass("Disabled");
             } else {
-                $(this).parent().find("span[class*='ModuleState']").addClass("Disabled");
-                $(this).parent().find("span[class*='ModuleState']").removeClass("Enabled");
+                JqId.addClass("Disabled");
+                JqId.removeClass("Enabled");
             }
         });
     },

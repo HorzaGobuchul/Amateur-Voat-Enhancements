@@ -1,7 +1,7 @@
 AVE.Modules['HideSubmissions'] = {
     ID: 'HideSubmissions',
     Name: 'Hide submissions',
-    Desc: 'Hide vote with the keyboard or automatically after voting on it.',
+    Desc: 'Hide vote with the keyboard or automatically after voting on submissions.',
     Category: 'Subverse',
 
     Index: 10, //early so that other modules don't do unnecessary processing on submissions that will get removed

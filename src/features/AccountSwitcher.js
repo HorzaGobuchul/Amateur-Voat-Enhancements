@@ -74,15 +74,35 @@ AVE.Modules['AccountSwitcher'] = {
                 }\
             span#AVE_AccountSwitcher_edit {\
                 /* edit */\
-                height: 14px;\
-                width: 14px;\
+                height:14px;\
+                width:14px;\
                 margin-top:2px;\
                 margin-left:4px;\
                 /* SVG from Jquery Mobile Icon Set */\
                 background-image:url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23377da8%22%20d%3D%22M1%2C10l-1%2C4l4-1l7-7L8%2C3L1%2C10z%20M11%2C0L9%2C2l3%2C3l2-2L11%2C0z%22%2F%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3Cg%3E%3C%2Fg%3E%3C%2Fsvg%3E")!important;\
-        background-repeat: no-repeat;\
-        cursor: pointer;\
-        background-position: center;\
+                background-repeat:no-repeat;\
+                cursor:pointer;\
+                background-position:center;\
+                }\
+            .light span#AVE_AccountSwitcher_account{\
+                color:#000;\
+                }\
+            .dark span#AVE_AccountSwitcher_account{\
+                color:#FFF;\
+                }\
+            span#AVE_AccountSwitcher_account:hover{\
+                color:#e23f3f;\
+                }\
+            .dark div#AVE_AccountSwitcher_MngrMenu{\
+                color:#fff;\
+                background-color:#333;\
+                }\
+            .light div#AVE_AccountSwitcher_MngrMenu{\
+                color:#000;\
+                background-color:#fff;\
+                }\
+            div#AVE_AccountSwitcher_MngrMenu > span:last-child:hover{\
+                color:#e23f3f;\
                 }';
 
         AVE.Utils.AddStyle(this.style);
@@ -92,8 +112,6 @@ AVE.Modules['AccountSwitcher'] = {
     storageName: "",
     style: "",
     savedAccounts: [],
-    normalColour: "#000",
-    hoverColour: "#e23f3f",
 
     AppendToPage: function () { //To insert content into the page
         var _this = this;
@@ -106,11 +124,11 @@ AVE.Modules['AccountSwitcher'] = {
         var qH = q.height() + (q.outerHeight() - q.height()) / 2;
             //qW = q.outerWidth();
 
-        var light = AVE.Utils.CSSstyle === "light";
-        if (!light)
-        {
-            this.normalColour = '#fff'; //this.hoverColour = "#8c2f2f"
-        }
+        //var light = AVE.Utils.CSSstyle === "light";
+        //if (!light)
+        //{
+        //    this.normalColour = '#fff'; //this.hoverColour = "#8c2f2f"
+        //}
 
         var manager = document.createElement('span');
         manager.style.position = 'relative';
@@ -124,36 +142,25 @@ AVE.Modules['AccountSwitcher'] = {
         managerIcon.height = 14;
         managerIcon.title = 'Accounts';
         managerIcon.style.cursor = 'pointer';
-        var managerMenu = document.createElement('div');
-        manager.appendChild(managerMenu);
-        managerMenu.style.display = 'none';
-        managerMenu.style.position = 'absolute';
-        managerMenu.style.left = '0';
-        managerMenu.style.top = qH + 'px';
-        managerMenu.style.width = '200px';
-        managerMenu.style.border = '1px solid #777';
-        managerMenu.style.borderRadius = '3px';
-        managerMenu.style.background = light ? '#fff' : '#333';
-        managerMenu.style.color = this.normalColour;
-        managerMenu.style.textAlign = 'left';
+        var managerMenu = $('<div id="AVE_AccountSwitcher_MngrMenu" style="display:none;position:absolute;left:0;top:'+qH+'px;width:200px;border:1px solid rgb(119,119,119);border-radius:3px;text-align:left;"></div>');
+        $(manager).append(managerMenu);
         managerIcon.addEventListener('click', function (e) {
-            managerMenu.style.display = managerMenu.style.display == 'none' ? 'block' : 'none';
+            if(managerMenu.is(":hidden")){
+                managerMenu.show();
+            } else {
+                managerMenu.hide();
+            }
         }, false);
         document.addEventListener('click', function (e) {
             if (e.target != managerIcon)
-                managerMenu.style.display = 'none';
+                managerMenu.hide();
         }, false);
         $.each(this.savedAccounts, function (val) {
-            //print('AVE: AccountSwitcher > adding ' + _this.savedAccounts[val].name, true);
             _this.addLoginLink(managerMenu, _this.savedAccounts[val].name, _this.savedAccounts[val].pass);
         });
-        var managerAddAccount = document.createElement('div');
-        managerAddAccount.appendChild(document.createTextNode('+ Add account'));
-        managerMenu.appendChild(managerAddAccount);
-        managerAddAccount.style.cursor = 'pointer';
-        managerAddAccount.style.padding = '0 0.5em';
-        this.switchColor(managerAddAccount);
-        managerAddAccount.addEventListener('click', function () {
+        var managerAddAccount = $('<span style="cursor:pointer;padding:0 0.5em;">+ Add account</span>');
+        managerMenu.append(managerAddAccount);
+        $(managerAddAccount).off().on('click', function () {
             var user = prompt('Username', '');
             if (!user){
                 return false;
@@ -178,10 +185,10 @@ AVE.Modules['AccountSwitcher'] = {
                 pass: pass
             });
             _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.savedAccounts));
-            managerMenu.removeChild(managerAddAccount);
+            managerAddAccount.remove();
             _this.addLoginLink(managerMenu, user, pass);
-            managerMenu.appendChild(managerAddAccount);
-        }, false);
+            managerMenu.append(managerAddAccount);
+        });
         if (q.hasClass('logged-in')){
             q = q.find(".user");
         } else {this.Options.IconPositionLeft.Value = true;} // Can't be at the right of the username if we aren't logged in
@@ -192,15 +199,6 @@ AVE.Modules['AccountSwitcher'] = {
             $(manager).insertAfter("span.user > a[title='Profile']");
             managerIcon.style.marginLeft = '0.5em';
         }
-    },
-
-    switchColor: function (e) {
-        var _this = this;
-        $(e).hover(function() {
-            $(this).css( "color", _this.hoverColour );
-        },         function() {
-            $(this).css( "color", _this.normalColour );
-        });
     },
 
     logIn: function (user, pass) {
@@ -237,22 +235,20 @@ AVE.Modules['AccountSwitcher'] = {
     addLoginLink: function (managerMenu, name) {
         if (typeof name !== "string") {print("AVE: AccountSwitcher > wrong variable type for \"name\""); return false;}
         var _this = this;
-        var account = document.createElement('div'),
-            namelink = document.createElement('span');
+        var account = $('<div></div>'),
+            namelink = $('<span id="AVE_AccountSwitcher_account"></span>');
 
-        namelink.appendChild(document.createTextNode(name));
-        account.appendChild(namelink);
+        namelink.text(name);
+        account.append(namelink);
 
         var del = $('<span id="AVE_AccountSwitcher_del" style="float:right;" title="remove account information"></span>').get(0),
             edit = $('<span id="AVE_AccountSwitcher_edit" style="float:right;" title="change password"></span>').get(0);
 
-        account.appendChild(del);
-        account.appendChild(edit);
-        managerMenu.appendChild(account);
-        namelink.style.cursor = 'pointer';
-        account.style.padding = '0 0.5em';
-
-        this.switchColor(account);
+        account.append(del);
+        account.append(edit);
+        managerMenu.append(account);
+        namelink.css("cursor", 'pointer');
+        account.css("padding", "0 0.5em");
 
         $(edit).off()
             .on("click", function () {
@@ -277,7 +273,7 @@ AVE.Modules['AccountSwitcher'] = {
                         }
                     }
                     _this.Store.SetValue(_this.StorageName, JSON.stringify(_this.savedAccounts));
-                    managerMenu.removeChild(account);
+                    account.remove();
                 }
             });
 

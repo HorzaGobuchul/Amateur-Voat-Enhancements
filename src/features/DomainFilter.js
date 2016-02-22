@@ -12,7 +12,7 @@ AVE.Modules['DomainFilter'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         Filters: {
             Type: 'array',
@@ -68,7 +68,7 @@ AVE.Modules['DomainFilter'] = {
             JSON.stringify(
                 {
                     Enabled: POST.Enabled,
-                    Filters: this.Options.Filters.Value,
+                    Filters: this.Options.Filters.Value
                 }
             )
         );
@@ -174,14 +174,14 @@ AVE.Modules['DomainFilter'] = {
             var count = 0;
             $.each(_this.Options.Filters.Value, function () {
                 var filter = Pref_this.htmlNewFilter + "<br />";
-                filter = filter.replace(/\{@id\}/ig, count);
+                filter = filter.replace(/\{@id}/ig, count);
                 filter = filter.replace("{@keywords}", this.Keywords.join(","));
                 filter = filter.replace("{@subverses}", this.ApplyToSub.join(","));
                 count++;
                 htmlStr += filter;
             });
 
-            htmlStr += '<a style="margin-top: 10px;" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub" id="AddNewFilter">Add new filter</a>';
+            htmlStr += '<a style="margin-top:10px;" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub" id="AddNewFilter">Add new filter</a>';
 
             return htmlStr;
         },
@@ -197,8 +197,8 @@ AVE.Modules['DomainFilter'] = {
 
                 $(html).insertBefore("div#DomainFilter > div.AVE_ModuleCustomInput > a#AddNewFilter");
 
-                $("div#DomainFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click");
-                $("div#DomainFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").on("click", function () {
+                $("div#DomainFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click")
+                    .on("click", function () {
                     print("Remove link: " + $(this).attr("id"), true);
                     print("Remove span: " + $(this).prev("span.AVE_Domain_Filter").attr("id"), true);
                     $(this).next("br").remove();
@@ -216,6 +216,6 @@ AVE.Modules['DomainFilter'] = {
 
                 AVE.Modules.PreferenceManager.AddToModifiedModulesList("DomainFilter");
             });
-        },
-    },
+        }
+    }
 };

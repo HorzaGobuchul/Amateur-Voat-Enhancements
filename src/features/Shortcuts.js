@@ -64,7 +64,7 @@ AVE.Modules['Shortcuts'] = {
     AddShortcutsButtonInSetPage: function () {
         //Not implemented yet.
         //The set pages are bound to change soon.
-        return;
+        //return;
     },
 
     AddShortcutsButtonInSetsPage: function () {
@@ -144,7 +144,7 @@ AVE.Modules['Shortcuts'] = {
         var setInfo = [];
 
         for (var idx in subArr) {
-            if (subArr[idx] == "") { continue; }
+            if (!subArr.hasOwnProperty(idx) || subArr[idx] == "") { continue; }
             if (AVE.Utils.regExpSet.test(subArr[idx])) { //ex: name:12
                 setInfo = this.GetSetParam(subArr[idx]);
                 SubString += '<li><span class="separator">-</span><a href="/set/' + setInfo[1] + '/" style="font-weight:bold;font-style: italic;">' + setInfo[0] + '</a></li>';

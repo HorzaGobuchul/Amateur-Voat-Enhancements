@@ -92,11 +92,11 @@ AVE.Modules['AppendQuote'] = {
             var userpageLink = $(this).parents("ul[class*='flat-list']").first().parent().find("a[class*='author']").attr("href");
             var username = $(this).parents("ul[class*='flat-list']").first().parent().find("a[class*='author']").text();
             
-            var quote = _this.Options.Formatting.Value.replace(/\{@username\}/gi, username);
-            quote = quote.replace(/\{@permaLink\}/gi, permaLink);
-            quote = quote.replace(/\{@userpage\}/gi, userpageLink);
-            quote = quote.replace(/\{@comment\}/gi, comment);
-            quote = quote.replace(/\{@n\}/g, "\n");
+            var quote = _this.Options.Formatting.Value.replace(/\{@username}/gi, username);
+            quote = quote.replace(/\{@permaLink}/gi, permaLink);
+            quote = quote.replace(/\{@userpage}/gi, userpageLink);
+            quote = quote.replace(/\{@comment}/gi, comment);
+            quote = quote.replace(/\{@n}/g, "\n");
 
             var NearestReplyBox = $(this).parents(":has(textarea[class*='commenttextarea'][id*='Content']:visible)").first()
                                          .find("textarea[class*='commenttextarea'][id*='Content']:visible");
@@ -113,9 +113,9 @@ AVE.Modules['AppendQuote'] = {
         html: function () {
             var _this = AVE.Modules['AppendQuote'];
             var htmlStr = "";
-            htmlStr += '<input style="display:inline;width:80%;padding:0px;letter-spacing:0.35px;" class="form-control" type="text" Module="'+ _this.ID +'" id="Formatting" value="' + _this.Options.Formatting.Value + '">';
+            htmlStr += '<input style="display:inline;width:80%;padding:0;letter-spacing:0.35px;" class="form-control" type="text" Module="'+ _this.ID +'" id="Formatting" value="' + _this.Options.Formatting.Value + '">';
             htmlStr += ' <button id="AutoQuoteFormatShowPreview" class="btn-whoaverse-paging" type="button">Show Preview</button>';
-            htmlStr += '<div class="md" id="AutoQuoteFormatPreview" style="height:150px; background-color: #' + ( AVE.Utils.CSSstyle === "dark" ? "292929": "FFF" ) + '; position: fixed; width:430px;padding: 10px; border-radius: 6px; border: 2px solid black;display: none;overflow: auto;"></div>';
+            htmlStr += '<div class="md" id="AutoQuoteFormatPreview" style="height:150px;background-color: #' + ( AVE.Utils.CSSstyle === "dark" ? "292929": "FFF" ) + '; position: fixed; width:430px;padding: 10px; border-radius: 6px; border: 2px solid black;display: none;overflow: auto;"></div>';
             htmlStr += "<br /> {@username}: username of the comment's author,";
             htmlStr += '<br /> {@permaLink}: permaLink to the comment,';
             htmlStr += "<br /> {@userpage}: link to the username's page,";
@@ -126,16 +126,17 @@ AVE.Modules['AppendQuote'] = {
         callback: function () {
             var _this = AVE.Modules['AppendQuote'];
             $('button#AutoQuoteFormatShowPreview').on("click", function () {
+                var JqId = $("div#AutoQuoteFormatPreview");
                 if ($(this).text() === "Show Preview") {
                     $(this).text("Hide Preview");
-                    var JqId = $("div#AutoQuoteFormatPreview");
+
                     JqId.show();
 
-                    var quote = $("input[id='Formatting'][Module='" + _this.ID + "']").val().replace(/\{@username\}/gi, "Username");
-                    quote = quote.replace(/\{@permaLink\}/gi, "/v/whatever/comments/111111/111111");
-                    quote = quote.replace(/\{@userpage\}/gi, "/user/atko");
-                    quote = quote.replace(/\{@comment\}/gi, "> This is a comment.\n\n> Another line.");
-                    quote = quote.replace(/\{@n\}/g, "\n");
+                    var quote = $("input[id='Formatting'][Module='" + _this.ID + "']").val().replace(/\{@username}/gi, "Username");
+                    quote = quote.replace(/\{@permaLink}/gi, "/v/whatever/comments/111111/111111");
+                    quote = quote.replace(/\{@userpage}/gi, "/user/atko");
+                    quote = quote.replace(/\{@comment}/gi, "> This is a comment.\n\n> Another line.");
+                    quote = quote.replace(/\{@n}/g, "\n");
 
                     JqId.text("Loading...");
                     var r = { MessageContent: quote };

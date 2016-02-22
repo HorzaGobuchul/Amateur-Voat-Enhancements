@@ -101,7 +101,7 @@ AVE.Modules['SingleClickOpener'] = {
         html: function () {
             var _this = AVE.Modules['SingleClickOpener'];
             return '<input id="OpenInArchive" ' + (_this.Options.OpenInArchive.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInArchive"> ' + _this.Options.OpenInArchive.Desc + '</label><br>';
-        },
+        }
     }
 };
 

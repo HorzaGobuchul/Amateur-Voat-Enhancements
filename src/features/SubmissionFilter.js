@@ -12,13 +12,13 @@ AVE.Modules['SubmissionFilter'] = {
     Options: {
         Enabled: {
             Type: 'boolean',
-            Value: true,
+            Value: true
         },
         Filters: {
             Type: 'array',
             Desc: "Example of filter",
-            Value: [], //not JSONified
-        },
+            Value: [] //not JSONified
+        }
     },
 
     Filter: function (id, keyword, sub) {
@@ -64,7 +64,7 @@ AVE.Modules['SubmissionFilter'] = {
             JSON.stringify(
                 {
                     Enabled: POST.Enabled,
-                    Filters: this.Options.Filters.Value,
+                    Filters: this.Options.Filters.Value
                 }
             )
         );
@@ -145,9 +145,9 @@ AVE.Modules['SubmissionFilter'] = {
 
             this.htmlNewFilter = '<span class="AVE_Submission_Filter" id="{@id}">\
                                 Keyword(s) \
-                                    <input id="{@id}-kw" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@keywords}"></input>\
+                                    <input id="{@id}-kw" style="width:40%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@keywords}">\
                                     Subverse(s) \
-                                    <input id="{@id}-sub" style="width:29%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@subverses}"></input>\
+                                    <input id="{@id}-sub" style="width:29%;background-color: #' + (AVE.Utils.CSSstyle === "dark" ? "2C2C2C" : "DADADA") + ';" type="text" Module="SubmissionFilter" value="{@subverses}">\
                                 </span>\
                                 <a href="javascript:void(0)" title="Remove filter" style="font-size: 16px;font-weight: bold;" class="RemoveFilter" id="{@id}">-</a>';
 
@@ -156,14 +156,14 @@ AVE.Modules['SubmissionFilter'] = {
             var count = 0;
             $.each(_this.Options.Filters.Value, function () {
                 var filter = Pref_this.htmlNewFilter + "<br />";
-                filter = filter.replace(/\{@id\}/ig, count);
+                filter = filter.replace(/\{@id}/ig, count);
                 filter = filter.replace("{@keywords}", this.Keywords.join(","));
                 filter = filter.replace("{@subverses}", this.ApplyToSub.join(","));
                 count++;
                 htmlStr += filter;
             });
 
-            htmlStr += '<a style="margin-top: 10px;" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub" id="AddNewFilter">Add new filter</a>';
+            htmlStr += '<a style="margin-top:10px;" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub" id="AddNewFilter">Add new filter</a>';
 
             return htmlStr;
         },
@@ -178,8 +178,8 @@ AVE.Modules['SubmissionFilter'] = {
 
                 $(html).insertBefore("div#SubmissionFilter > div.AVE_ModuleCustomInput > a#AddNewFilter");
 
-                $("div#SubmissionFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click");
-                $("div#SubmissionFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").on("click", function () {
+                $("div#SubmissionFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click")
+                    .on("click", function () {
                     //print("Remove link: " + $(this).attr("id"));
                     //print("Remove span: " + $(this).prev("span.AVE_Submission_Filter").attr("id"));
                     $(this).next("br").remove();
@@ -189,14 +189,14 @@ AVE.Modules['SubmissionFilter'] = {
                 AVE.Modules.PreferenceManager.ChangeListeners();
             });
 
-            $("div#SubmissionFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click");
-            $("div#SubmissionFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").on("click", function () {
+            $("div#SubmissionFilter > div.AVE_ModuleCustomInput > a.RemoveFilter").off("click")
+                .on("click", function () {
                 $(this).next("br").remove();
                 $(this).prev("span.AVE_Submission_Filter").remove();
                 $(this).remove();
 
                 AVE.Modules.PreferenceManager.AddToModifiedModulesList("SubmissionFilter");
             });
-        },
-    },
+        }
+    }
 };

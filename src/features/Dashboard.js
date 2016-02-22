@@ -82,7 +82,7 @@ AVE.Modules['Dashboard'] = {
 
         $("a[id^='AVE_Dashboard_Show']")
             .off("click")
-            .on("click", function (el) {
+            .on("click", function () {
                 "use strict";
                 _this.ToggleContent($(this).attr("name"), $(this).text());
         });

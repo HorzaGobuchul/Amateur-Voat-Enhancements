@@ -1,7 +1,7 @@
 AVE.Modules['HttpWarning'] = {
     ID: 'HttpWarning',
     Name: 'unsecure HTTP warning',
-    Desc: 'This module show a warning for submissions that link to HTTP URL instead of HTTPS(ecure)',
+    Desc: 'This module show a warning for submissions that link to HTTP URL instead of HTTPS(ecure).',
     Category: 'Subverse',
 
     Index: 100,
@@ -105,7 +105,7 @@ AVE.Modules['HttpWarning'] = {
             htmlStr += '<input id="ModifyStyle" ' + (_this.Options.ModifyStyle.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ModifyStyle"> ' + _this.Options.ModifyStyle.Desc + '</label><br />';
 
             htmlStr += '<div style="display:inline;padding-left:15px;padding-right:15px;margin-right:10px;font-weight: bold;" id="Demo_WarningStyle">TEST</div>';
-            htmlStr += '<input style="font-size:12px;display:inline;width: 65%;padding:0px;" class="form-control" type="text" Module="' + _this.ID + '" id="WarningStyle" Value="'+_this.Options.WarningStyle.Value[style]+'"/> - Warning style values<br />';
+            htmlStr += '<input style="font-size:12px;display:inline;width: 65%;padding:0;" class="form-control" type="text" Module="' + _this.ID + '" id="WarningStyle" Value="'+_this.Options.WarningStyle.Value[style]+'"/> - Warning style values<br />';
 
             return htmlStr;
         },

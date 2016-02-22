@@ -278,7 +278,7 @@ AVE.Modules['RememberCommentCount'] = {
             htmlStr += '<input id="HighlightNewComments" ' + (_this.Options.HighlightNewComments.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="HighlightNewComments"> ' + _this.Options.HighlightNewComments.Desc + '</label><br />';
 
             htmlStr += '<div style="display:inline;padding-left:15px;padding-right:15px;margin-right:10px;" id="Demo_HighlightStyle"></div>';
-            htmlStr += '<input style="font-size:12px;display:inline;width:60px;padding:0px;" class="form-control" type="text" Module="' + _this.ID + '" id="HighlightStyle" Value="'+_this.Options.HighlightStyle.Value[style]+'"/> - Highlight CSS value<br />';
+            htmlStr += '<input style="font-size:12px;display:inline;width:60px;padding:0;" class="form-control" type="text" Module="' + _this.ID + '" id="HighlightStyle" Value="'+_this.Options.HighlightStyle.Value[style]+'"/> - Highlight CSS value<br />';
 
             htmlStr += '<input id="CorrectTimeZone" ' + (_this.Options.CorrectTimeZone.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="CorrectTimeZone"> ' + _this.Options.CorrectTimeZone.Desc + '</label><br />';
 
