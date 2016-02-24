@@ -8,7 +8,7 @@
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.36.13.34
+// @version     2.36.13.35
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1202,7 +1202,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.13.34",
+        "V2.36.13.35",
+        "   UpdateAfterLoadingMore:",
+        "       Fixed bug",
         "   ContributionDeltas:",
         "       Fixed bug",
         "   AccountSwitcher:",
@@ -1672,15 +1674,16 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
 
     Start: function () {
         var _this = this,
-            JqId = $("div[class*='id-']");
+            JqId = "div[class*='id-']";
 
         this.CommentLen = JqId.length;
+
         //More Comments
         if (this.obsComm) { this.obsComm.disconnect(); }
         this.obsComm = new OnNodeChange($("div.sitetable#siteTable"), function (e) {
             if (e.addedNodes.length > 0 && e.removedNodes.length === 0) {
-                if (JqId.length > _this.CommentLen) {
-                    _this.CommentLen = JqId.length;
+                if ($(JqId).length > _this.CommentLen) {
+                    _this.CommentLen = $(JqId).length;
 
                     setTimeout(AVE.Init.UpdateModules, 500);
                 }
@@ -1697,6 +1700,8 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
             if (e.removedNodes.length === 1) {
                 if (e.removedNodes[0].tagName === "DIV" && e.removedNodes[0].id === "") {
                     setTimeout(AVE.Init.UpdateModules, 500);
+
+                    alert("alert");
                 }
             }
         });
@@ -1704,7 +1709,7 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
     },
 
     Update: function () {
-        if (AVE.Utils.currentPageType !== "thread") {this.Listeners();}
+        if (AVE.Utils.currentPageType === "thread") {this.Listeners();}
     }
 };
 /// END Update after loading more ///
@@ -5314,8 +5319,6 @@ AVE.Modules['NeverEndingVoat'] = {
             oldSCP = SCP.text(),
             oldCCP = CCP.text();
 
-        print(newSCP+" - "+newCCP+" - "+oldSCP+" - "+oldCCP);
-
         if (newSCP !== oldSCP){
             SCP.text(newSCP);
         }
@@ -8184,12 +8187,8 @@ AVE.Modules['HideUsername'] = {
         }
     },
 
-    Username: "",
-
     Start: function () {
-        if (!this.Username){
-            this.Username = $(".logged-in > .user > a[title='Profile']").text();
-        }
+        if (AVE.Utils.CurrUsername() === null) {return;}
 
         if (this.Options.RemoveInLoginBlock.Value) {
             $(".logged-in > .user > a[title='Profile']").remove();
@@ -8198,7 +8197,7 @@ AVE.Modules['HideUsername'] = {
         }
 
         if (this.Options.ReplaceEverywhere.Value) {
-            $("a[href='/user/" + this.Username + "'],a[href='/u/" + this.Username + "']")
+            $("a[href='/user/" + AVE.Utils.CurrUsername() + "'],a[href='/u/" + AVE.Utils.CurrUsername() + "']")
                 .not("#upvoatsGiven").filter(":parents(li.selected)")
                 .text(this.Options.NewName.Value);
         }

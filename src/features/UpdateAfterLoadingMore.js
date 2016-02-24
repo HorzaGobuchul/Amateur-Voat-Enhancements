@@ -51,15 +51,16 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
 
     Start: function () {
         var _this = this,
-            JqId = $("div[class*='id-']");
+            JqId = "div[class*='id-']";
 
         this.CommentLen = JqId.length;
+
         //More Comments
         if (this.obsComm) { this.obsComm.disconnect(); }
         this.obsComm = new OnNodeChange($("div.sitetable#siteTable"), function (e) {
             if (e.addedNodes.length > 0 && e.removedNodes.length === 0) {
-                if (JqId.length > _this.CommentLen) {
-                    _this.CommentLen = JqId.length;
+                if ($(JqId).length > _this.CommentLen) {
+                    _this.CommentLen = $(JqId).length;
 
                     setTimeout(AVE.Init.UpdateModules, 500);
                 }
@@ -76,6 +77,8 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
             if (e.removedNodes.length === 1) {
                 if (e.removedNodes[0].tagName === "DIV" && e.removedNodes[0].id === "") {
                     setTimeout(AVE.Init.UpdateModules, 500);
+
+                    alert("alert");
                 }
             }
         });
@@ -83,6 +86,6 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
     },
 
     Update: function () {
-        if (AVE.Utils.currentPageType !== "thread") {this.Listeners();}
+        if (AVE.Utils.currentPageType === "thread") {this.Listeners();}
     }
 };

@@ -268,8 +268,6 @@ AVE.Modules['NeverEndingVoat'] = {
             oldSCP = SCP.text(),
             oldCCP = CCP.text();
 
-        print(newSCP+" - "+newCCP+" - "+oldSCP+" - "+oldCCP);
-
         if (newSCP !== oldSCP){
             SCP.text(newSCP);
         }
