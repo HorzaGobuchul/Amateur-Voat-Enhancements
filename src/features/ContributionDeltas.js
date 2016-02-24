@@ -280,7 +280,7 @@ AVE.Modules['ContributionDeltas'] = {
              */
 
             if (_this.StoredDeltas[_this.Username] && _this.Username.length > 0) {
-                htmlStr += '<br /><br />Current user: ' + _this.Username + '.<br /> <a style="margin-top: 10px;" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub" id="AVE_Reset_SinceLast">Reset count</a> <span id="AVE_LastReset">Last reset on ' + this.GetParsedDate(_this.StoredDeltas[_this.Username]["reset"].ts) + '</span>';
+                htmlStr += '<br /><br />Current user: ' + _this.Username + '.<br /> <a style="margin-top:10px;" href="javascript:void(0)" class="btn-whoaverse-paging btn-xs btn-default btn-sub" id="AVE_Reset_SinceLast">Reset count</a> <span id="AVE_LastReset">Last reset on ' + this.GetParsedDate(_this.StoredDeltas[_this.Username]["reset"].ts) + '</span>';
             }
             return htmlStr;
         },
@@ -291,14 +291,6 @@ AVE.Modules['ContributionDeltas'] = {
 
             JqId = $("div#ContributionDeltas > div.AVE_ModuleCustomInput > a#AVE_Reset_SinceLast");
 
-            /**
-             * @param timeStamp
-             * @returns {string}
-             */
-            function GetParsedDate (timeStamp) {
-                return new Date(timeStamp).toLocaleString();
-            }
-
             JqId.off("click");
             JqId.on("click", function () {
                 $("span#AVE_LastReset").text('Last reset on '+ GetParsedDate(Date.now()));
@@ -306,6 +298,15 @@ AVE.Modules['ContributionDeltas'] = {
                 _this.StoredDeltas[_this.Username]["reset"] = {ts: Date.now(), S: $("a.userkarma#scp").text(), C: $("a.userkarma#ccp").text()};
                 _this.Store.SetValue(_this.Store.Prefix + _this.ID + "_Deltas", JSON.stringify(_this.StoredDeltas));
             });
+        },
+
+
+        /**
+         * @param timeStamp
+         * @returns {string}
+         */
+        GetParsedDate: function (timeStamp) {
+            return new Date(timeStamp).toLocaleString();
         }
     }
 };
