@@ -60,7 +60,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.12.33",
+        "V2.36.13.33",
+        "   AccountSwitcher:",
+        "       No longer shows the account you are currently logged-in with",
         "   General maintenance",
         "V2.36.11.33",
         "   UserTag:",

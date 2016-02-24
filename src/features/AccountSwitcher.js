@@ -156,6 +156,7 @@ AVE.Modules['AccountSwitcher'] = {
                 managerMenu.hide();
         }, false);
         $.each(this.savedAccounts, function (val) {
+            if (AVE.Utils.CurrUsername() && _this.savedAccounts[val].name.toLowerCase() === AVE.Utils.CurrUsername().toLowerCase()) { return; }
             _this.addLoginLink(managerMenu, _this.savedAccounts[val].name, _this.savedAccounts[val].pass);
         });
         var managerAddAccount = $('<span style="cursor:pointer;padding:0 0.5em;">+ Add account</span>');

@@ -7,6 +7,25 @@ AVE.Utils = {
     currentPageType: "",
     DevMode: false,
     POSTinfo: {},
+
+    _CurrUsername: "",
+    CurrUsername: function () {
+        // "" means that it is not set
+        if (this._CurrUsername === "") {
+            // is the header-account block already loaded?
+            if ($("div#header-account").length > 0){
+                var profil = $("span.user > a[title='Profile']");
+                // is the user logged-in
+                if (profil.length > 0) {
+                    this._CurrUsername = profil.text();
+                } else { // If not null is returned
+                    this._CurrUsername = null;
+                }
+                // else "" is returned until the banner is DOM ready
+            }
+        }
+        return this._CurrUsername;
+    },
     
     LateSet: function () {
         this.CSSstyle = this.CSS_Style();
