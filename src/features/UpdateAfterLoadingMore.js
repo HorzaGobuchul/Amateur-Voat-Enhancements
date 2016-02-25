@@ -77,8 +77,6 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
             if (e.removedNodes.length === 1) {
                 if (e.removedNodes[0].tagName === "DIV" && e.removedNodes[0].id === "") {
                     setTimeout(AVE.Init.UpdateModules, 500);
-
-                    alert("alert");
                 }
             }
         });

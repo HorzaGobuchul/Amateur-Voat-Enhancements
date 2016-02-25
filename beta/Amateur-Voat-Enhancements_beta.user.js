@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2016-02-24
+// @date        2016-02-25
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.36.13.35
+// @version     2.36.13.36
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1202,9 +1202,10 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.13.35",
+        "V2.36.13.36",
         "   UpdateAfterLoadingMore:",
         "       Fixed bug",
+        "       Forgot to remove debug info",
         "   ContributionDeltas:",
         "       Fixed bug",
         "   AccountSwitcher:",
@@ -1700,8 +1701,6 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
             if (e.removedNodes.length === 1) {
                 if (e.removedNodes[0].tagName === "DIV" && e.removedNodes[0].id === "") {
                     setTimeout(AVE.Init.UpdateModules, 500);
-
-                    alert("alert");
                 }
             }
         });

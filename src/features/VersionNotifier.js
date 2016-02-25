@@ -60,9 +60,10 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.13.35",
+        "V2.36.13.36",
         "   UpdateAfterLoadingMore:",
         "       Fixed bug",
+        "       Forgot to remove debug info",
         "   ContributionDeltas:",
         "       Fixed bug",
         "   AccountSwitcher:",
