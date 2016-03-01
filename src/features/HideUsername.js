@@ -67,12 +67,8 @@ AVE.Modules['HideUsername'] = {
         }
     },
 
-    Username: "",
-
     Start: function () {
-        if (!this.Username){
-            this.Username = $(".logged-in > .user > a[title='Profile']").text();
-        }
+        if (AVE.Utils.CurrUsername() === null) {return;}
 
         if (this.Options.RemoveInLoginBlock.Value) {
             $(".logged-in > .user > a[title='Profile']").remove();
@@ -81,7 +77,7 @@ AVE.Modules['HideUsername'] = {
         }
 
         if (this.Options.ReplaceEverywhere.Value) {
-            $("a[href='/user/" + this.Username + "'],a[href='/u/" + this.Username + "']")
+            $("a[href='/user/" + AVE.Utils.CurrUsername() + "'],a[href='/u/" + AVE.Utils.CurrUsername() + "']")
                 .not("#upvoatsGiven").filter(":parents(li.selected)")
                 .text(this.Options.NewName.Value);
         }

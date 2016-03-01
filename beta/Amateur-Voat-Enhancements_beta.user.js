@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2016-02-25
+// @date        2016-03-01
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
@@ -9180,7 +9180,7 @@ div#header-container {z-index: 2;}\
         }
         else { this.userBlockOriginalOffset.left = JqId.offset().left; }
 
-        this.userBlockOriginalOffset.right = Math.floor($(document).width() - (this.userBlockOriginalOffset.left + this.userBlockOriginalWidth + 1));
+        this.userBlockOriginalOffset.right = Math.floor($(document).width() - (this.userBlockOriginalOffset.left + this.userBlockOriginalWidth));
         if (this.userBlockOriginalOffset.right < 0){this.userBlockOriginalOffset.right = 0;}
     },
 
