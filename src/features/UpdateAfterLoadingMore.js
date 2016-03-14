@@ -7,6 +7,8 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
     Index: 1,
     Enabled: false,
 
+    RunAt: "load",
+
     Store: {},
 
     Options: {

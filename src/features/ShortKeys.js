@@ -71,6 +71,11 @@ AVE.Modules['ShortKeys'] = {
         HidePost: {
             Type: 'char',
             Value: 'h'
+        },
+        ToggleCustomStyle: {
+            Type: 'char',
+            Value: 'd',
+            Mod: "cs"
         }
     },
 
@@ -399,9 +404,17 @@ AVE.Modules['ShortKeys'] = {
     },
 
     AppendToPreferenceManager: {
+
+        colours: {
+            shift: "rebeccapurple",
+            ctrl: "#30308D",
+            both: "#398F6A"
+        },
+
         html: function () {
             var _this = AVE.Modules['ShortKeys'];
             var htmlStr = "";
+
             //Up and Down vote
             htmlStr += '<table id="AVE_ShortcutKeys" style="text-align: right;">';
             htmlStr += '<tr>';
@@ -414,29 +427,96 @@ AVE.Modules['ShortKeys'] = {
             //Open Link, Comments, Comments & Link
             htmlStr += '<tr>';
             htmlStr += '<td>Open Link: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="OpenLinkKey" value="' + _this.Options.OpenLinkKey.Value + '"/></td>';
-            htmlStr += '<td>&nbsp; Open comments: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="OpenCommentsKey" value="' + _this.Options.OpenCommentsKey.Value + '"/>';
+            htmlStr += '<td>&nbsp; Open comments: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="OpenCommentsKey" value="' + _this.Options.OpenCommentsKey.Value + '"/></td>';
             htmlStr += '<td>&nbsp; Open L&C: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="OpenLCKey" value="' + _this.Options.OpenLCKey.Value + '"/></td>';
             //Toggle expand media
-            htmlStr += '<td>&nbsp; Toggle expand: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="ExpandKey" value="' + _this.Options.ExpandKey.Value + '"/>';
+            htmlStr += '<td>&nbsp; Toggle expand: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="ExpandKey" value="' + _this.Options.ExpandKey.Value + '"/></td>';
             htmlStr += '</tr>';
             //Toggle expand comment
             htmlStr += '<tr>';
-            htmlStr += '<td>&nbsp; <span title="Toggle comment chain or load more replies">Toggle comment</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="ToggleCommentChain" value="' + _this.Options.ToggleCommentChain.Value + '"/>';
+            htmlStr += '<td>&nbsp; <span title="Toggle comment chain or load more replies">Toggle comment</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="ToggleCommentChain" value="' + _this.Options.ToggleCommentChain.Value + '"/></td>';
             //Navigate to Top and Bottom of the page
-            htmlStr += '<td>&nbsp; <span title="Navigate to the top of the page">Top of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="NavigateTop" value="' + _this.Options.NavigateTop.Value + '"/>';
+            htmlStr += '<td>&nbsp; <span title="Navigate to the top of the page">Top of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="NavigateTop" value="' + _this.Options.NavigateTop.Value + '"/></td>';
             htmlStr += '<td>&nbsp; <span title="Navigate to the bottom of the page">Bottom of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="NavigateBottom" value="' + _this.Options.NavigateBottom.Value + '"/></td>';
             //Hide submission
             htmlStr += '<td>&nbsp; <span title="This feaure requires the module HideSubmission to be enabled!">Hide post</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="HidePost" value="' + _this.Options.HidePost.Value + '"/></td>';
             htmlStr += '</tr>';
+            htmlStr += '<tr>';
+            //Toggle custom styles
+            htmlStr += '<td>&nbsp; <span title="Toggle custom styles">Toggle styles</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="ToggleCustomStyle" value="' + _this.Options.ToggleCustomStyle.Value + '"/></td>';
+            htmlStr += '</tr>';
 
             htmlStr += '</table>';
             htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br>';
-            htmlStr += '<input id="OpenInArchive" ' + (_this.Options.OpenInArchive.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInArchive"> ' + _this.Options.OpenInArchive.Desc + '</label><br>';
+            htmlStr += '<input id="OpenInArchive" ' + (_this.Options.OpenInArchive.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInArchive"> ' + _this.Options.OpenInArchive.Desc + '</label><br><br>';
+
+            htmlStr += '<div><span style="border-bottom:2px solid '+this.colours.shift+';">Shift</span> - ' +
+                            '<span style="border-bottom:2px solid '+this.colours.ctrl+';">Ctrl</span> - ' +
+                            '<span style="border-bottom:2px solid '+this.colours.both+';">Ctrl+Shift</span></div>';
+
             return htmlStr;
         },
 
         callback: function () {
+            var _this = this,
+                _self = AVE.Modules['ShortKeys'],
+                JqId = $("table#AVE_ShortcutKeys input[type='text']");
 
+            JqId.each(function () {
+                var id = $(this).attr("id"),
+                    opt = _self.Options[id];
+                if (opt.hasOwnProperty("Mod")){
+                    if (opt.Mod == "cs"){
+                        $(this).css("borderBottom", "2px solid "+_this.colours.both);
+                    } else if (opt.Mod == "s"){
+                        $(this).css("borderBottom", "2px solid "+_this.colours.shift);
+                    } else if (opt.Mod == "c"){
+                        $(this).css("borderBottom", "2px solid "+_this.colours.ctrl);
+                    }
+
+                    $('<input id="'+id+'_mod" value="'+opt.Mod+'" style="display:none;" />').insertAfter(this);
+                }
+            }).on("keydown", function (event) {
+                var shift = event.shiftKey,
+                    ctrl = event.ctrlKey,
+                    id = $(this).attr("id"),
+                    opt = _self.Options[id],
+                    key;
+
+                if (event.key === undefined) { //Chrome
+                    key = String.fromCharCode(event.keyCode).toUpperCase();
+                } else {
+                    key = event.key.toUpperCase();
+                }
+
+                if (key.length === 1){
+                    $(this).val(key.toLowerCase());
+                } else { return; }
+
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+
+                var modVal = $("table#AVE_ShortcutKeys input#"+id+"_mod");
+                if (modVal.length == 0) {
+                    $('<input id="'+id+'_mod" value="'+opt.Mod+'" style="display:none;" />').insertAfter(this);
+                    modVal = $("table#AVE_ShortcutKeys input#"+id+"_mod");
+                }
+
+                if(shift && ctrl){
+                    $(this).css("borderBottom", "2px solid "+_this.colours.both);
+                    modVal.val("cs");
+                } else if (shift) {
+                    $(this).css("borderBottom", "2px solid "+_this.colours.shift);
+                    modVal.val("s");
+                } else if (ctrl) {
+                    $(this).css("borderBottom", "2px solid "+_this.colours.ctrl);
+                    modVal.val("c");
+                } else {
+                    $(this).css("borderBottom", "");
+                    modVal.val("");
+                }
+            });
         }
     }
 };
