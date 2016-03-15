@@ -18,6 +18,8 @@ AVE.Modules['ToggleCustomStyle'] = {
         }
     },
 
+    CustomCSSContainerCount: 0,
+
     SavePref: function (POST) {
         POST = POST[this.ID];
 
@@ -56,11 +58,14 @@ AVE.Modules['ToggleCustomStyle'] = {
                                 if (!_this.CustomCSS){
                                     _this.CustomCSS = $(n).text();
                                 }
+                                _this.CustomCSSContainerCount++;
 
                                 if (_this.CustomCSSContainerCount === 1 && $.trim(_this.CustomCSS).length > 0){
                                     _this.Start();
 
                                     obsCustomCSS.disconnect();
+                                } else {
+                                    $(n).remove();
                                 }
                             }
                         }

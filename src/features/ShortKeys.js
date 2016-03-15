@@ -86,7 +86,7 @@ AVE.Modules['ShortKeys'] = {
     },
 
     ResetPref: function () {
-        this.Options = JSON.parse(_this.OriginalOptions);
+        this.Options = JSON.parse(this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
@@ -96,7 +96,15 @@ AVE.Modules['ShortKeys'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
+                if (key.substr(key.length-4, 4) === "_mod"){
+                    key = key.substr(0, key.length-4);
+                    if (!_this.Options.hasOwnProperty(key)) {return true;}
+                    _this.Options[key].Mod = value;
+                    return true;
+                }
+
                 if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
+
                 _this.Options[key].Value = value;
             });
         }
@@ -118,23 +126,26 @@ AVE.Modules['ShortKeys'] = {
     Start: function () {
         var _this = this;
 
-        var shift, ctrl,
-            up = this.Options.UpvoteKey.Value,
-            down = this.Options.DownvoteKey.Value,
-            next = this.Options.NextKey.Value,
-            previous = this.Options.PrevKey.Value,
-            OpenC = this.Options.OpenCommentsKey.Value,
-            OpenL = this.Options.OpenLinkKey.Value,
-            OpenLC = this.Options.OpenLCKey.Value,
-            Expand = this.Options.ExpandKey.Value,
-            TCC = this.Options.ToggleCommentChain.Value,
-            NavTop = this.Options.NavigateTop.Value,
-            NavBottom = this.Options.NavigateBottom.Value,
-            HidePost = this.Options.HidePost.Value;
+        var shift, ctrl, mod;
+        var K = {
+            UpvoteKey: this.Options.UpvoteKey.Value,
+            DownvoteKey: this.Options.DownvoteKey.Value,
+            NextKey: this.Options.NextKey.Value,
+            PrevKey: this.Options.PrevKey.Value,
+            OpenCommentsKey: this.Options.OpenCommentsKey.Value,
+            OpenLinkKey: this.Options.OpenLinkKey.Value,
+            OpenLCKey: this.Options.OpenLCKey.Value,
+            ExpandKey: this.Options.ExpandKey.Value,
+            ToggleCommentChain: this.Options.ToggleCommentChain.Value,
+            NavigateTop: this.Options.NavigateTop.Value,
+            NavigateBottom: this.Options.NavigateBottom.Value,
+            HidePost: this.Options.HidePost.Value,
+            ToggleCustomStyle: this.Options.ToggleCustomStyle.Value};
 
         $(document).keydown(function (event) {
             shift = event.shiftKey;
             ctrl = event.ctrlKey;
+            mod = "";
 
             //Exit if the CSSEditor panel has the focus
             if ($("style#custom_css.AVE_custom_css_editable").is(":focus")){return;}
@@ -154,8 +165,12 @@ AVE.Modules['ShortKeys'] = {
                 return;
             }
 
-            //Exit if a key modifier is pressed (ctrl, shift)
-            if (ctrl || shift) { return; }
+            //FIXME Shift doesn't work alone
+            //TODO Check if two shortkey aren't using the same combination
+            //TODO Add the following if a key matches
+            //event.preventDefault();
+            //event.stopPropagation();
+            //event.stopImmediatePropagation();
 
             var sel = AVE.Utils.SelectedPost;
             var key;
@@ -166,31 +181,53 @@ AVE.Modules['ShortKeys'] = {
                 key = event.key.toUpperCase();
             }
 
+            if (key.length > 1) { return; } //Stop there if the key isn't alphanumeric
+
+            if (ctrl)  { mod += "c"; }
+            if (shift) { mod += "s"; }
+            var c = 0;
+            $.each(Object.keys(_this.Options), function (idx, key) {
+                if (K.hasOwnProperty(key)){
+                    if (!_this.Options[key].hasOwnProperty("Mod")){
+                        _this.Options[key].Mod = "";
+                    }
+
+                    if (_this.Options[key].Mod !== mod){
+                        K[key] = "\n"; //Impossible character since an empty string is already reserved to Enter/Return
+                    } else {c++;}
+                }
+            });
+            if (c===0){return;} //Stop there if no shortkeys matches the current modifier(s)
+
             if (event.which === 13) { key = ""; } //Enter/Return key
 
-            if (key === NavTop.toUpperCase()) { // Navigate to the top of the page
+            if (key === K.NavigateTop.toUpperCase()) { // Navigate to the top of the page
                 //Scroll to top
                 //Set first post as selected
                 var obj = $("div.submission[class*='id']:first,div.comment[class*='id']:first").first();
                 if (AVE.Modules['SelectPost']) { AVE.Modules['SelectPost'].ToggleSelectedState(obj.find(".entry:first")); }
                 $(window).scrollTop(0);
-            } else if (key === NavBottom.toUpperCase()) { // Navigate to the bottom of the page
+            } else if (key === K.NavigateBottom.toUpperCase()) { // Navigate to the bottom of the page
                 //Scroll to bottom
                 $(window).scrollTop($(document).height());
                 //Set last post as selected
                 var obj = $("div.comment[class*='id']:last");
                 if (obj.length === 0) { obj = $("div.submission[class*='id']:last"); }
                 if (AVE.Modules['SelectPost']) { AVE.Modules['SelectPost'].ToggleSelectedState(obj.find(".entry:first")); }
+            } else if (key === K.ToggleCustomStyle.toUpperCase()) { // Toggle custom style
+                var checkbox = $("input#AVE_ToggleCustomStyle");
+                checkbox.prop('checked', !checkbox.is(":checked"));
+                checkbox.trigger("change");
             }
 
-            //All following keys need a post selected to work
-            if (!AVE.Utils.SelectedPost) {  return; }
+            //All following shortkeys need a post selected to work
+            if (!AVE.Utils.SelectedPost) { return;}
 
-            if (key === up.toUpperCase()) { // upvote
+            if (key === K.UpvoteKey.toUpperCase()) { // upvote
                 sel.parent().find(".midcol").find("div[aria-label='upvote']").first().click();
-            } else if (key === down.toUpperCase()) { // downvote
+            } else if (key === K.DownvoteKey.toUpperCase()) { // downvote
                 sel.parent().find(".midcol").find("div[aria-label='downvote']").first().click();
-            } else if (key === next.toUpperCase()) { // next post
+            } else if (key === K.NextKey.toUpperCase()) { // next post
                 if (sel.parent().hasClass("submission")) {
                     //Submissions
                     var _next = sel.parent().nextAll("div.submission[class*='id-']:first");
@@ -206,7 +243,7 @@ AVE.Modules['ShortKeys'] = {
                     var id = sel.parent().prop("class").split(" ")[1];
                     // :visible because comments could be hidden, with the ToggleChildComment module
                     var a = sel.parent().find("div[class*='id-']:visible").get(0) || //Child
-                            $("div." + id + " ~ div[class*='id-']:visible").get(0); //Sibling
+                        $("div." + id + " ~ div[class*='id-']:visible").get(0); //Sibling
 
                     if (!a) { //Not a direct parent
                         var tempSel = sel.parent();
@@ -214,7 +251,7 @@ AVE.Modules['ShortKeys'] = {
                         var count = 0;
                         while (!a) {
                             tempSel = $(tempSel.parent("div[class*='id-']").get(0) ||
-                                      $("div." + tempID + " ~ div[class*='id-']:visible").get(0));
+                                $("div." + tempID + " ~ div[class*='id-']:visible").get(0));
                             if (tempSel.length === 0) { break; }
 
                             if (tempSel.nextAll("div[class*='id-']:visible:last").length > 0) {
@@ -235,7 +272,7 @@ AVE.Modules['ShortKeys'] = {
                     } else { $("a#loadmorebutton").click(); }
                 }
 
-            } else if (key === previous.toUpperCase()) { // previous post
+            } else if (key === K.PrevKey.toUpperCase()) { // previous post
                 if (sel.parent().hasClass("submission")) { // select by page type not class
                     //Submissions
                     var prev = sel.parent().prevAll("div.submission[class*='id-']:first");
@@ -248,8 +285,8 @@ AVE.Modules['ShortKeys'] = {
                     //var id = sel.parent().prop("class").split(" ")[1];
 
                     var a = sel.parent().prevAll("div[class*='id-']:visible:first").find("div[class*='id-']:visible:last").get(0) || //Parent's child
-                            sel.parent().prevAll("div[class*='id-']:visible:first").get(0) || //Sibling
-                            sel.parent().parent("div[class*='id-']:visible").get(0); //Parent
+                        sel.parent().prevAll("div[class*='id-']:visible:first").get(0) || //Sibling
+                        sel.parent().parent("div[class*='id-']:visible").get(0); //Parent
 
                     if (a) {
                         AVE.Modules['SelectPost'].ToggleSelectedState($(a).find("div.entry:first"));
@@ -258,7 +295,7 @@ AVE.Modules['ShortKeys'] = {
                     //if (!a) No previous comment
                 }
 
-            } else if (key === OpenC.toUpperCase()) { // Open comment page
+            } else if (key === K.OpenCommentsKey.toUpperCase()) { // Open comment page
                 if (!sel.parent().hasClass("submission")) { return; }
 
                 var url = "https://" + window.location.hostname +sel.find("a.comments").attr("href");
@@ -267,7 +304,7 @@ AVE.Modules['ShortKeys'] = {
                 } else {
                     window.location.href = url;
                 }
-            } else if (key === OpenL.toUpperCase()) { // Open link page
+            } else if (key === K.OpenLinkKey.toUpperCase()) { // Open link page
                 if (!sel.parent().hasClass("submission")) { return; }
                 var url = sel.find("a.title").attr("href");
 
@@ -282,7 +319,7 @@ AVE.Modules['ShortKeys'] = {
                 } else {
                     window.location.href = url;
                 }
-            } else if (key === OpenLC.toUpperCase()) { // Open comment and link pages
+            } else if (key === K.OpenLCKey.toUpperCase()) { // Open comment and link pages
                 if (!sel.parent().hasClass("submission")) { return; }
                 var url = [];
 
@@ -300,7 +337,7 @@ AVE.Modules['ShortKeys'] = {
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[0] });
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[1] });
                 }
-            } else if (key === Expand.toUpperCase()) { // Expand media/self-text
+            } else if (key === K.ExpandKey.toUpperCase()) { // Expand media/self-text
                 var expand, media;
                 if ( sel.parent().hasClass("submission")) {
                     //In submissions
@@ -310,13 +347,13 @@ AVE.Modules['ShortKeys'] = {
 
                         media.each(function () {
                             //Expand is false if at least one of the media is expanded
-                            if ($(this).next(".link-expando:visible").length > 0)
+                            if ($(this).NextKey(".link-expando:visible").length > 0)
                             { expand = false; return false; }
                         });
 
                         media.each(function () {
                             if ($(this).find("span.link-expando-type").length > 0
-                                && expand !== $(this).next(".link-expando:visible").length > 0)
+                                && expand !== $(this).NextKey(".link-expando:visible").length > 0)
                             { this.click(); }
                         });
                     } else {
@@ -329,22 +366,22 @@ AVE.Modules['ShortKeys'] = {
 
                     media.each(function () {
                         //Expand is false if at least one of the media is expanded
-                        if ($(this).next(".link-expando:visible").length > 0)
+                        if ($(this).NextKey(".link-expando:visible").length > 0)
                         { expand = false; return false; }
-                        });
+                    });
 
                     media.each(function () {
-                        if ($(this).find("span.link-expando-type").length > 0 
-                            && expand !== $(this).next(".link-expando:visible").length > 0)
+                        if ($(this).find("span.link-expando-type").length > 0
+                            && expand !== $(this).NextKey(".link-expando:visible").length > 0)
                         { this.click(); }
-                        });
+                    });
                 }
 
                 if (sel.offset().top < $(window).scrollTop() &&
                     sel.find("div.expando-button").hasClass("collapsed")){// and if it was expanded
                     $('html, body').animate({ scrollTop: AVE.Utils.SelectedPost.parent().offset().top - 50 }, 150);
                 }
-            } else if (key === TCC.toUpperCase()) { // Toggle comment chain or load more replies
+            } else if (key === K.ToggleCommentChain.toUpperCase()) { // Toggle comment chain or load more replies
                 if (sel.parent().hasClass("submission")) { return; }
 
                 if (sel.find("a.inline-loadcomments-btn:first").length > 0) {
@@ -354,7 +391,7 @@ AVE.Modules['ShortKeys'] = {
                     //Hide selected comment otherwise
                     sel.find('a.expand:visible:first')[0].click();
                 }
-            } else if (key === HidePost.toUpperCase()) { // Hide submission
+            } else if (key === K.HidePost.toUpperCase()) { // Hide submission
                 if (!AVE.Modules['HideSubmissions'] || !AVE.Modules['HideSubmissions'].Enabled){
                     if(!confirm("You are trying to hide a post but the module \"HideSubmissions\" is disabled.\nDo you want to activate and load this module?")){
                         return;
@@ -407,8 +444,7 @@ AVE.Modules['ShortKeys'] = {
 
         colours: {
             shift: "rebeccapurple",
-            ctrl: "#30308D",
-            both: "#398F6A"
+            ctrl: "#398F6A"
         },
 
         html: function () {
@@ -447,12 +483,10 @@ AVE.Modules['ShortKeys'] = {
             htmlStr += '</tr>';
 
             htmlStr += '</table>';
-            htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br>';
-            htmlStr += '<input id="OpenInArchive" ' + (_this.Options.OpenInArchive.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInArchive"> ' + _this.Options.OpenInArchive.Desc + '</label><br><br>';
 
-            htmlStr += '<div><span style="border-bottom:2px solid '+this.colours.shift+';">Shift</span> - ' +
-                            '<span style="border-bottom:2px solid '+this.colours.ctrl+';">Ctrl</span> - ' +
-                            '<span style="border-bottom:2px solid '+this.colours.both+';">Ctrl+Shift</span></div>';
+            htmlStr += '<div><span style="border-bottom:2px solid '+this.colours.ctrl+';">Ctrl</span> - <span style="border-bottom:2px solid '+this.colours.shift+';">Shift</span><br><br>';
+            htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br>';
+            htmlStr += '<input id="OpenInArchive" ' + (_this.Options.OpenInArchive.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInArchive"> ' + _this.Options.OpenInArchive.Desc + '</label><br>';
 
             return htmlStr;
         },
@@ -467,11 +501,14 @@ AVE.Modules['ShortKeys'] = {
                     opt = _self.Options[id];
                 if (opt.hasOwnProperty("Mod")){
                     if (opt.Mod == "cs"){
-                        $(this).css("borderBottom", "2px solid "+_this.colours.both);
+                        $(this).css("borderRight", "2px solid "+_this.colours.shift);
+                        $(this).css("borderLeft", "2px solid "+_this.colours.ctrl);
                     } else if (opt.Mod == "s"){
-                        $(this).css("borderBottom", "2px solid "+_this.colours.shift);
+                        $(this).css("borderRight", "2px solid "+_this.colours.shift);
+                        $(this).css("borderLeft", "");
                     } else if (opt.Mod == "c"){
-                        $(this).css("borderBottom", "2px solid "+_this.colours.ctrl);
+                        $(this).css("borderLeft", "2px solid "+_this.colours.ctrl);
+                        $(this).css("borderRight", "");
                     }
 
                     $('<input id="'+id+'_mod" value="'+opt.Mod+'" style="display:none;" />').insertAfter(this);
@@ -489,33 +526,39 @@ AVE.Modules['ShortKeys'] = {
                     key = event.key.toUpperCase();
                 }
 
+                //key = $.trim(key); // Space is an accepted key
+
                 if (key.length === 1){
                     $(this).val(key.toLowerCase());
                 } else { return; }
-
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
 
                 var modVal = $("table#AVE_ShortcutKeys input#"+id+"_mod");
                 if (modVal.length == 0) {
                     $('<input id="'+id+'_mod" value="'+opt.Mod+'" style="display:none;" />').insertAfter(this);
                     modVal = $("table#AVE_ShortcutKeys input#"+id+"_mod");
                 }
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
 
                 if(shift && ctrl){
-                    $(this).css("borderBottom", "2px solid "+_this.colours.both);
+                    $(this).css("borderLeft", "2px solid "+_this.colours.ctrl);
+                    $(this).css("borderRight", "2px solid "+_this.colours.shift);
                     modVal.val("cs");
                 } else if (shift) {
-                    $(this).css("borderBottom", "2px solid "+_this.colours.shift);
+                    $(this).css("borderRight", "2px solid "+_this.colours.shift);
+                    $(this).css("borderLeft", "");
                     modVal.val("s");
                 } else if (ctrl) {
-                    $(this).css("borderBottom", "2px solid "+_this.colours.ctrl);
+                    $(this).css("borderLeft", "2px solid "+_this.colours.ctrl);
+                    $(this).css("borderRight", "");
                     modVal.val("c");
                 } else {
-                    $(this).css("borderBottom", "");
+                    $(this).css("borderLeft", "");
+                    $(this).css("borderRight", "");
                     modVal.val("");
                 }
+                AVE.Modules.PreferenceManager.AddToModifiedModulesList("ShortKeys");
             });
         }
     }

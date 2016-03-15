@@ -60,7 +60,7 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.14.37",
+        "V2.36.14.38",
         "   Shortkeys:",
         "       Added key modifiers (ctrl & shift)",
         "   UpdateAfterLoadingMore:",

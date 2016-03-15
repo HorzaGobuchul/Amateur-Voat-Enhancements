@@ -98,8 +98,6 @@ AVE.Modules['InjectCustomStyle'] = {
         Typogra: "https://cdn.rawgit.com/Nurdoidz/Typogra-Voat/master/Typogra.min.css?AVE"
     },
 
-    CustomCSSContainerCount: 0,
-
     Start: function () {
         var _this = this;
 

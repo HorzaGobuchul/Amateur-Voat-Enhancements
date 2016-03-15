@@ -42,8 +42,7 @@ AVE.Modules['FixContainerWidth'] = {
     },
 
     ResetPref: function () {
-        var _this = this;
-        _this.Options = JSON.parse(_this.OriginalOptions);
+        this.Options = JSON.parse(this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
