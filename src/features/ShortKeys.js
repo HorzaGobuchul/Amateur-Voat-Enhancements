@@ -123,29 +123,34 @@ AVE.Modules['ShortKeys'] = {
         }
     },
 
+    CopyValue: function (val) { //Not reference
+        return JSON.parse(JSON.stringify(val));
+    },
+
     Start: function () {
         var _this = this;
 
         var shift, ctrl, mod;
-        var K = {
-            UpvoteKey: this.Options.UpvoteKey.Value,
-            DownvoteKey: this.Options.DownvoteKey.Value,
-            NextKey: this.Options.NextKey.Value,
-            PrevKey: this.Options.PrevKey.Value,
-            OpenCommentsKey: this.Options.OpenCommentsKey.Value,
-            OpenLinkKey: this.Options.OpenLinkKey.Value,
-            OpenLCKey: this.Options.OpenLCKey.Value,
-            ExpandKey: this.Options.ExpandKey.Value,
-            ToggleCommentChain: this.Options.ToggleCommentChain.Value,
-            NavigateTop: this.Options.NavigateTop.Value,
-            NavigateBottom: this.Options.NavigateBottom.Value,
-            HidePost: this.Options.HidePost.Value,
-            ToggleCustomStyle: this.Options.ToggleCustomStyle.Value};
+        var Keys = {
+            UpvoteKey: this.CopyValue(this.Options.UpvoteKey.Value),
+            DownvoteKey: this.CopyValue(this.Options.DownvoteKey.Value),
+            NextKey: this.CopyValue(this.Options.NextKey.Value),
+            PrevKey: this.CopyValue(this.Options.PrevKey.Value),
+            OpenCommentsKey: this.CopyValue(this.Options.OpenCommentsKey.Value),
+            OpenLinkKey: this.CopyValue(this.Options.OpenLinkKey.Value),
+            OpenLCKey: this.CopyValue(this.Options.OpenLCKey.Value),
+            ExpandKey: this.CopyValue(this.Options.ExpandKey.Value),
+            ToggleCommentChain: this.CopyValue(this.Options.ToggleCommentChain.Value),
+            NavigateTop: this.CopyValue(this.Options.NavigateTop.Value),
+            NavigateBottom: this.CopyValue(this.Options.NavigateBottom.Value),
+            HidePost: this.CopyValue(this.Options.HidePost.Value),
+            ToggleCustomStyle: this.CopyValue(this.Options.ToggleCustomStyle.Value)};
 
         $(document).keydown(function (event) {
             shift = event.shiftKey;
             ctrl = event.ctrlKey;
             mod = "";
+            var K = _this.CopyValue(Keys);
 
             //Exit if the CSSEditor panel has the focus
             if ($("style#custom_css.AVE_custom_css_editable").is(":focus")){return;}
@@ -165,17 +170,14 @@ AVE.Modules['ShortKeys'] = {
                 return;
             }
 
-            //FIXME Shift doesn't work alone
-            //TODO Check if two shortkey aren't using the same combination
-            //TODO Add the following if a key matches
-            //event.preventDefault();
-            //event.stopPropagation();
-            //event.stopImmediatePropagation();
+            //TODO Check if two shortkeys aren't using the same combination
 
-            var sel = AVE.Utils.SelectedPost;
-            var key;
+            var sel = AVE.Utils.SelectedPost,
+                key;
 
-            if (event.key === undefined) { //Chrome
+
+            if (event.which === 13) { key = ""; } //Enter/Return key
+            else if (event.key === undefined) { //Chrome
                 key = String.fromCharCode(event.keyCode).toUpperCase();
             } else {
                 key = event.key.toUpperCase();
@@ -185,21 +187,30 @@ AVE.Modules['ShortKeys'] = {
 
             if (ctrl)  { mod += "c"; }
             if (shift) { mod += "s"; }
-            var c = 0;
-            $.each(Object.keys(_this.Options), function (idx, key) {
-                if (K.hasOwnProperty(key)){
-                    if (!_this.Options[key].hasOwnProperty("Mod")){
-                        _this.Options[key].Mod = "";
+            var c = false, // At least one shortkey was found for the current combination of key and modifiers
+                s = false; // At least one of those combinations needs a selected post to work
+            $.each(Object.keys(_this.Options), function (idx, Kiter) {
+                if (K.hasOwnProperty(Kiter)){
+                    if (!_this.Options[Kiter].hasOwnProperty("Mod")){
+                        _this.Options[Kiter].Mod = "";
                     }
 
-                    if (_this.Options[key].Mod !== mod){
-                        K[key] = "\n"; //Impossible character since an empty string is already reserved to Enter/Return
-                    } else {c++;}
+                    if (_this.Options[Kiter].Mod !== mod){
+                        K[Kiter] = "\n"; //Impossible character since an empty string is already reserved to Enter/Return
+                    } else if (K[Kiter].toUpperCase() === key){
+                        if ($.inArray(key,["NavigateTop", "NavigateBottom", "ToggleCustomStyle"]) === -1){s=true;}
+                        c = true;
+                    }
                 }
             });
-            if (c===0){return;} //Stop there if no shortkeys matches the current modifier(s)
 
-            if (event.which === 13) { key = ""; } //Enter/Return key
+            if (!c){return;} //Stop there if no shortkey matches the current modifier(s)
+
+            if (!s){
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+            }
 
             if (key === K.NavigateTop.toUpperCase()) { // Navigate to the top of the page
                 //Scroll to top
@@ -221,7 +232,11 @@ AVE.Modules['ShortKeys'] = {
             }
 
             //All following shortkeys need a post selected to work
-            if (!AVE.Utils.SelectedPost) { return;}
+            if (!sel) { return;}
+
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
 
             if (key === K.UpvoteKey.toUpperCase()) { // upvote
                 sel.parent().find(".midcol").find("div[aria-label='upvote']").first().click();
