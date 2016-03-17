@@ -170,11 +170,8 @@ AVE.Modules['ShortKeys'] = {
                 return;
             }
 
-            //TODO Check if two shortkeys aren't using the same combination
-
             var sel = AVE.Utils.SelectedPost,
                 key;
-
 
             if (event.which === 13) { key = ""; } //Enter/Return key
             else if (event.key === undefined) { //Chrome
@@ -490,7 +487,7 @@ AVE.Modules['ShortKeys'] = {
             htmlStr += '<td>&nbsp; <span title="Navigate to the top of the page">Top of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="NavigateTop" value="' + _this.Options.NavigateTop.Value + '"/></td>';
             htmlStr += '<td>&nbsp; <span title="Navigate to the bottom of the page">Bottom of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="NavigateBottom" value="' + _this.Options.NavigateBottom.Value + '"/></td>';
             //Hide submission
-            htmlStr += '<td>&nbsp; <span title="This feaure requires the module HideSubmission to be enabled!">Hide post</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="HidePost" value="' + _this.Options.HidePost.Value + '"/></td>';
+            htmlStr += '<td>&nbsp; <span title="This feature requires the module HideSubmission to be enabled!">Hide post</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="HidePost" value="' + _this.Options.HidePost.Value + '"/></td>';
             htmlStr += '</tr>';
             htmlStr += '<tr>';
             //Toggle custom styles
@@ -499,7 +496,8 @@ AVE.Modules['ShortKeys'] = {
 
             htmlStr += '</table>';
 
-            htmlStr += '<div><span style="border-bottom:2px solid '+this.colours.ctrl+';">Ctrl</span> - <span style="border-bottom:2px solid '+this.colours.shift+';">Shift</span><br><br>';
+            htmlStr += '<div><span style="border-bottom:2px solid '+this.colours.ctrl+';">Ctrl</span> - <span style="border-bottom:2px solid '+this.colours.shift+';">Shift</span> <span id="AVE_Shortkeys_CollisionWarning" style="margin-left:25px;display:none;font-weight:bold;"></span><br><br>';
+
             htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br>';
             htmlStr += '<input id="OpenInArchive" ' + (_this.Options.OpenInArchive.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInArchive"> ' + _this.Options.OpenInArchive.Desc + '</label><br>';
 
@@ -531,20 +529,21 @@ AVE.Modules['ShortKeys'] = {
             }).on("keydown", function (event) {
                 var shift = event.shiftKey,
                     ctrl = event.ctrlKey,
-                    id = $(this).attr("id"),
+                    el = $(this),
+                    id = el.attr("id"),
                     opt = _self.Options[id],
                     key;
 
                 if (event.key === undefined) { //Chrome
-                    key = String.fromCharCode(event.keyCode).toUpperCase();
+                    key = String.fromCharCode(event.keyCode).toLowerCase();
                 } else {
-                    key = event.key.toUpperCase();
+                    key = event.key.toLowerCase();
                 }
 
                 //key = $.trim(key); // Space is an accepted key
 
                 if (key.length === 1){
-                    $(this).val(key.toLowerCase());
+                    $(this).val(key);
                 } else { return; }
 
                 var modVal = $("table#AVE_ShortcutKeys input#"+id+"_mod");
@@ -552,28 +551,57 @@ AVE.Modules['ShortKeys'] = {
                     $('<input id="'+id+'_mod" value="'+opt.Mod+'" style="display:none;" />').insertAfter(this);
                     modVal = $("table#AVE_ShortcutKeys input#"+id+"_mod");
                 }
+
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
 
                 if(shift && ctrl){
-                    $(this).css("borderLeft", "2px solid "+_this.colours.ctrl);
-                    $(this).css("borderRight", "2px solid "+_this.colours.shift);
+                    el.css("borderLeft", "2px solid "+_this.colours.ctrl)
+                      .css("borderRight", "2px solid "+_this.colours.shift);
                     modVal.val("cs");
                 } else if (shift) {
-                    $(this).css("borderRight", "2px solid "+_this.colours.shift);
-                    $(this).css("borderLeft", "");
+                    el.css("borderRight", "2px solid "+_this.colours.shift)
+                      .css("borderLeft", "");
                     modVal.val("s");
                 } else if (ctrl) {
-                    $(this).css("borderLeft", "2px solid "+_this.colours.ctrl);
-                    $(this).css("borderRight", "");
+                    el.css("borderLeft", "2px solid "+_this.colours.ctrl)
+                      .css("borderRight", "");
                     modVal.val("c");
                 } else {
-                    $(this).css("borderLeft", "");
-                    $(this).css("borderRight", "");
+                    el.css("borderLeft", "")
+                      .css("borderRight", "");
                     modVal.val("");
                 }
                 AVE.Modules.PreferenceManager.AddToModifiedModulesList("ShortKeys");
+
+                var colliding = [],
+                    mod = modVal.val();
+                JqId.each(function () {
+                    var ID = $(this).prop("id");
+                    if (ID === id) { return true; }
+
+                    var nmod = $(this).next("input#"+$(this).prop("id")+"_mod").val(),
+                        nkey = $(this).val().toLowerCase();
+
+                    if (nkey === key && nmod === mod) {
+                        colliding.push(ID);
+                        $(this).css("backgroundColor", "#4B2A2A");
+                    } else {
+                        $(this).css("backgroundColor", "");
+                    }
+                });
+
+                var warn = $("span#AVE_Shortkeys_CollisionWarning");
+                if (colliding.length > 0){
+                    el.css("backgroundColor", "#4B2A2A");
+                    warn.text("This key shortcut is currently assigned to: " + colliding.join(", ") + ".")
+                        .show();
+                } else {
+                    el.css("backgroundColor", "");
+                    warn.text("")
+                        .hide();
+                }
             });
         }
     }
