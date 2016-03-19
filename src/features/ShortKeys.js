@@ -21,7 +21,7 @@ AVE.Modules['ShortKeys'] = {
         },
         OpenInArchive: {
             Type: 'boolean',
-            Desc: 'Open link page in <strong>archives.is</strong>.',
+            Desc: 'Open link page in <strong>archive.is</strong>.',
             Value: false
         },
         UpvoteKey: {
@@ -463,6 +463,8 @@ AVE.Modules['ShortKeys'] = {
             var _this = AVE.Modules['ShortKeys'];
             var htmlStr = "";
 
+            this.colours.collides = "#" + (AVE.Utils.CSSstyle === "dark" ? "4B2A2A" : "FFBCBC");
+
             //Up and Down vote
             htmlStr += '<table id="AVE_ShortcutKeys" style="text-align: right;">';
             htmlStr += '<tr>';
@@ -586,15 +588,16 @@ AVE.Modules['ShortKeys'] = {
 
                     if (nkey === key && nmod === mod) {
                         colliding.push(ID);
-                        $(this).css("backgroundColor", "#4B2A2A");
+                        $(this).css("backgroundColor", _this.colours.collides);
                     } else {
                         $(this).css("backgroundColor", "");
                     }
                 });
 
+
                 var warn = $("span#AVE_Shortkeys_CollisionWarning");
                 if (colliding.length > 0){
-                    el.css("backgroundColor", "#4B2A2A");
+                    el.css("backgroundColor", _this.colours.collides);
                     warn.text("This key shortcut is currently assigned to: " + colliding.join(", ") + ".")
                         .show();
                 } else {

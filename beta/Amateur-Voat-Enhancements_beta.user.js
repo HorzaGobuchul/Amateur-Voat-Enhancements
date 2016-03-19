@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2016-03-01
+// @date        2016-03-19
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.36.13.36
+// @version     2.36.16.37
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -85,6 +85,7 @@ AVE.Init = {
                 }//Error pages that are empty
 
                 AVE.Utils.LateSet();
+                
                 print("Init: Starting on Head ready", true);
                 $.each(ModLoad.HeadReady, function () {
                     _this.LoadModules(this);
@@ -1202,6 +1203,13 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.36.16.37",
+        "   Shortkeys:",
+        "       Added support for key modifiers (ctrl & shift)",
+        "       Added checks for shortcut collisions (shows warning and visual cues)",
+        "       Added shortcut to toggle custom styles",
+        "   UpdateAfterLoadingMore:",
+        "       Starts at DOM load so that it isn't trigger while the page is still loading",
         "V2.36.13.36",
         "   UpdateAfterLoadingMore:",
         "       Fixed bug",
@@ -1630,6 +1638,8 @@ AVE.Modules['UpdateAfterLoadingMore'] = {
 
     Index: 1,
     Enabled: false,
+
+    RunAt: "load",
 
     Store: {},
 
@@ -3361,8 +3371,7 @@ AVE.Modules['SelectPost'] = {
     },
 
     ResetPref: function () {
-        var _this = this;
-        _this.Options = JSON.parse(_this.OriginalOptions);
+        this.Options = JSON.parse(this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
@@ -3522,7 +3531,7 @@ AVE.Modules['ShortKeys'] = {
         },
         OpenInArchive: {
             Type: 'boolean',
-            Desc: 'Open link page in <strong>archives.is</strong>.',
+            Desc: 'Open link page in <strong>archive.is</strong>.',
             Value: false
         },
         UpvoteKey: {
@@ -3572,6 +3581,11 @@ AVE.Modules['ShortKeys'] = {
         HidePost: {
             Type: 'char',
             Value: 'h'
+        },
+        ToggleCustomStyle: {
+            Type: 'char',
+            Value: 'd',
+            Mod: "cs"
         }
     },
 
@@ -3582,7 +3596,7 @@ AVE.Modules['ShortKeys'] = {
     },
 
     ResetPref: function () {
-        this.Options = JSON.parse(_this.OriginalOptions);
+        this.Options = JSON.parse(this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
@@ -3592,7 +3606,15 @@ AVE.Modules['ShortKeys'] = {
         if (Opt != undefined) {
             Opt = JSON.parse(Opt);
             $.each(Opt, function (key, value) {
+                if (key.substr(key.length-4, 4) === "_mod"){
+                    key = key.substr(0, key.length-4);
+                    if (!_this.Options.hasOwnProperty(key)) {return true;}
+                    _this.Options[key].Mod = value;
+                    return true;
+                }
+
                 if (!_this.Options.hasOwnProperty(key)) {print("AVE: loading "+_this.ID+" > option key " +key+" doesn't exist", true);return true;}
+
                 _this.Options[key].Value = value;
             });
         }
@@ -3611,26 +3633,34 @@ AVE.Modules['ShortKeys'] = {
         }
     },
 
+    CopyValue: function (val) { //Not reference
+        return JSON.parse(JSON.stringify(val));
+    },
+
     Start: function () {
         var _this = this;
 
-        var shift, ctrl,
-            up = this.Options.UpvoteKey.Value,
-            down = this.Options.DownvoteKey.Value,
-            next = this.Options.NextKey.Value,
-            previous = this.Options.PrevKey.Value,
-            OpenC = this.Options.OpenCommentsKey.Value,
-            OpenL = this.Options.OpenLinkKey.Value,
-            OpenLC = this.Options.OpenLCKey.Value,
-            Expand = this.Options.ExpandKey.Value,
-            TCC = this.Options.ToggleCommentChain.Value,
-            NavTop = this.Options.NavigateTop.Value,
-            NavBottom = this.Options.NavigateBottom.Value,
-            HidePost = this.Options.HidePost.Value;
+        var shift, ctrl, mod;
+        var Keys = {
+            UpvoteKey: this.CopyValue(this.Options.UpvoteKey.Value),
+            DownvoteKey: this.CopyValue(this.Options.DownvoteKey.Value),
+            NextKey: this.CopyValue(this.Options.NextKey.Value),
+            PrevKey: this.CopyValue(this.Options.PrevKey.Value),
+            OpenCommentsKey: this.CopyValue(this.Options.OpenCommentsKey.Value),
+            OpenLinkKey: this.CopyValue(this.Options.OpenLinkKey.Value),
+            OpenLCKey: this.CopyValue(this.Options.OpenLCKey.Value),
+            ExpandKey: this.CopyValue(this.Options.ExpandKey.Value),
+            ToggleCommentChain: this.CopyValue(this.Options.ToggleCommentChain.Value),
+            NavigateTop: this.CopyValue(this.Options.NavigateTop.Value),
+            NavigateBottom: this.CopyValue(this.Options.NavigateBottom.Value),
+            HidePost: this.CopyValue(this.Options.HidePost.Value),
+            ToggleCustomStyle: this.CopyValue(this.Options.ToggleCustomStyle.Value)};
 
         $(document).keydown(function (event) {
             shift = event.shiftKey;
             ctrl = event.ctrlKey;
+            mod = "";
+            var K = _this.CopyValue(Keys);
 
             //Exit if the CSSEditor panel has the focus
             if ($("style#custom_css.AVE_custom_css_editable").is(":focus")){return;}
@@ -3650,43 +3680,76 @@ AVE.Modules['ShortKeys'] = {
                 return;
             }
 
-            //Exit if a key modifier is pressed (ctrl, shift)
-            if (ctrl || shift) { return; }
+            var sel = AVE.Utils.SelectedPost,
+                key;
 
-            var sel = AVE.Utils.SelectedPost;
-            var key;
-
-            if (event.key === undefined) { //Chrome
+            if (event.which === 13) { key = ""; } //Enter/Return key
+            else if (event.key === undefined) { //Chrome
                 key = String.fromCharCode(event.keyCode).toUpperCase();
             } else {
                 key = event.key.toUpperCase();
             }
 
-            if (event.which === 13) { key = ""; } //Enter/Return key
+            if (key.length > 1) { return; } //Stop there if the key isn't alphanumeric
 
-            if (key === NavTop.toUpperCase()) { // Navigate to the top of the page
+            if (ctrl)  { mod += "c"; }
+            if (shift) { mod += "s"; }
+            var c = false, // At least one shortkey was found for the current combination of key and modifiers
+                s = false; // At least one of those combinations needs a selected post to work
+            $.each(Object.keys(_this.Options), function (idx, Kiter) {
+                if (K.hasOwnProperty(Kiter)){
+                    if (!_this.Options[Kiter].hasOwnProperty("Mod")){
+                        _this.Options[Kiter].Mod = "";
+                    }
+
+                    if (_this.Options[Kiter].Mod !== mod){
+                        K[Kiter] = "\n"; //Impossible character since an empty string is already reserved to Enter/Return
+                    } else if (K[Kiter].toUpperCase() === key){
+                        if ($.inArray(key,["NavigateTop", "NavigateBottom", "ToggleCustomStyle"]) === -1){s=true;}
+                        c = true;
+                    }
+                }
+            });
+
+            if (!c){return;} //Stop there if no shortkey matches the current modifier(s)
+
+            if (!s){
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+            }
+
+            if (key === K.NavigateTop.toUpperCase()) { // Navigate to the top of the page
                 //Scroll to top
                 //Set first post as selected
                 var obj = $("div.submission[class*='id']:first,div.comment[class*='id']:first").first();
                 if (AVE.Modules['SelectPost']) { AVE.Modules['SelectPost'].ToggleSelectedState(obj.find(".entry:first")); }
                 $(window).scrollTop(0);
-            } else if (key === NavBottom.toUpperCase()) { // Navigate to the bottom of the page
+            } else if (key === K.NavigateBottom.toUpperCase()) { // Navigate to the bottom of the page
                 //Scroll to bottom
                 $(window).scrollTop($(document).height());
                 //Set last post as selected
                 var obj = $("div.comment[class*='id']:last");
                 if (obj.length === 0) { obj = $("div.submission[class*='id']:last"); }
                 if (AVE.Modules['SelectPost']) { AVE.Modules['SelectPost'].ToggleSelectedState(obj.find(".entry:first")); }
+            } else if (key === K.ToggleCustomStyle.toUpperCase()) { // Toggle custom style
+                var checkbox = $("input#AVE_ToggleCustomStyle");
+                checkbox.prop('checked', !checkbox.is(":checked"));
+                checkbox.trigger("change");
             }
 
-            //All following keys need a post selected to work
-            if (!AVE.Utils.SelectedPost) {  return; }
+            //All following shortkeys need a post selected to work
+            if (!sel) { return;}
 
-            if (key === up.toUpperCase()) { // upvote
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+
+            if (key === K.UpvoteKey.toUpperCase()) { // upvote
                 sel.parent().find(".midcol").find("div[aria-label='upvote']").first().click();
-            } else if (key === down.toUpperCase()) { // downvote
+            } else if (key === K.DownvoteKey.toUpperCase()) { // downvote
                 sel.parent().find(".midcol").find("div[aria-label='downvote']").first().click();
-            } else if (key === next.toUpperCase()) { // next post
+            } else if (key === K.NextKey.toUpperCase()) { // next post
                 if (sel.parent().hasClass("submission")) {
                     //Submissions
                     var _next = sel.parent().nextAll("div.submission[class*='id-']:first");
@@ -3702,7 +3765,7 @@ AVE.Modules['ShortKeys'] = {
                     var id = sel.parent().prop("class").split(" ")[1];
                     // :visible because comments could be hidden, with the ToggleChildComment module
                     var a = sel.parent().find("div[class*='id-']:visible").get(0) || //Child
-                            $("div." + id + " ~ div[class*='id-']:visible").get(0); //Sibling
+                        $("div." + id + " ~ div[class*='id-']:visible").get(0); //Sibling
 
                     if (!a) { //Not a direct parent
                         var tempSel = sel.parent();
@@ -3710,7 +3773,7 @@ AVE.Modules['ShortKeys'] = {
                         var count = 0;
                         while (!a) {
                             tempSel = $(tempSel.parent("div[class*='id-']").get(0) ||
-                                      $("div." + tempID + " ~ div[class*='id-']:visible").get(0));
+                                $("div." + tempID + " ~ div[class*='id-']:visible").get(0));
                             if (tempSel.length === 0) { break; }
 
                             if (tempSel.nextAll("div[class*='id-']:visible:last").length > 0) {
@@ -3731,7 +3794,7 @@ AVE.Modules['ShortKeys'] = {
                     } else { $("a#loadmorebutton").click(); }
                 }
 
-            } else if (key === previous.toUpperCase()) { // previous post
+            } else if (key === K.PrevKey.toUpperCase()) { // previous post
                 if (sel.parent().hasClass("submission")) { // select by page type not class
                     //Submissions
                     var prev = sel.parent().prevAll("div.submission[class*='id-']:first");
@@ -3744,8 +3807,8 @@ AVE.Modules['ShortKeys'] = {
                     //var id = sel.parent().prop("class").split(" ")[1];
 
                     var a = sel.parent().prevAll("div[class*='id-']:visible:first").find("div[class*='id-']:visible:last").get(0) || //Parent's child
-                            sel.parent().prevAll("div[class*='id-']:visible:first").get(0) || //Sibling
-                            sel.parent().parent("div[class*='id-']:visible").get(0); //Parent
+                        sel.parent().prevAll("div[class*='id-']:visible:first").get(0) || //Sibling
+                        sel.parent().parent("div[class*='id-']:visible").get(0); //Parent
 
                     if (a) {
                         AVE.Modules['SelectPost'].ToggleSelectedState($(a).find("div.entry:first"));
@@ -3754,7 +3817,7 @@ AVE.Modules['ShortKeys'] = {
                     //if (!a) No previous comment
                 }
 
-            } else if (key === OpenC.toUpperCase()) { // Open comment page
+            } else if (key === K.OpenCommentsKey.toUpperCase()) { // Open comment page
                 if (!sel.parent().hasClass("submission")) { return; }
 
                 var url = "https://" + window.location.hostname +sel.find("a.comments").attr("href");
@@ -3763,7 +3826,7 @@ AVE.Modules['ShortKeys'] = {
                 } else {
                     window.location.href = url;
                 }
-            } else if (key === OpenL.toUpperCase()) { // Open link page
+            } else if (key === K.OpenLinkKey.toUpperCase()) { // Open link page
                 if (!sel.parent().hasClass("submission")) { return; }
                 var url = sel.find("a.title").attr("href");
 
@@ -3778,7 +3841,7 @@ AVE.Modules['ShortKeys'] = {
                 } else {
                     window.location.href = url;
                 }
-            } else if (key === OpenLC.toUpperCase()) { // Open comment and link pages
+            } else if (key === K.OpenLCKey.toUpperCase()) { // Open comment and link pages
                 if (!sel.parent().hasClass("submission")) { return; }
                 var url = [];
 
@@ -3796,7 +3859,7 @@ AVE.Modules['ShortKeys'] = {
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[0] });
                     AVE.Utils.SendMessage({ request: "OpenInTab", url: url[1] });
                 }
-            } else if (key === Expand.toUpperCase()) { // Expand media/self-text
+            } else if (key === K.ExpandKey.toUpperCase()) { // Expand media/self-text
                 var expand, media;
                 if ( sel.parent().hasClass("submission")) {
                     //In submissions
@@ -3806,13 +3869,13 @@ AVE.Modules['ShortKeys'] = {
 
                         media.each(function () {
                             //Expand is false if at least one of the media is expanded
-                            if ($(this).next(".link-expando:visible").length > 0)
+                            if ($(this).NextKey(".link-expando:visible").length > 0)
                             { expand = false; return false; }
                         });
 
                         media.each(function () {
                             if ($(this).find("span.link-expando-type").length > 0
-                                && expand !== $(this).next(".link-expando:visible").length > 0)
+                                && expand !== $(this).NextKey(".link-expando:visible").length > 0)
                             { this.click(); }
                         });
                     } else {
@@ -3825,22 +3888,22 @@ AVE.Modules['ShortKeys'] = {
 
                     media.each(function () {
                         //Expand is false if at least one of the media is expanded
-                        if ($(this).next(".link-expando:visible").length > 0)
+                        if ($(this).NextKey(".link-expando:visible").length > 0)
                         { expand = false; return false; }
-                        });
+                    });
 
                     media.each(function () {
-                        if ($(this).find("span.link-expando-type").length > 0 
-                            && expand !== $(this).next(".link-expando:visible").length > 0)
+                        if ($(this).find("span.link-expando-type").length > 0
+                            && expand !== $(this).NextKey(".link-expando:visible").length > 0)
                         { this.click(); }
-                        });
+                    });
                 }
 
                 if (sel.offset().top < $(window).scrollTop() &&
                     sel.find("div.expando-button").hasClass("collapsed")){// and if it was expanded
                     $('html, body').animate({ scrollTop: AVE.Utils.SelectedPost.parent().offset().top - 50 }, 150);
                 }
-            } else if (key === TCC.toUpperCase()) { // Toggle comment chain or load more replies
+            } else if (key === K.ToggleCommentChain.toUpperCase()) { // Toggle comment chain or load more replies
                 if (sel.parent().hasClass("submission")) { return; }
 
                 if (sel.find("a.inline-loadcomments-btn:first").length > 0) {
@@ -3850,7 +3913,7 @@ AVE.Modules['ShortKeys'] = {
                     //Hide selected comment otherwise
                     sel.find('a.expand:visible:first')[0].click();
                 }
-            } else if (key === HidePost.toUpperCase()) { // Hide submission
+            } else if (key === K.HidePost.toUpperCase()) { // Hide submission
                 if (!AVE.Modules['HideSubmissions'] || !AVE.Modules['HideSubmissions'].Enabled){
                     if(!confirm("You are trying to hide a post but the module \"HideSubmissions\" is disabled.\nDo you want to activate and load this module?")){
                         return;
@@ -3900,9 +3963,18 @@ AVE.Modules['ShortKeys'] = {
     },
 
     AppendToPreferenceManager: {
+
+        colours: {
+            shift: "rebeccapurple",
+            ctrl: "#398F6A"
+        },
+
         html: function () {
             var _this = AVE.Modules['ShortKeys'];
             var htmlStr = "";
+
+            this.colours.collides = "#" + (AVE.Utils.CSSstyle === "dark" ? "4B2A2A" : "FFBCBC");
+
             //Up and Down vote
             htmlStr += '<table id="AVE_ShortcutKeys" style="text-align: right;">';
             htmlStr += '<tr>';
@@ -3915,29 +3987,135 @@ AVE.Modules['ShortKeys'] = {
             //Open Link, Comments, Comments & Link
             htmlStr += '<tr>';
             htmlStr += '<td>Open Link: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="OpenLinkKey" value="' + _this.Options.OpenLinkKey.Value + '"/></td>';
-            htmlStr += '<td>&nbsp; Open comments: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="OpenCommentsKey" value="' + _this.Options.OpenCommentsKey.Value + '"/>';
+            htmlStr += '<td>&nbsp; Open comments: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="OpenCommentsKey" value="' + _this.Options.OpenCommentsKey.Value + '"/></td>';
             htmlStr += '<td>&nbsp; Open L&C: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="OpenLCKey" value="' + _this.Options.OpenLCKey.Value + '"/></td>';
             //Toggle expand media
-            htmlStr += '<td>&nbsp; Toggle expand: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="ExpandKey" value="' + _this.Options.ExpandKey.Value + '"/>';
+            htmlStr += '<td>&nbsp; Toggle expand: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="ExpandKey" value="' + _this.Options.ExpandKey.Value + '"/></td>';
             htmlStr += '</tr>';
             //Toggle expand comment
             htmlStr += '<tr>';
-            htmlStr += '<td>&nbsp; <span title="Toggle comment chain or load more replies">Toggle comment</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="ToggleCommentChain" value="' + _this.Options.ToggleCommentChain.Value + '"/>';
+            htmlStr += '<td>&nbsp; <span title="Toggle comment chain or load more replies">Toggle comment</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="ToggleCommentChain" value="' + _this.Options.ToggleCommentChain.Value + '"/></td>';
             //Navigate to Top and Bottom of the page
-            htmlStr += '<td>&nbsp; <span title="Navigate to the top of the page">Top of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="NavigateTop" value="' + _this.Options.NavigateTop.Value + '"/>';
+            htmlStr += '<td>&nbsp; <span title="Navigate to the top of the page">Top of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="NavigateTop" value="' + _this.Options.NavigateTop.Value + '"/></td>';
             htmlStr += '<td>&nbsp; <span title="Navigate to the bottom of the page">Bottom of the page</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="NavigateBottom" value="' + _this.Options.NavigateBottom.Value + '"/></td>';
             //Hide submission
-            htmlStr += '<td>&nbsp; <span title="This feaure requires the module HideSubmission to be enabled!">Hide post</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="HidePost" value="' + _this.Options.HidePost.Value + '"/></td>';
+            htmlStr += '<td>&nbsp; <span title="This feature requires the module HideSubmission to be enabled!">Hide post</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="HidePost" value="' + _this.Options.HidePost.Value + '"/></td>';
+            htmlStr += '</tr>';
+            htmlStr += '<tr>';
+            //Toggle custom styles
+            htmlStr += '<td>&nbsp; <span title="Toggle custom styles">Toggle styles</span>: <input maxlength="1" style="display:inline;width:25px;padding:0;text-align:center;" size="1" class="form-control" type="text" id="ToggleCustomStyle" value="' + _this.Options.ToggleCustomStyle.Value + '"/></td>';
             htmlStr += '</tr>';
 
             htmlStr += '</table>';
+
+            htmlStr += '<div><span style="border-bottom:2px solid '+this.colours.ctrl+';">Ctrl</span> - <span style="border-bottom:2px solid '+this.colours.shift+';">Shift</span> <span id="AVE_Shortkeys_CollisionWarning" style="margin-left:25px;display:none;font-weight:bold;"></span><br><br>';
+
             htmlStr += '<input id="OpenInNewTab" ' + (_this.Options.OpenInNewTab.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInNewTab"> ' + _this.Options.OpenInNewTab.Desc + '</label><br>';
             htmlStr += '<input id="OpenInArchive" ' + (_this.Options.OpenInArchive.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="OpenInArchive"> ' + _this.Options.OpenInArchive.Desc + '</label><br>';
+
             return htmlStr;
         },
 
         callback: function () {
+            var _this = this,
+                _self = AVE.Modules['ShortKeys'],
+                JqId = $("table#AVE_ShortcutKeys input[type='text']");
 
+            JqId.each(function () {
+                var id = $(this).attr("id"),
+                    opt = _self.Options[id];
+                if (opt.hasOwnProperty("Mod")){
+                    if (opt.Mod == "cs"){
+                        $(this).css("borderRight", "2px solid "+_this.colours.shift);
+                        $(this).css("borderLeft", "2px solid "+_this.colours.ctrl);
+                    } else if (opt.Mod == "s"){
+                        $(this).css("borderRight", "2px solid "+_this.colours.shift);
+                        $(this).css("borderLeft", "");
+                    } else if (opt.Mod == "c"){
+                        $(this).css("borderLeft", "2px solid "+_this.colours.ctrl);
+                        $(this).css("borderRight", "");
+                    }
+
+                    $('<input id="'+id+'_mod" value="'+opt.Mod+'" style="display:none;" />').insertAfter(this);
+                }
+            }).on("keydown", function (event) {
+                var shift = event.shiftKey,
+                    ctrl = event.ctrlKey,
+                    el = $(this),
+                    id = el.attr("id"),
+                    opt = _self.Options[id],
+                    key;
+
+                if (event.key === undefined) { //Chrome
+                    key = String.fromCharCode(event.keyCode).toLowerCase();
+                } else {
+                    key = event.key.toLowerCase();
+                }
+
+                //key = $.trim(key); // Space is an accepted key
+
+                if (key.length === 1){
+                    $(this).val(key);
+                } else { return; }
+
+                var modVal = $("table#AVE_ShortcutKeys input#"+id+"_mod");
+                if (modVal.length == 0) {
+                    $('<input id="'+id+'_mod" value="'+opt.Mod+'" style="display:none;" />').insertAfter(this);
+                    modVal = $("table#AVE_ShortcutKeys input#"+id+"_mod");
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+
+                if(shift && ctrl){
+                    el.css("borderLeft", "2px solid "+_this.colours.ctrl)
+                      .css("borderRight", "2px solid "+_this.colours.shift);
+                    modVal.val("cs");
+                } else if (shift) {
+                    el.css("borderRight", "2px solid "+_this.colours.shift)
+                      .css("borderLeft", "");
+                    modVal.val("s");
+                } else if (ctrl) {
+                    el.css("borderLeft", "2px solid "+_this.colours.ctrl)
+                      .css("borderRight", "");
+                    modVal.val("c");
+                } else {
+                    el.css("borderLeft", "")
+                      .css("borderRight", "");
+                    modVal.val("");
+                }
+                AVE.Modules.PreferenceManager.AddToModifiedModulesList("ShortKeys");
+
+                var colliding = [],
+                    mod = modVal.val();
+                JqId.each(function () {
+                    var ID = $(this).prop("id");
+                    if (ID === id) { return true; }
+
+                    var nmod = $(this).next("input#"+$(this).prop("id")+"_mod").val(),
+                        nkey = $(this).val().toLowerCase();
+
+                    if (nkey === key && nmod === mod) {
+                        colliding.push(ID);
+                        $(this).css("backgroundColor", _this.colours.collides);
+                    } else {
+                        $(this).css("backgroundColor", "");
+                    }
+                });
+
+
+                var warn = $("span#AVE_Shortkeys_CollisionWarning");
+                if (colliding.length > 0){
+                    el.css("backgroundColor", _this.colours.collides);
+                    warn.text("This key shortcut is currently assigned to: " + colliding.join(", ") + ".")
+                        .show();
+                } else {
+                    el.css("backgroundColor", "");
+                    warn.text("")
+                        .hide();
+                }
+            });
         }
     }
 };
@@ -4043,8 +4221,6 @@ AVE.Modules['InjectCustomStyle'] = {
         SlimDark: "https://cdn.rawgit.com/KinOfMany/SlimDark/master/style.css?AVE",
         Typogra: "https://cdn.rawgit.com/Nurdoidz/Typogra-Voat/master/Typogra.min.css?AVE"
     },
-
-    CustomCSSContainerCount: 0,
 
     Start: function () {
         var _this = this;
@@ -4266,6 +4442,8 @@ AVE.Modules['ToggleCustomStyle'] = {
         }
     },
 
+    CustomCSSContainerCount: 0,
+
     SavePref: function (POST) {
         POST = POST[this.ID];
 
@@ -4304,11 +4482,14 @@ AVE.Modules['ToggleCustomStyle'] = {
                                 if (!_this.CustomCSS){
                                     _this.CustomCSS = $(n).text();
                                 }
+                                _this.CustomCSSContainerCount++;
 
                                 if (_this.CustomCSSContainerCount === 1 && $.trim(_this.CustomCSS).length > 0){
                                     _this.Start();
 
                                     obsCustomCSS.disconnect();
+                                } else {
+                                    $(n).remove();
                                 }
                             }
                         }
@@ -4603,8 +4784,7 @@ AVE.Modules['CommentFilter'] = {
     },
 
     ResetPref: function () {
-        var _this = this;
-        _this.Options = JSON.parse(_this.OriginalOptions);
+        this.Options = JSON.parse(this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
@@ -5100,8 +5280,7 @@ AVE.Modules['NeverEndingVoat'] = {
     },
 
     ResetPref: function () {
-        var _this = this;
-        _this.Options = JSON.parse(_this.OriginalOptions);
+        this.Options = JSON.parse(this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
@@ -5510,8 +5689,7 @@ AVE.Modules['FixContainerWidth'] = {
     },
 
     ResetPref: function () {
-        var _this = this;
-        _this.Options = JSON.parse(_this.OriginalOptions);
+        this.Options = JSON.parse(this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
@@ -5770,8 +5948,7 @@ AVE.Modules['SubmissionFilter'] = {
     },
 
     ResetPref: function () {
-        var _this = this;
-        _this.Options = JSON.parse(_this.OriginalOptions);
+        this.Options = JSON.parse(this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
@@ -6121,9 +6298,8 @@ AVE.Modules['IgnoreUsers'] = {
         _this.Store.SetValue(_this.Store.Prefix + _this.ID, JSON.stringify(POST[_this.ID]));
     },
 
-    ResetPref: function () {// will add the reset option in the pref manager. Can be deleted.
-        var _this = this;
-        _this.Options = JSON.parse(_this.OriginalOptions);
+    ResetPref: function () {
+        this.Options = JSON.parse(this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
@@ -7015,8 +7191,7 @@ AVE.Modules['AppendQuote'] = {
     },
 
     ResetPref: function () {
-        var _this = this;
-        _this.Options = JSON.parse(_this.OriginalOptions);
+        this.Options = JSON.parse(this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
@@ -7858,8 +8033,7 @@ AVE.Modules['DomainFilter'] = {
     },
 
     ResetPref: function () {
-        var _this = this;
-        _this.Options = JSON.parse(_this.OriginalOptions);
+        this.Options = JSON.parse(this.OriginalOptions);
     },
 
     SetOptionsFromPref: function () {
