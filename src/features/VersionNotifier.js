@@ -60,11 +60,12 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.16.37",
+        "V2.36.16.38",
         "   Shortkeys:",
         "       Added support for key modifiers (ctrl & shift)",
         "       Added checks for shortcut collisions (shows warning and visual cues)",
         "       Added shortcut to toggle custom styles",
+        "       Corrected issue with event bubbling in Chrome",
         "   UpdateAfterLoadingMore:",
         "       Starts at DOM load so that it isn't trigger while the page is still loading",
         "V2.36.13.36",

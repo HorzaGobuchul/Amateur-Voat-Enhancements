@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        Amateur Voat Enhancements beta
 // @author      Horza
-// @date        2016-03-19
+// @date        2016-03-20
 // @description Add new features to voat.co
 // @license     MIT; https://github.com/HorzaGobuchul/Amateur-Voat-Enhancements/blob/master/LICENSE
 // @match       *://voat.co/*
 // @match       *://*.voat.co/*
 // @exclude     *://*.voat.co/api*
 // @exclude     *://voat.co/api*
-// @version     2.36.16.37
+// @version     2.36.16.38
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -1203,11 +1203,12 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
-        "V2.36.16.37",
+        "V2.36.16.38",
         "   Shortkeys:",
         "       Added support for key modifiers (ctrl & shift)",
         "       Added checks for shortcut collisions (shows warning and visual cues)",
         "       Added shortcut to toggle custom styles",
+        "       Corrected issue with event bubbling in Chrome",
         "   UpdateAfterLoadingMore:",
         "       Starts at DOM load so that it isn't trigger while the page is still loading",
         "V2.36.13.36",
@@ -3695,7 +3696,7 @@ AVE.Modules['ShortKeys'] = {
             if (ctrl)  { mod += "c"; }
             if (shift) { mod += "s"; }
             var c = false, // At least one shortkey was found for the current combination of key and modifiers
-                s = false; // At least one of those combinations needs a selected post to work
+                s = true; // At least one of those combinations needs a selected post to work
             $.each(Object.keys(_this.Options), function (idx, Kiter) {
                 if (K.hasOwnProperty(Kiter)){
                     if (!_this.Options[Kiter].hasOwnProperty("Mod")){
@@ -3705,7 +3706,7 @@ AVE.Modules['ShortKeys'] = {
                     if (_this.Options[Kiter].Mod !== mod){
                         K[Kiter] = "\n"; //Impossible character since an empty string is already reserved to Enter/Return
                     } else if (K[Kiter].toUpperCase() === key){
-                        if ($.inArray(key,["NavigateTop", "NavigateBottom", "ToggleCustomStyle"]) === -1){s=true;}
+                        if (s && $.inArray(Kiter,["NavigateTop", "NavigateBottom", "ToggleCustomStyle"]) !== -1){s=false;}
                         c = true;
                     }
                 }
@@ -4058,15 +4059,15 @@ AVE.Modules['ShortKeys'] = {
                     $(this).val(key);
                 } else { return; }
 
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+
                 var modVal = $("table#AVE_ShortcutKeys input#"+id+"_mod");
                 if (modVal.length == 0) {
                     $('<input id="'+id+'_mod" value="'+opt.Mod+'" style="display:none;" />').insertAfter(this);
                     modVal = $("table#AVE_ShortcutKeys input#"+id+"_mod");
                 }
-
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
 
                 if(shift && ctrl){
                     el.css("borderLeft", "2px solid "+_this.colours.ctrl)
