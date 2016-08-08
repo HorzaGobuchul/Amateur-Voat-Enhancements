@@ -126,14 +126,11 @@ AVE.Utils = {
     },
 
     GetDevMode: function () {
-        return AVE.Storage.GetValue(AVE.Storage.Prefix+"DevMode", "0") === "1" ? true : false;
+        return AVE.Storage.GetValue(AVE.Storage.Prefix+"DevMode", "0") === "1";
     },
 
     GetPageSubverse: function () {
-        if (this.subverseName)
-        { return true; }
-
-        return false;
+        return !!this.subverseName;
     },
 
     GetSubverseName: function () {
@@ -220,12 +217,22 @@ AVE.Utils = {
         }
     };
 }($));
-function print(str, dev) {if(dev && !AVE.Utils.DevMode){return;} console.log(str); }
+function print(str,dev){if(dev && !AVE.Utils.DevMode){return;}console.log(str);}
 //Thanks to Paolo Bergantino https://stackoverflow.com/questions/965816/what-jquery-selector-excludes-items-with-a-parent-that-matches-a-given-selector#answer-965962
 jQuery.expr[':'].parents = function (a, i, m) { return jQuery(a).parents(m[3]).length < 1; };
 //Thanks to Narnian https://stackoverflow.com/questions/6673777/select-link-by-text-exact-match#answer-8447189
 jQuery.expr[':'].textEquals = function(a, i, m) { return jQuery(a).text().match("^" + m[3] + "$"); };
-    //Thanks to digiguru https://stackoverflow.com/questions/5306680/move-an-array-element-from-one-array-position-to-another#answer-7180095
+//Thanks to J. Padolsey http://james.padolsey.com/javascript/regex-selector-for-jquery/
+jQuery.expr[':'].regex = function(a, i, m) {
+    var matchParams = m[3].split(','),
+        validLabels = /^(data|css):/,
+        attr = { method: matchParams[0].match(validLabels) ? matchParams[0].split(':')[0] : 'attr',
+                 property: matchParams.shift().replace(validLabels,'') },
+        regexFlags = 'ig',
+        regex = new RegExp(matchParams.join('').replace(/^\s+|\s+$/g,''), regexFlags);
+    return regex.test(jQuery(a)[attr.method](attr.property));
+};
+//Thanks to digiguru https://stackoverflow.com/questions/5306680/move-an-array-element-from-one-array-position-to-another#answer-7180095
 AVE.Utils.move = function(arr, from, to) { arr.splice(to, 0, arr.splice(from, 1)[0]);};
 //Might be overkill, but I need to be able to disconnect the listener before updating.
 var OnNodeChange = (function () {
@@ -234,7 +241,7 @@ var OnNodeChange = (function () {
     var cls = function (t, c) {
         this.options = {
             subtree: true,
-            childList: true,
+            childList: true
         };
         this.observed = [];
         this.targets = t;
@@ -270,7 +277,7 @@ var OnAttrChange = (function () {
     var cls = function (t, c) {
         this.options = {
             attributes: true,
-            attributeOldValue: true,
+            attributeOldValue: true
         };
         this.targets = t;
 

@@ -1,7 +1,7 @@
 AVE.Modules['VersionNotifier'] = {
     ID: 'VersionNotifier',
     Name: 'Version notifier',
-    Desc: 'Show a short notification the first time a new version of AVE is used.',
+    Desc: 'Show a short notification when AVE is updated.',
     Category: 'General',
 
     Index: 0.5,
@@ -60,6 +60,19 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.37.19.42",
+        "   UserTag:",
+        "       Updated Jquery selector according to recent changes (backward compatible)",
+        "       Added option to show usertags even when the link label doesn't match the username",
+        "       Added conditional plurals in the PrefMngr for the stats",
+        "   Shortkeys:",
+        "       Fixed ExpandKey and ToggleCommentChain",
+        "       Simplified key input code in the PrefMngr",
+        "   VersionNotifier:",
+        "       Updated description",
+        "V2.37.16.38",
+        "   New feature: DelayTimer:",
+        "       Shows a timer informing you about the number of seconds you need to wait before posting/commenting again",
         "V2.36.16.38",
         "   Shortkeys:",
         "       Added support for key modifiers (ctrl & shift)",

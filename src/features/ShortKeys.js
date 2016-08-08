@@ -359,13 +359,13 @@ AVE.Modules['ShortKeys'] = {
 
                         media.each(function () {
                             //Expand is false if at least one of the media is expanded
-                            if ($(this).NextKey(".link-expando:visible").length > 0)
+                            if ($(this).next(".link-expando:visible").length > 0)
                             { expand = false; return false; }
                         });
 
                         media.each(function () {
                             if ($(this).find("span.link-expando-type").length > 0
-                                && expand !== $(this).NextKey(".link-expando:visible").length > 0)
+                                && expand !== $(this).next(".link-expando:visible").length > 0)
                             { this.click(); }
                         });
                     } else {
@@ -378,13 +378,13 @@ AVE.Modules['ShortKeys'] = {
 
                     media.each(function () {
                         //Expand is false if at least one of the media is expanded
-                        if ($(this).NextKey(".link-expando:visible").length > 0)
+                        if ($(this).next(".link-expando:visible").length > 0)
                         { expand = false; return false; }
                     });
 
                     media.each(function () {
                         if ($(this).find("span.link-expando-type").length > 0
-                            && expand !== $(this).NextKey(".link-expando:visible").length > 0)
+                            && expand !== $(this).next(".link-expando:visible").length > 0)
                         { this.click(); }
                     });
                 }
@@ -396,9 +396,9 @@ AVE.Modules['ShortKeys'] = {
             } else if (key === K.ToggleCommentChain.toUpperCase()) { // Toggle comment chain or load more replies
                 if (sel.parent().hasClass("submission")) { return; }
 
-                if (sel.find("a.inline-loadcomments-btn:first").length > 0) {
-                    //Load more comment if possible
-                    sel.find("a.inline-loadcomments-btn:first")[0].click();
+                if (sel.next("div.loadMoreComments:first").length > 0) {
+                    //Load more comments if possible
+                    sel.next("div.loadMoreComments:first").children(":first")[0].click();
                 } else if (sel.find('a.expand:visible:first').length > 0) {
                     //Hide selected comment otherwise
                     sel.find('a.expand:visible:first')[0].click();
@@ -528,25 +528,17 @@ AVE.Modules['ShortKeys'] = {
 
                     $('<input id="'+id+'_mod" value="'+opt.Mod+'" style="display:none;" />').insertAfter(this);
                 }
-            }).on("keydown", function (event) {
+            }).on("keyup", function (event) {
                 var shift = event.shiftKey,
                     ctrl = event.ctrlKey,
                     el = $(this),
                     id = el.attr("id"),
                     opt = _self.Options[id],
-                    key;
+                    key = $(this).val().toLowerCase();
 
-                if (event.key === undefined) { //Chrome
-                    key = String.fromCharCode(event.keyCode).toLowerCase();
-                } else {
-                    key = event.key.toLowerCase();
+                if (key.length >= 1){
+                    key = key[0]
                 }
-
-                //key = $.trim(key); // Space is an accepted key
-
-                if (key.length === 1){
-                    $(this).val(key);
-                } else { return; }
 
                 event.preventDefault();
                 event.stopPropagation();

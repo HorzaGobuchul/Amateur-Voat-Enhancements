@@ -60,6 +60,7 @@ AVE.Init = {
                 }//Error pages that are empty
 
                 AVE.Utils.LateSet();
+                print("WARNING!! Change metafile, l25, l63");
                 
                 print("Init: Starting on Head ready", true);
                 $.each(ModLoad.HeadReady, function () {

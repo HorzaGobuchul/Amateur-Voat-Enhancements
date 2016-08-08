@@ -19,6 +19,11 @@ AVE.Modules['UserTag'] = {
             Type: 'boolean',
             Value: true
         },
+        ForceShowTag: {
+            Type: 'boolean',
+            Desc: 'Display tag/balance even in cases where the link label doesn\'t match the username (<a href="https://voat.co/v/TestingAVE/comments/391434/6020818" target="_blank">example</a>) .',
+            Value: false
+        },
         VoteBalance: {
             Type: 'boolean',
             Desc: 'Track votes and display the vote balance next to usernames.',
@@ -258,15 +263,25 @@ table#formTable{\
 
     AppendToPage: function () {
         var _this = this;
-        var Tag_html, name, tag;
+        var Tag_html, name, actual_ref, tag;
 
-        $("a[href^='/user/'],a[href^='/u/']").each(function () {
+        var regex = "^(https?:\/\/)?(voat\.co)?\/u(ser)?\/([^\/#?=]+)$";
+
+        $("a:regex(href, "+regex.toString()+")").each(function () {
             if ($(this).next("span.AVE_UserTag").length > 0) { return true; } //don't add if it already exists
             if ($(this).parents("div#header-account").length > 0) { return true; } //don't add if it the userpage link in the account header
 
             name = $(this).html().replace("@", "").replace("/u/", "").toLowerCase(); //Accepts: Username, @Username, /u/Username
 
-            if ($(this).attr('href').split("/")[2].toLowerCase() !== name) { return true; } //don't add if this is a link whose label isn't the username
+            actual_ref = new RegExp(regex);
+            actual_ref = actual_ref.exec($(this).attr('href'));
+            actual_ref = actual_ref[actual_ref.length-1].toLowerCase();
+
+            if (actual_ref !== name) {
+                if (_this.Options.ForceShowTag.Value) {
+                    name = actual_ref;
+                } else { return true;} //don't add if this is a link whose label isn't the username
+            }
 
             tag = _this.GetTag(name) || {};// || new _this.UserTagObj("",  "", false, 0);
 
@@ -591,11 +606,17 @@ table#formTable{\
                     if (value.i) { IgnoreLen++; }
                 });
 
-                htmlStr += '<ul style="list-style:inside circle;"><li>You have tagged <strong>' + TagLen + '</strong> users.</li>';
-                htmlStr += "<li>You have voted on submissions made by <strong>" + VoteLen + "</strong> users.</li>";
-                htmlStr += "<li>You have chosen to ignore <strong>" + IgnoreLen + "</strong> users.</li></ul>";
+                htmlStr += '<ul style="list-style:inside circle;"><li>You have tagged <strong>' + TagLen + '</strong> user'+ (TagLen>1 ? "s":"") +'.</li>';
+                htmlStr += "<li>You have voted on submissions made by <strong>" + VoteLen + "</strong> user"+ (VoteLen>1 ? "s":"") +".</li>";
+                htmlStr += "<li>You have chosen to ignore <strong>" + IgnoreLen + "</strong> user"+ (IgnoreLen>1 ? "s":"") +".</li></ul>";
 
-                htmlStr += '<br /><input id="VoteBalance" ' + (_this.Options.VoteBalance.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="VoteBalance"> ' + _this.Options.VoteBalance.Desc + '</label><br>';
+                htmlStr += "<hr />";
+
+                htmlStr += '<input id="ForceShowTag" ' + (_this.Options.ForceShowTag.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ForceShowTag"> ' + _this.Options.ForceShowTag.Desc + '</label>';
+
+                htmlStr += "<hr />";
+
+                htmlStr += '<input id="VoteBalance" ' + (_this.Options.VoteBalance.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="VoteBalance"> ' + _this.Options.VoteBalance.Desc + '</label><br>';
                 htmlStr += '<input id="ShowBalanceWithColourGradient" ' + (_this.Options.ShowBalanceWithColourGradient.Value ? 'checked="true"' : "") + ' type="checkbox"/><label style="display:inline;" for="ShowBalanceWithColourGradient"> ' + _this.Options.ShowBalanceWithColourGradient.Desc + '</label><br><br>';
                 //Add option to remove oldest tags.
                 //  Seeing as this.usertags is ordered oldest first, propose to remove X tags at the beginning of the list.
