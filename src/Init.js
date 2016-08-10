@@ -38,6 +38,14 @@ AVE.Init = {
                 } else { //(this.RunAt === "load") {
                     ModLoad.WinLoaded.push(this.ID);
                 }
+                //   "start"     => as soon as possible
+                //   "head"      => On head ready
+                //   "banner"    => On header/banner ready
+                //   "container" => On container ready
+                //   "ready"     => On DOMready
+                //   "load"      => On DOMload
+                // "ready" by default if RunAt is undefined
+                // "load" by default if RunAt is not one of the values above
             });
 
             //Start as soon as possible

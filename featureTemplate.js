@@ -1,23 +1,15 @@
-AVE.Modules['ID'] = {
-    ID: 'ID',
-    Name: 'Name',
-    Desc: 'Desc',
-    Category: 'Cat',
-
+AVE.Modules['${NAME}'] = {
+    ID: '${NAME}',
+    Name: '${Title}',
+    Desc: '${Description}',
+    Category: '${Category}',
+    
     Index: 100,
     Enabled: false,
 
     Store: {},
-
-    //   "start"     => as soon as possible
-    //   "head"      => On head ready
-    //   "banner"    => On header/banner ready
-    //   "container" => On container ready
-    //   "ready"     => On DOMready
-    //   "load"      => On DOMload
-    // "ready" by default if RunAt is undefined
-    // "load" by default if RunAt is not one of these values above
-    RunAt: "load",
+    
+    RunAt: "${Start}",
 
     Options: {
         Enabled: {
@@ -80,11 +72,30 @@ AVE.Modules['ID'] = {
 
     AppendToPreferenceManager: { //Use to add custom input to the pref Manager
         html: function () {
-            //var _this = AVE.Modules['ID'];
+            //var _this = AVE.Modules['${NAME}'];
             var htmlStr = '';
             return htmlStr;
         },
         callback: function () {
-        },
+        }
     },
+
+    AppendToDashboard: {
+        initialized: false,
+        module: {},
+
+        init: function () {
+            this.module = AVE.Modules['${NAME}'];
+            this.initialized = true;
+        },
+
+        html: function () {
+            if (!this.initialized){this.init();}
+
+            var htmlStr = "";
+            return htmlStr;
+        },
+        callback: function () {
+            var _this = this;
+        }
 };
