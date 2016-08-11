@@ -265,22 +265,22 @@ table#formTable{\
         var _this = this;
         var Tag_html, name, actual_ref, tag;
 
-        var regex = "^(https?:\/\/)?(voat\.co)?\/u(ser)?\/([^\/#?=]+)$";
+        var regex_str = "^(https?:\/\/)?(voat\.co)?\/u(ser)?\/([^\/#?=]+)$";
+        var regex_act = new RegExp(regex_str);
 
-        $("a:regex(href, "+regex.toString()+")").each(function () {
+        $("a:regex(href, "+regex_str+")").each(function () {
             if ($(this).next("span.AVE_UserTag").length > 0) { return true; } //don't add if it already exists
             if ($(this).parents("div#header-account").length > 0) { return true; } //don't add if it the userpage link in the account header
 
             name = $(this).html().replace("@", "").replace("/u/", "").toLowerCase(); //Accepts: Username, @Username, /u/Username
 
-            actual_ref = new RegExp(regex);
-            actual_ref = actual_ref.exec($(this).attr('href'));
+            actual_ref = regex_act.exec($(this).attr('href'));
             actual_ref = actual_ref[actual_ref.length-1].toLowerCase();
 
             if (actual_ref !== name) {
                 if (_this.Options.ForceShowTag.Value) {
                     name = actual_ref;
-                } else { return true;} //don't add if this is a link whose label isn't the username
+                } else { return true;} //don't add if this is a link which label isn't the targeted username
             }
 
             tag = _this.GetTag(name) || {};// || new _this.UserTagObj("",  "", false, 0);

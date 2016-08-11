@@ -60,6 +60,9 @@ AVE.Modules['VersionNotifier'] = {
     Trigger: "new",
 
     ChangeLog: [
+        "V2.38.19.42",
+        "   New feature: DisplayUserBasicInfo",
+        "       Display user information when your mouse is over a username.",
         "V2.37.19.42",
         "   UserTag:",
         "       Updated Jquery selector according to recent changes (backward compatible)",

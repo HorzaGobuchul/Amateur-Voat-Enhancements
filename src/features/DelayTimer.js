@@ -68,7 +68,7 @@ AVE.Modules['DelayTimer'] = {
 
         if (!unsafeWindow || !unsafeWindow.UI) {
             // https://bugs.chromium.org/p/chromium/issues/detail?id=222652
-            print("AVE: DelayTimer > coudln't not access window's JS objects");
+            print("AVE: DelayTimer > coudl not access window's JS objects");
         }
         else {
             unsafeWindow.UI.Notifications.subscribe('DOM', exportFunction(function (context) {

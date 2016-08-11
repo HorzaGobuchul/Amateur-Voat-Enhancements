@@ -325,6 +325,8 @@ AVE.Modules['PreferenceManager'] = {
             $(".overlay").hide();
             $("body").css("overflow", "");
 
+            $("div#AVE_UserInfoTooltip").hide();
+
             event.stopPropagation();
         });
 
@@ -617,7 +619,7 @@ AVE.Modules['PreferenceManager'] = {
     ExportToJSON: function () {
         try {
             var isFileSaverSupported = !!new Blob;
-        } catch (e) { alert("AVE: Saving settings and data to JSON is not supported by your browser."); return; }
+        } catch (e) { alert("AVE: Saving settings and data to a file is not supported by your browser."); return; }
 
         var _this = AVE.Modules['PreferenceManager'];
         var data = {};

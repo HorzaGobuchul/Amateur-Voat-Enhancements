@@ -152,7 +152,7 @@ AVE.Modules['NeverEndingVoat'] = {
         print('AVE: loading page > ' + nextPageURL);
         $.ajax({
             url: nextPageURL,
-            cache: false,
+            cache: false
         }).done(function (html) {
             var error = "sticky";
             var content = $(html).find("div[class*='id-'][data-downs][data-ups]");
